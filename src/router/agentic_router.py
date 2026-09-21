@@ -1,0 +1,271 @@
+"""
+SatQuery AI -- Agentic Dynamic Router
+Section 9: Sensor-Aware Routing (SAR gets its own pathway)
+Section 15: Agentic Router (Input validation, capability matching, fallback selection, refusal logic)
+"""
+
+from __future__ import annotations
+
+import logging
+from typing import Optional
+
+from src.contracts.query_contracts import (
+    PathwayType,
+    QueryIntent,
+    RoutingDecision,
+    TaskType,
+)
+from src.contracts.raster_contracts import RasterMetadata, SensorModality
+from src.router.capability_registry import CapabilityRegistry, RuntimeMode
+from src.router.query_parser import QueryParser
+
+logger = logging.getLogger("satquery.router")
+
+
+class AgenticRouter:
+    """
+    Intelligent router that evaluates natural language intent alongside
+    provided sensor data, dynamically directing tasks to truthful pathways
+    or issuing precise refusals.
+    """
+
+    def __init__(
+        self,
+        parser: Optional[QueryParser] = None,
+        registry: Optional[CapabilityRegistry] = None,
+    ):
+        self.parser = parser or QueryParser()
+        self.registry = registry or CapabilityRegistry()
+
+    def route(
+        self,
+        query: str,
+        input_files: list[RasterMetadata],
+    ) -> RoutingDecision:
+        """
+        Produce a deterministic, transparent routing decision.
+        """
+        intent = self.parser.parse(query)
+        provided_count = len(input_files)
+        file_ids = [f.file_id for f in input_files]
+        modalities = [f.modality.value for f in input_files]
+
+        # -------------------------------------------------------------------
+        # Rule 0: Zero input rasters
+        # -------------------------------------------------------------------
+        if provided_count == 0:
+            return RoutingDecision(
+                query=query,
+                intent=intent,
+                task_type=TaskType.UNSUPPORTED,
+                selected_capability="none",
+                pathway=PathwayType.REFUSAL,
+                pathway_label="Refusal: Missing Input Imagery",
+                is_executable=False,
+                refusal_reason=(
+                    "Cannot perform remote sensing analysis. "
+                    "Reason: No satellite imagery was supplied. "
+                    "Required: Upload at least one GeoTIFF or TIFF raster."
+                ),
+                required_inputs_count=1,
+                provided_inputs_count=0,
+                input_file_ids=[],
+                input_modalities=[],
+                tool_sequence=[],
+                runtime_mode=self.registry.runtime_mode.value,
+            )
+
+        # -------------------------------------------------------------------
+        # Rule 1: Temporal Change Request
+        # -------------------------------------------------------------------
+        if intent.requires_temporal_pair or intent.task_type == TaskType.TEMPORAL_CHANGE:
+            if provided_count < 2:
+                # Mandatory refusal per Section 15 & DEMO 6: Never hallucinate missing observation
+                return RoutingDecision(
+                    query=query,
+                    intent=intent,
+                    task_type=TaskType.TEMPORAL_CHANGE,
+                    selected_capability="temporal_change",
+                    pathway=PathwayType.REFUSAL,
+                    pathway_label="Refusal: Insufficient Temporal Observations",
+                    is_executable=False,
+                    refusal_reason=(
+                        f"Cannot perform temporal change analysis. "
+                        f"Reason: Only one acquisition was supplied ({input_files[0].filename}). "
+                        f"Required: Two temporally distinct observations of the same geographic area."
+                    ),
+                    required_inputs_count=2,
+                    provided_inputs_count=provided_count,
+                    input_file_ids=file_ids,
+                    input_modalities=modalities,
+                    tool_sequence=[],
+                    runtime_mode=self.registry.runtime_mode.value,
+                )
+
+            # Two observations supplied
+            return RoutingDecision(
+                query=query,
+                intent=intent,
+                task_type=TaskType.TEMPORAL_CHANGE,
+                selected_capability="temporal_change",
+                pathway=PathwayType.TEMPORAL_CHANGE_ENGINE,
+                pathway_label="Bi-Temporal Change Engine [Registration Gate + L1/L2 Declaration]",
+                is_executable=True,
+                refusal_reason=None,
+                required_inputs_count=2,
+                provided_inputs_count=provided_count,
+                input_file_ids=file_ids,
+                input_modalities=modalities,
+                tool_sequence=[
+                    "CompatibilityChecker",
+                    "RegistrationQualityGate (AROSICS)",
+                    "TemporalConfoundCheck",
+                    "DeterministicChangeEngine",
+                    "L1L2DeclarationGate",
+                    "EvidenceStore",
+                ],
+                runtime_mode=self.registry.runtime_mode.value,
+            )
+
+        # -------------------------------------------------------------------
+        # Rule 2: Optical-SAR Multimodal Fusion Request
+        # -------------------------------------------------------------------
+        if intent.requires_optical_sar or intent.task_type == TaskType.OPTICAL_SAR_ANALYSIS:
+            has_optical = any(f.modality in (SensorModality.OPTICAL, SensorModality.MULTISPECTRAL) for f in input_files)
+            has_sar = any(f.modality == SensorModality.SAR for f in input_files)
+
+            if provided_count < 2 or not (has_optical and has_sar):
+                return RoutingDecision(
+                    query=query,
+                    intent=intent,
+                    task_type=TaskType.OPTICAL_SAR_ANALYSIS,
+                    selected_capability="optical_sar_fusion",
+                    pathway=PathwayType.REFUSAL,
+                    pathway_label="Refusal: Missing Modality for Fusion",
+                    is_executable=False,
+                    refusal_reason=(
+                        "Cannot perform Optical-SAR cross-modal fusion. "
+                        f"Reason: Expected 1 Optical/Multispectral and 1 SAR raster. "
+                        f"Supplied: {modalities}."
+                    ),
+                    required_inputs_count=2,
+                    provided_inputs_count=provided_count,
+                    input_file_ids=file_ids,
+                    input_modalities=modalities,
+                    tool_sequence=[],
+                    runtime_mode=self.registry.runtime_mode.value,
+                )
+
+            return RoutingDecision(
+                query=query,
+                intent=intent,
+                task_type=TaskType.OPTICAL_SAR_ANALYSIS,
+                selected_capability="optical_sar_fusion",
+                pathway=PathwayType.OPTICAL_SAR_FUSION,
+                pathway_label="Cross-Modal Optical-SAR Fusion Engine [Agreement Tiers & Dual Evidence]",
+                is_executable=True,
+                refusal_reason=None,
+                required_inputs_count=2,
+                provided_inputs_count=provided_count,
+                input_file_ids=file_ids,
+                input_modalities=modalities,
+                tool_sequence=[
+                    "CompatibilityChecker",
+                    "CommonGridResampler",
+                    "OpticalEvidenceExtractor (NDWI)",
+                    "SARBackscatterExtractor (Thresholding)",
+                    "CrossModalFusionEngine",
+                    "AgreementTierClassifier",
+                ],
+                runtime_mode=self.registry.runtime_mode.value,
+            )
+
+        # -------------------------------------------------------------------
+        # Rule 3: Single Image Input -- Sensor Aware Routing
+        # Section 9: SAR gets its own pathway! Never route SAR to optical VLM.
+        # -------------------------------------------------------------------
+        primary_file = input_files[0]
+
+        if primary_file.modality == SensorModality.SAR:
+            # Section 9: SAR strictly routed to SAR deterministic tools
+            return RoutingDecision(
+                query=query,
+                intent=intent,
+                task_type=TaskType.SINGLE_IMAGE_VQA_SAR,
+                selected_capability="single_image_vqa_sar",
+                pathway=PathwayType.SAR_DETERMINISTIC_TOOLS,
+                pathway_label="SAR Deterministic Feature Pathway [Radar Backscatter Analysis -- No Optical Hallucination]",
+                is_executable=True,
+                refusal_reason=None,
+                required_inputs_count=1,
+                provided_inputs_count=1,
+                input_file_ids=file_ids[:1],
+                input_modalities=[primary_file.modality.value],
+                tool_sequence=[
+                    "RasterInspector",
+                    "SARBackscatterAnalysis (VV/VH stats)",
+                    "LeeSpeckleFilter",
+                    "PolarizationRatioEstimator",
+                    "SARStructuredResponseComposer",
+                ],
+                runtime_mode=self.registry.runtime_mode.value,
+            )
+
+        # Optical / Multispectral single image
+        if intent.task_type == TaskType.SINGLE_IMAGE_GROUNDING:
+            return RoutingDecision(
+                query=query,
+                intent=intent,
+                task_type=TaskType.SINGLE_IMAGE_GROUNDING,
+                selected_capability="single_image_grounding",
+                pathway=PathwayType.OPTICAL_DETERMINISTIC if self.registry.runtime_mode != RuntimeMode.FULL_AI else PathwayType.OPTICAL_VLM,
+                pathway_label="Text-Guided Grounding [Geospatial ROI Localizer & Bounding Box]",
+                is_executable=True,
+                refusal_reason=None,
+                required_inputs_count=1,
+                provided_inputs_count=1,
+                input_file_ids=file_ids[:1],
+                input_modalities=[primary_file.modality.value],
+                tool_sequence=[
+                    "RasterInspector",
+                    "TargetEntityDetector",
+                    "SpectralRegionOfInterestExtractor",
+                    "BoundingBoxCalculator",
+                    "EvidenceOverlayRenderer",
+                ],
+                runtime_mode=self.registry.runtime_mode.value,
+            )
+
+        # Optical VQA / Land cover / Caption
+        pathway = (
+            PathwayType.OPTICAL_VLM
+            if self.registry.runtime_mode == RuntimeMode.FULL_AI
+            else PathwayType.OPTICAL_DETERMINISTIC
+        )
+        pathway_label = (
+            "Optical VLM Pathway [GeoChat-7B]"
+            if pathway == PathwayType.OPTICAL_VLM
+            else "Optical Deterministic Feature Pathway [Spectral Index Baseline]"
+        )
+
+        return RoutingDecision(
+            query=query,
+            intent=intent,
+            task_type=TaskType.SINGLE_IMAGE_VQA_OPTICAL,
+            selected_capability="single_image_vqa_optical",
+            pathway=pathway,
+            pathway_label=pathway_label,
+            is_executable=True,
+            refusal_reason=None,
+            required_inputs_count=1,
+            provided_inputs_count=1,
+            input_file_ids=file_ids[:1],
+            input_modalities=[primary_file.modality.value],
+            tool_sequence=[
+                "RasterInspector",
+                "SpectralIndexEngine (NDVI/NDWI)",
+                "LandCoverClassProbabilityEstimator",
+                "ResponseComposer",
+            ],
+            runtime_mode=self.registry.runtime_mode.value,
+        )

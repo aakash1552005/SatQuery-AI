@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         /* ============================================================
-           SATQUERY AI — DESIGN SYSTEM
+           SATQUERY AI — DESIGN SYSTEM (DAY 2)
            Dark-mode, data-driven satellite intelligence aesthetic
            ============================================================ */
 
@@ -41,8 +41,8 @@
             --text-muted: #64748b;
 
             /* Borders */
-            --border-subtle: rgba(255, 255, 255, 0.06);
-            --border-accent: rgba(0, 212, 255, 0.2);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(0, 212, 255, 0.25);
 
             /* Typography */
             --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
@@ -65,7 +65,7 @@
             overflow-x: hidden;
         }
 
-        /* ---- Background grid effect ---- */
+        /* Background grid */
         body::before {
             content: '';
             position: fixed;
@@ -78,7 +78,7 @@
             z-index: 0;
         }
 
-        /* ---- Header ---- */
+        /* Header */
         .header {
             position: relative;
             z-index: 10;
@@ -94,212 +94,197 @@
         .header-brand {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
 
         .header-logo {
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             background: var(--accent-gradient);
-            border-radius: var(--radius-sm);
+            border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 14px;
-            color: var(--bg-primary);
+            font-size: 18px;
+            color: #0a0e17;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
         }
 
         .header-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
-            letter-spacing: -0.02em;
+            letter-spacing: -0.5px;
         }
 
         .header-title span {
-            color: var(--accent-primary);
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .header-badge {
-            font-family: var(--font-mono);
             font-size: 11px;
+            font-weight: 600;
             padding: 4px 10px;
-            border-radius: 999px;
-            border: 1px solid var(--border-accent);
+            background: rgba(0, 212, 255, 0.1);
             color: var(--accent-primary);
-            background: var(--accent-glow);
+            border: 1px solid var(--border-accent);
+            border-radius: var(--radius-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .capabilities-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            padding: 7px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .capabilities-btn:hover {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent-primary);
+            border-color: var(--border-accent);
         }
 
         .runtime-badge {
             display: flex;
             align-items: center;
             gap: 8px;
+            padding: 6px 14px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
             font-size: 12px;
+            font-weight: 500;
             color: var(--text-secondary);
+            font-family: var(--font-mono);
         }
 
         .runtime-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: var(--status-warn);
-            animation: pulse 2s infinite;
+            background: var(--status-ready);
+            box-shadow: 0 0 8px currentColor;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
-
-        /* ---- Main Layout ---- */
+        /* Layout */
         .main {
             position: relative;
             z-index: 1;
             max-width: 1400px;
             margin: 0 auto;
-            padding: 32px;
-        }
-
-        /* ---- Upload Zone ---- */
-        .upload-zone {
-            border: 2px dashed var(--border-accent);
-            border-radius: var(--radius-lg);
-            padding: 48px;
-            text-align: center;
-            background: rgba(0, 212, 255, 0.02);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .upload-zone:hover,
-        .upload-zone.dragover {
-            border-color: var(--accent-primary);
-            background: rgba(0, 212, 255, 0.06);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.1);
-        }
-
-        .upload-zone-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            opacity: 0.7;
-        }
-
-        .upload-zone h2 {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .upload-zone p {
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        .upload-zone .formats {
-            margin-top: 12px;
+            padding: 24px;
             display: flex;
-            gap: 8px;
-            justify-content: center;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 24px;
         }
 
-        .format-tag {
-            font-family: var(--font-mono);
-            font-size: 11px;
-            padding: 3px 8px;
-            border-radius: var(--radius-sm);
-            background: var(--bg-tertiary);
-            color: var(--text-muted);
-            border: 1px solid var(--border-subtle);
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
         }
 
-        .upload-input {
-            display: none;
-        }
-
-        /* ---- Cards ---- */
+        /* Card Styles */
         .card {
             background: var(--bg-card);
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-lg);
             padding: 24px;
-            margin-top: 24px;
-            transition: border-color 0.2s;
-        }
-
-        .card:hover {
-            border-color: var(--border-accent);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
         }
 
         .card-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-subtle);
         }
 
         .card-title {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
-        }
-
-        .status-pill {
-            font-family: var(--font-mono);
-            font-size: 11px;
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-weight: 500;
-        }
-
-        .status-pill.ready { background: rgba(34,197,94,0.15); color: var(--status-ready); }
-        .status-pill.warn { background: rgba(245,158,11,0.15); color: var(--status-warn); }
-        .status-pill.error { background: rgba(239,68,68,0.15); color: var(--status-error); }
-        .status-pill.blocked { background: rgba(99,102,241,0.15); color: var(--status-blocked); }
-        .status-pill.unavailable { background: rgba(107,114,128,0.15); color: var(--status-unavailable); }
-
-        /* ---- Metadata Grid ---- */
-        .metadata-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 12px;
-        }
-
-        .meta-item {
-            background: var(--bg-secondary);
-            border-radius: var(--radius-md);
-            padding: 12px 16px;
-            border: 1px solid var(--border-subtle);
-        }
-
-        .meta-label {
-            font-size: 11px;
-            font-weight: 500;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 4px;
-        }
-
-        .meta-value {
-            font-family: var(--font-mono);
-            font-size: 14px;
             color: var(--text-primary);
-            word-break: break-all;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .meta-value.accent { color: var(--accent-primary); }
-        .meta-value.sensor-sar { color: #f59e0b; }
-        .meta-value.sensor-optical { color: #22c55e; }
-        .meta-value.sensor-multispectral { color: #8b5cf6; }
+        /* Upload Zone */
+        .upload-zone {
+            border: 2px dashed rgba(0, 212, 255, 0.25);
+            border-radius: var(--radius-lg);
+            padding: 32px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: rgba(21, 29, 46, 0.6);
+        }
 
-        /* ---- Files List ---- */
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--accent-primary);
+            background: rgba(0, 212, 255, 0.05);
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+
+        .upload-zone-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+
+        .upload-zone h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .upload-zone p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 14px;
+        }
+
+        .formats {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .format-tag {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: 3px 8px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+        }
+
+        .upload-input { display: none; }
+
+        /* Files List */
         .files-list {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
+            max-height: 280px;
+            overflow-y: auto;
         }
 
         .file-item {
@@ -308,59 +293,371 @@
             justify-content: space-between;
             padding: 12px 16px;
             background: var(--bg-secondary);
-            border-radius: var(--radius-md);
             border: 1px solid var(--border-subtle);
-            transition: all 0.2s;
+            border-radius: var(--radius-md);
             cursor: pointer;
+            transition: all 0.2s;
         }
 
         .file-item:hover {
-            background: var(--bg-tertiary);
             border-color: var(--border-accent);
+            background: var(--bg-card-hover);
+        }
+
+        .file-item.selected {
+            border-color: var(--accent-primary);
+            background: rgba(0, 212, 255, 0.08);
+        }
+
+        .file-item-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .file-checkbox {
+            cursor: pointer;
+            accent-color: var(--accent-primary);
         }
 
         .file-item-name {
+            font-size: 13px;
             font-weight: 500;
-            font-size: 14px;
+            font-family: var(--font-mono);
         }
 
         .file-item-info {
             display: flex;
-            gap: 12px;
             align-items: center;
+            gap: 8px;
         }
 
         .file-item-tag {
-            font-family: var(--font-mono);
             font-size: 11px;
             padding: 2px 8px;
             border-radius: var(--radius-sm);
-            background: var(--bg-card);
+            font-family: var(--font-mono);
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
         }
 
-        /* ---- Compatibility Card ---- */
-        .compat-result {
-            padding: 16px;
+        .sensor-optical { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+        .sensor-multispectral { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+        .sensor-sar { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+
+        .status-pill {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 9999px;
+            text-transform: uppercase;
+        }
+        .status-pill.ready { background: rgba(34, 197, 94, 0.15); color: var(--status-ready); }
+        .status-pill.error { background: rgba(239, 68, 68, 0.15); color: var(--status-error); }
+        .status-pill.warn { background: rgba(245, 158, 11, 0.15); color: var(--status-warn); }
+
+        /* Metadata Grid */
+        .metadata-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .meta-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
             border-radius: var(--radius-md);
-            margin-top: 12px;
+            padding: 10px 14px;
         }
 
-        .compat-result.compatible {
-            background: rgba(34, 197, 94, 0.08);
-            border: 1px solid rgba(34, 197, 94, 0.2);
+        .meta-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
         }
 
-        .compat-result.incompatible {
-            background: rgba(239, 68, 68, 0.08);
-            border: 1px solid rgba(239, 68, 68, 0.2);
+        .meta-value {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            font-weight: 500;
+            word-break: break-all;
         }
 
-        .compat-result.warning {
-            background: rgba(245, 158, 11, 0.08);
-            border: 1px solid rgba(245, 158, 11, 0.2);
+        /* Query Section */
+        .query-card {
+            border: 1px solid var(--border-accent);
+            background: linear-gradient(180deg, rgba(21, 29, 46, 0.95), rgba(17, 24, 39, 0.95));
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
         }
 
-        /* ---- Loading ---- */
+        .query-box-container {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .query-input {
+            flex: 1;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 14px 18px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: var(--font-sans);
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .query-input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .query-btn {
+            background: var(--accent-gradient);
+            color: #0a0e17;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 0 28px;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .query-btn:hover {
+            box-shadow: 0 0 25px rgba(0, 212, 255, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .query-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Demo Prompts Chips */
+        .demo-prompts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .demo-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .demo-chip {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .demo-chip:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            background: rgba(0, 212, 255, 0.08);
+        }
+
+        /* Routing & Trace Output */
+        .routing-output {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 20px;
+            margin-top: 16px;
+        }
+
+        .pathway-banner {
+            padding: 16px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            border-left: 4px solid var(--accent-primary);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .pathway-banner.sar {
+            border-left-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .pathway-banner.refusal {
+            border-left-color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .pathway-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+
+        .pathway-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .pathway-reason {
+            font-size: 13px;
+            color: var(--status-error);
+            line-height: 1.4;
+        }
+
+        .tools-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .tool-pill {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: 4px 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            color: var(--accent-primary);
+        }
+
+        /* Execution Trace Panel */
+        .trace-panel {
+            background: #0d1320;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+        }
+
+        .trace-header {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .trace-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .trace-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            line-height: 1.4;
+        }
+
+        .trace-icon {
+            font-weight: 700;
+        }
+        .trace-icon.ok { color: var(--status-ready); }
+        .trace-icon.fail { color: var(--status-error); }
+
+        .trace-content {
+            flex: 1;
+        }
+
+        .trace-step-name {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .trace-step-details {
+            color: var(--text-secondary);
+            font-size: 11px;
+            margin-top: 2px;
+        }
+
+        /* Modal */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-backdrop.active { display: flex; }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .modal-close:hover { color: var(--text-primary); }
+
+        .cap-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .cap-title {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .cap-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* Loading */
         .loading {
             display: none;
             align-items: center;
@@ -380,23 +677,11 @@
             animation: spin 0.8s linear infinite;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ---- Empty State ---- */
-        .empty-state {
-            text-align: center;
-            padding: 32px;
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-
-        /* ---- Responsive ---- */
-        @media (max-width: 768px) {
-            .header { padding: 12px 16px; }
-            .main { padding: 16px; }
-            .upload-zone { padding: 32px 16px; }
+        @media (max-width: 900px) {
+            .grid-2col { grid-template-columns: 1fr; }
+            .routing-output { grid-template-columns: 1fr; }
             .metadata-grid { grid-template-columns: 1fr 1fr; }
         }
     </style>
@@ -410,20 +695,77 @@
         <h1 class="header-title">Sat<span>Query</span> AI</h1>
         <span class="header-badge">PS 26167</span>
     </div>
-    <div class="runtime-badge">
-        <div class="runtime-dot" id="runtimeDot"></div>
-        <span id="runtimeMode">Connecting...</span>
+    <div class="header-right">
+        <button class="capabilities-btn" onclick="showCapabilitiesModal()">Engine Capabilities</button>
+        <div class="runtime-badge">
+            <div class="runtime-dot" id="runtimeDot"></div>
+            <span id="runtimeMode">Connecting...</span>
+        </div>
     </div>
 </header>
 
 <!-- Main Content -->
 <main class="main">
 
+    <!-- Interactive Query Section (Day 2 Milestone) -->
+    <section class="card query-card">
+        <div class="card-header">
+            <span class="card-title">
+                <span>&#128373;</span> Natural Language Query & Sensor-Aware Router
+            </span>
+            <span class="header-badge" id="selectedCountBadge">0 images selected</span>
+        </div>
+
+        <div class="query-box-container">
+            <input type="text" id="queryInput" class="query-input"
+                   placeholder="Ask a question about the imagery (e.g. 'What land cover is visible?', 'Where is the largest water body?', 'What changed over time?')...">
+            <button class="query-btn" id="queryBtn" onclick="submitQuery()">
+                <span>Ask SatQuery AI</span>
+            </button>
+        </div>
+
+        <div class="demo-prompts">
+            <span class="demo-label">Demo Presets:</span>
+            <button class="demo-chip" onclick="fillQuery('What type of land cover dominates this scene?')">Optical VQA</button>
+            <button class="demo-chip" onclick="fillQuery('Where is the largest water body? Highlight with bounding box.')">Grounding</button>
+            <button class="demo-chip" onclick="fillQuery('What changed between the two observations over time?')">Bi-Temporal Change</button>
+            <button class="demo-chip" onclick="fillQuery('Fuse optical and SAR observations to map surface water.')">Optical-SAR Fusion</button>
+            <button class="demo-chip" onclick="fillQuery('Analyze the radar backscatter and surface roughness in this SAR image.')">SAR Backscatter (Sec 9)</button>
+            <button class="demo-chip" onclick="fillQuery('What changed in this area?')">Refusal Test (1 Image)</button>
+        </div>
+
+        <!-- Dynamic Routing Decision & Execution Trace -->
+        <div id="routingContainer" style="display:none; margin-top: 24px;">
+            <div class="routing-output">
+                <!-- Pathway Banner -->
+                <div class="pathway-banner" id="pathwayBanner">
+                    <div class="pathway-title">Selected Execution Pathway</div>
+                    <div class="pathway-name" id="pathwayLabel">--</div>
+                    <div id="pathwayDetails" style="font-size:13px; color:var(--text-secondary); margin-top:4px;"></div>
+                    <div id="refusalReason" class="pathway-reason" style="display:none;"></div>
+                    <div style="margin-top:12px;">
+                        <div class="pathway-title">Scheduled Tool Sequence:</div>
+                        <div class="tools-list" id="toolSequence"></div>
+                    </div>
+                </div>
+
+                <!-- Execution Trace Panel -->
+                <div class="trace-panel">
+                    <div class="trace-header">
+                        <span>Factual Execution Trace (Section 24)</span>
+                        <span id="traceId">ID: --</span>
+                    </div>
+                    <div class="trace-steps" id="traceSteps"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Upload Zone -->
     <section class="upload-zone" id="uploadZone">
         <div class="upload-zone-icon">&#128752;</div>
-        <h2>Upload Remote Sensing Imagery</h2>
-        <p>Drop a GeoTIFF, TIFF, PNG, or JPEG file to begin analysis</p>
+        <h2>Upload Satellite Imagery</h2>
+        <p>Drop GeoTIFF, TIFF, or multispectral rasters to inspect metadata and route queries</p>
         <div class="formats">
             <span class="format-tag">.tif</span>
             <span class="format-tag">.tiff</span>
@@ -437,44 +779,62 @@
 
     <div class="loading" id="uploadLoading">
         <div class="spinner"></div>
-        <span>Processing upload...</span>
+        <span>Processing and inspecting raster metadata...</span>
     </div>
 
-    <!-- Uploaded Files -->
-    <section class="card" id="filesCard" style="display:none;">
-        <div class="card-header">
-            <span class="card-title">Uploaded Files</span>
-            <span class="status-pill ready" id="filesCount">0 files</span>
-        </div>
-        <div class="files-list" id="filesList"></div>
-    </section>
+    <!-- Uploaded Files & Metadata in 2 Columns -->
+    <div class="grid-2col">
+        <!-- Uploaded Files -->
+        <section class="card" id="filesCard" style="display:none;">
+            <div class="card-header">
+                <span class="card-title">Available Imagery</span>
+                <span class="status-pill ready" id="filesCount">0 files</span>
+            </div>
+            <div class="files-list" id="filesList"></div>
+        </section>
 
-    <!-- Metadata Viewer -->
-    <section class="card" id="metadataCard" style="display:none;">
-        <div class="card-header">
-            <span class="card-title" id="metadataTitle">Raster Metadata</span>
-            <span class="status-pill" id="metadataStatus"></span>
-        </div>
-        <div class="metadata-grid" id="metadataGrid"></div>
-    </section>
+        <!-- Metadata Viewer -->
+        <section class="card" id="metadataCard" style="display:none;">
+            <div class="card-header">
+                <span class="card-title" id="metadataTitle">Raster Metadata</span>
+                <span class="status-pill" id="metadataStatus"></span>
+            </div>
+            <div class="metadata-grid" id="metadataGrid"></div>
+        </section>
+    </div>
 
-    <!-- Compatibility -->
+    <!-- Pair Compatibility Card -->
     <section class="card" id="compatCard" style="display:none;">
         <div class="card-header">
-            <span class="card-title">Pair Compatibility</span>
+            <span class="card-title">Pair Compatibility & Data Readiness Gate</span>
         </div>
         <div id="compatResult"></div>
     </section>
 
 </main>
 
+<!-- Capabilities Modal -->
+<div class="modal-backdrop" id="capabilitiesModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>SatQuery AI -- Live Capability Registry</h3>
+            <button class="modal-close" onclick="closeCapabilitiesModal()">&times;</button>
+        </div>
+        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">
+            In accordance with the Honesty Rule (Section 0), every capability truthfully reports its operational status, engine mechanism, and license posture.
+        </p>
+        <div id="capabilitiesList"></div>
+    </div>
+</div>
+
 <script>
 // ============================================================
-// SatQuery AI -- Frontend Logic (Day 1)
+// SatQuery AI -- Frontend Engine Logic (Day 1 + Day 2)
 // ============================================================
 
 const API = '';
 const uploadedFiles = {};
+const selectedFileIds = new Set();
 
 // ---- Runtime Status ----
 async function checkStatus() {
@@ -488,13 +848,13 @@ async function checkStatus() {
             ? 'var(--status-ready)'
             : data.runtime_mode === 'HYBRID'
                 ? 'var(--status-warn)'
-                : 'var(--status-error)';
+                : 'var(--status-blocked)';
     } catch (e) {
         document.getElementById('runtimeMode').textContent = 'Disconnected';
     }
 }
 
-// ---- Upload ----
+// ---- Upload Handling ----
 const uploadZone = document.getElementById('uploadZone');
 const uploadInput = document.getElementById('uploadInput');
 const loadingEl = document.getElementById('uploadLoading');
@@ -533,12 +893,19 @@ async function uploadFile(file) {
         const res = await fetch(`${API}/api/upload`, { method: 'POST', body: formData });
         const data = await res.json();
         uploadedFiles[data.file_id] = data;
+        selectedFileIds.add(data.file_id); // Auto-select for query
+        updateSelectedCount();
         if (data.status === 'accepted') {
             showMetadata(data.metadata);
         }
     } catch (e) {
         console.error('Upload failed:', e);
     }
+}
+
+function updateSelectedCount() {
+    const badge = document.getElementById('selectedCountBadge');
+    badge.textContent = `${selectedFileIds.size} image(s) selected`;
 }
 
 // ---- Files List ----
@@ -560,25 +927,39 @@ function renderFilesList() {
     ids.forEach(id => {
         const f = uploadedFiles[id];
         const meta = f.metadata;
+        const isChecked = selectedFileIds.has(id);
         const item = document.createElement('div');
-        item.className = 'file-item';
-        item.onclick = () => showMetadata(meta);
+        item.className = `file-item ${isChecked ? 'selected' : ''}`;
 
         const sensorClass = meta.modality === 'sar' ? 'sensor-sar'
             : meta.modality === 'multispectral' ? 'sensor-multispectral'
             : 'sensor-optical';
 
         item.innerHTML = `
-            <span class="file-item-name">${meta.filename}</span>
+            <div class="file-item-left">
+                <input type="checkbox" class="file-checkbox" ${isChecked ? 'checked' : ''}
+                       onclick="toggleFileSelection(event, '${id}')">
+                <span class="file-item-name" onclick="showMetadata(uploadedFiles['${id}'].metadata)">${meta.filename}</span>
+            </div>
             <div class="file-item-info">
                 <span class="file-item-tag ${sensorClass}">${meta.modality.toUpperCase()}</span>
                 <span class="file-item-tag">${meta.width}x${meta.height}</span>
-                <span class="file-item-tag">${meta.band_count} bands</span>
                 <span class="status-pill ${f.status === 'accepted' ? 'ready' : 'error'}">${f.status}</span>
             </div>
         `;
         list.appendChild(item);
     });
+}
+
+function toggleFileSelection(e, fileId) {
+    e.stopPropagation();
+    if (selectedFileIds.has(fileId)) {
+        selectedFileIds.delete(fileId);
+    } else {
+        selectedFileIds.add(fileId);
+    }
+    updateSelectedCount();
+    renderFilesList();
 }
 
 // ---- Metadata Display ----
@@ -601,8 +982,7 @@ function showMetadata(meta) {
 
     const sensorClass = meta.modality === 'sar' ? 'sensor-sar'
         : meta.modality === 'multispectral' ? 'sensor-multispectral'
-        : meta.modality === 'optical' ? 'sensor-optical'
-        : '';
+        : 'sensor-optical';
 
     const items = [
         ['Format', meta.format],
@@ -610,18 +990,10 @@ function showMetadata(meta) {
         ['Bands', meta.band_count],
         ['Modality', meta.modality.toUpperCase(), sensorClass],
         ['CRS', meta.crs || 'Not defined'],
-        ['Resolution', meta.resolution_x
-            ? `${meta.resolution_x.toFixed(4)} ${meta.resolution_unit || ''}`
-            : 'Unknown'],
-        ['Polarization', meta.polarization !== 'not_applicable'
-            ? meta.polarization.toUpperCase()
-            : 'N/A'],
+        ['Polarization', meta.polarization !== 'not_applicable' ? meta.polarization.toUpperCase() : 'N/A'],
         ['Sensor', meta.sensor_name || 'Unknown'],
         ['Acquisition', meta.acquisition_time || 'Unknown'],
-        ['Processing', meta.processing_level || 'Unknown'],
         ['File Size', formatBytes(meta.file_size_bytes)],
-        ['Nodata', meta.nodata_values && meta.nodata_values[0] !== null
-            ? meta.nodata_values[0] : 'None'],
     ];
 
     grid.innerHTML = items.map(([label, value, cls]) => `
@@ -630,34 +1002,15 @@ function showMetadata(meta) {
             <div class="meta-value ${cls || ''}">${value}</div>
         </div>
     `).join('');
-
-    // Show warnings/errors
-    if (meta.validation_warnings && meta.validation_warnings.length) {
-        grid.innerHTML += meta.validation_warnings.map(w => `
-            <div class="meta-item" style="grid-column: 1/-1;">
-                <div class="meta-label" style="color: var(--status-warn);">Warning</div>
-                <div class="meta-value" style="color: var(--status-warn); font-size:12px;">${w}</div>
-            </div>
-        `).join('');
-    }
-    if (meta.validation_errors && meta.validation_errors.length) {
-        grid.innerHTML += meta.validation_errors.map(e => `
-            <div class="meta-item" style="grid-column: 1/-1;">
-                <div class="meta-label" style="color: var(--status-error);">Error</div>
-                <div class="meta-value" style="color: var(--status-error); font-size:12px;">${e}</div>
-            </div>
-        `).join('');
-    }
 }
 
-// ---- Compatibility Auto-Check ----
+// ---- Compatibility Check ----
 async function autoCheckCompatibility() {
-    const ids = Object.keys(uploadedFiles);
+    const ids = Array.from(selectedFileIds);
     if (ids.length < 2) return;
 
-    // Check last two uploaded files
-    const a = ids[ids.length - 2];
-    const b = ids[ids.length - 1];
+    const a = ids[0];
+    const b = ids[1];
 
     try {
         const res = await fetch(`${API}/api/compatibility`, {
@@ -677,47 +1030,159 @@ function showCompatibility(result) {
     const div = document.getElementById('compatResult');
     card.style.display = 'block';
 
-    const cls = result.status === 'compatible' ? 'compatible'
-        : result.status === 'incompatible' ? 'incompatible'
-        : 'warning';
+    const cls = result.status === 'compatible' ? 'ready'
+        : result.status === 'incompatible' ? 'error' : 'warn';
 
-    let html = `<div class="compat-result ${cls}">
-        <div style="margin-bottom:8px; font-weight:600;">
-            Status: ${result.status.toUpperCase().replace('_', ' ')}
+    div.innerHTML = `
+        <div style="padding: 14px; background: var(--bg-secondary); border-radius: var(--radius-md); border-left: 4px solid var(--status-${cls});">
+            <div style="font-weight: 600; margin-bottom: 6px;">
+                Pair Status: <span class="status-pill ${cls}">${result.status.toUpperCase()}</span>
+            </div>
+            <div style="font-size: 13px; color: var(--text-secondary);">
+                Pair Type: <b>${result.pair_type}</b> |
+                CRS Match: <b>${result.crs_match ? 'Aligned' : 'Mismatch'}</b> |
+                Spatial Overlap: <b>${result.bounds_overlap !== null ? (result.bounds_overlap * 100).toFixed(1) + '%' : 'N/A'}</b>
+            </div>
+            ${result.issues.length ? `<div style="margin-top:8px; color:var(--status-error); font-size:12px;">Issues: ${result.issues.join('; ')}</div>` : ''}
         </div>
-        <div style="font-size:13px; color: var(--text-secondary);">
-            Pair type: ${result.pair_type} |
-            CRS match: ${result.crs_match ? 'Yes' : 'No'} |
-            Overlap: ${result.bounds_overlap !== null ? (result.bounds_overlap * 100).toFixed(1) + '%' : 'N/A'} |
-            Resolution match: ${result.resolution_match ? 'Yes' : 'No'}
-            ${result.temporal_gap_days !== null ? '| Temporal gap: ' + result.temporal_gap_days + ' days' : ''}
-        </div>`;
+    `;
+}
 
-    if (result.issues.length) {
-        html += `<div style="margin-top:8px; font-size:12px; color: var(--status-error);">
-            Issues: ${result.issues.join('; ')}
-        </div>`;
+// ---- Query & Routing ----
+function fillQuery(text) {
+    const input = document.getElementById('queryInput');
+    input.value = text;
+    input.focus();
+}
+
+async function submitQuery() {
+    const input = document.getElementById('queryInput');
+    const query = input.value.trim();
+    if (!query) return;
+
+    const btn = document.getElementById('queryBtn');
+    btn.disabled = true;
+    btn.innerHTML = `<span>Routing...</span>`;
+
+    const fileIds = Array.from(selectedFileIds);
+
+    try {
+        const res = await fetch(`${API}/api/query`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query, file_ids: fileIds }),
+        });
+        const data = await res.json();
+        renderRoutingResult(data);
+    } catch (e) {
+        console.error('Query failed:', e);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Ask SatQuery AI</span>`;
     }
-    if (result.warnings.length) {
-        html += `<div style="margin-top:4px; font-size:12px; color: var(--status-warn);">
-            Warnings: ${result.warnings.join('; ')}
-        </div>`;
+}
+
+function renderRoutingResult(resp) {
+    const container = document.getElementById('routingContainer');
+    const banner = document.getElementById('pathwayBanner');
+    const label = document.getElementById('pathwayLabel');
+    const details = document.getElementById('pathwayDetails');
+    const refusal = document.getElementById('refusalReason');
+    const tools = document.getElementById('toolSequence');
+    const traceId = document.getElementById('traceId');
+    const traceSteps = document.getElementById('traceSteps');
+
+    container.style.display = 'block';
+    const d = resp.decision;
+    const t = resp.trace;
+
+    label.textContent = d.pathway_label;
+    traceId.textContent = `TRACE ID: ${t.trace_id}`;
+
+    // Pathway banner styling
+    banner.className = 'pathway-banner';
+    if (!d.is_executable) {
+        banner.classList.add('refusal');
+        refusal.style.display = 'block';
+        refusal.textContent = d.refusal_reason || 'Execution halted per gate constraints';
+        details.textContent = `Task: ${d.task_type.toUpperCase()} | Required: ${d.required_inputs_count} image(s), Provided: ${d.provided_inputs_count}`;
+    } else {
+        refusal.style.display = 'none';
+        if (d.task_type.includes('sar')) {
+            banner.classList.add('sar');
+        }
+        details.textContent = `Task Intent: ${d.task_type.toUpperCase()} | Target Modalities: ${d.input_modalities.join(', ')}`;
     }
 
-    html += '</div>';
-    div.innerHTML = html;
+    // Tool Sequence
+    tools.innerHTML = d.tool_sequence.length
+        ? d.tool_sequence.map(tool => `<span class="tool-pill">${tool}</span>`).join('')
+        : `<span style="color:var(--text-muted); font-size:12px;">No tools invoked (Refusal pathway)</span>`;
+
+    // Execution Trace
+    traceSteps.innerHTML = t.steps.map(step => {
+        const isOk = step.status === 'completed';
+        const icon = isOk ? '✓' : '✗';
+        const iconCls = isOk ? 'ok' : 'fail';
+        return `
+            <div class="trace-step">
+                <span class="trace-icon ${iconCls}">${icon}</span>
+                <div class="trace-content">
+                    <div class="trace-step-name">${step.name}</div>
+                    ${step.details ? `<div class="trace-step-details">${step.details}</div>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Smooth scroll to results
+    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ---- Capabilities Modal ----
+async function showCapabilitiesModal() {
+    const modal = document.getElementById('capabilitiesModal');
+    const list = document.getElementById('capabilitiesList');
+    modal.classList.add('active');
+    list.innerHTML = `<div class="spinner"></div>`;
+
+    try {
+        const res = await fetch(`${API}/api/capabilities`);
+        const data = await res.json();
+        list.innerHTML = Object.entries(data.capabilities).map(([key, cap]) => `
+            <div class="cap-row">
+                <div>
+                    <div class="cap-title">${cap.name}</div>
+                    <div class="cap-desc">${cap.description}</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
+                        Engine: <b>${cap.primary_engine}</b> ${cap.fallback_engine ? `| Fallback: ${cap.fallback_engine}` : ''}
+                    </div>
+                    ${cap.license_note ? `<div style="font-size:11px; color:var(--status-warn); margin-top:2px;">License: ${cap.license_note}</div>` : ''}
+                </div>
+                <div>
+                    <span class="status-pill ${cap.status === 'READY' ? 'ready' : (cap.status === 'BLOCKED_LICENSE' ? 'error' : 'warn')}">${cap.status}</span>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) {
+        list.innerHTML = `<div style="color:var(--status-error)">Failed to load capabilities.</div>`;
+    }
+}
+
+function closeCapabilitiesModal() {
+    document.getElementById('capabilitiesModal').classList.remove('active');
 }
 
 // ---- Helpers ----
 function formatBytes(bytes) {
-    if (bytes === 0) return '0 B';
+    if (!bytes || bytes === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
-// ---- Init ----
+// ---- Initialization ----
 checkStatus();
 setInterval(checkStatus, 15000);
 </script>

@@ -19,13 +19,17 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from src.contracts.query_contracts import QueryIntent, RoutingDecision, TaskType
 from src.contracts.raster_contracts import (
     PairCompatibility,
     RasterMetadata,
     UploadResponse,
 )
+from src.execution.trace_engine import ExecutionTrace, TraceEngine
 from src.gateway.compatibility_checker import CompatibilityChecker
 from src.gateway.raster_inspector import RasterInspector
+from src.router.agentic_router import AgenticRouter
+from src.router.capability_registry import CapabilityRegistry, RuntimeMode
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -46,7 +50,7 @@ app = FastAPI(
         "Remote Sensing Image Analysis through Text Queries. "
         "PS 26167 -- ISRO / Department of Space / SAC."
     ),
-    version="0.1.0-day1",
+    version="0.2.0-day2",
 )
 
 app.add_middleware(
@@ -65,6 +69,8 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 inspector = RasterInspector()
 compat_checker = CompatibilityChecker()
+registry = CapabilityRegistry(runtime_mode=RuntimeMode.DEMO_FALLBACK)
+router = AgenticRouter(registry=registry)
 
 # In-memory store of uploaded file metadata (keyed by file_id)
 _uploaded_files: dict[str, dict] = {}
@@ -83,30 +89,26 @@ class SystemStatus(BaseModel):
 
 @app.get("/api/health")
 async def health():
-    return {"status": "ok", "service": "satquery-ai", "version": "0.1.0-day1"}
+    return {"status": "ok", "service": "satquery-ai", "version": "0.2.0-day2"}
 
 
 @app.get("/api/status", response_model=SystemStatus)
 async def system_status():
     return SystemStatus(
         status="running",
-        version="0.1.0-day1",
-        runtime_mode="DEMO_FALLBACK",
-        capabilities={
-            "upload": "READY",
-            "metadata_inspection": "READY",
-            "compatibility_check": "READY",
-            "single_image_vqa_optical": "NOT_IMPLEMENTED",
-            "single_image_vqa_sar": "NOT_IMPLEMENTED",
-            "single_image_grounding": "NOT_IMPLEMENTED",
-            "temporal_change": "NOT_IMPLEMENTED",
-            "optical_sar_fusion": "NOT_IMPLEMENTED",
-            "geochat": "UNAVAILABLE",
-            "changechat": "BLOCKED_LICENSE",
-            "croma": "DISABLED",
-            "sar_deterministic_tools": "NOT_IMPLEMENTED",
-        },
+        version="0.2.0-day2",
+        runtime_mode=registry.runtime_mode.value,
+        capabilities={name: rec["status"] for name, rec in registry.get_all().items()},
     )
+
+
+@app.get("/api/capabilities")
+async def get_capabilities():
+    """Retrieve complete live capability registry with engine notes and license status."""
+    return {
+        "runtime_mode": registry.runtime_mode.value,
+        "capabilities": registry.get_all(),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -219,6 +221,103 @@ async def check_compatibility(req: CompatibilityRequest):
 
     result = compat_checker.check_pair(meta_a, meta_b)
     return result
+
+
+# ---------------------------------------------------------------------------
+# Query & Agentic Routing (Day 2)
+# ---------------------------------------------------------------------------
+
+class QueryRequest(BaseModel):
+    query: str
+    file_ids: list[str] = []
+
+
+class QueryResponse(BaseModel):
+    decision: RoutingDecision
+    trace: ExecutionTrace
+    status: str
+
+
+@app.post("/api/query", response_model=QueryResponse)
+async def process_query(req: QueryRequest):
+    """
+    Process natural language user query against selected raster inputs.
+    Emits sensor-aware routing decision, transparent pathway, and execution trace.
+    """
+    if not req.query.strip():
+        raise HTTPException(400, "Query cannot be empty.")
+
+    # Resolve metadata objects for provided file_ids
+    input_metadata: list[RasterMetadata] = []
+    for fid in req.file_ids:
+        if fid not in _uploaded_files:
+            raise HTTPException(404, f"Referenced file not found: {fid}")
+        input_metadata.append(_uploaded_files[fid]["metadata"])
+
+    # Dynamic routing
+    decision = router.route(req.query, input_metadata)
+
+    # Build factual execution trace (Section 24)
+    trace = TraceEngine.create_trace(
+        task_type=decision.task_type.value,
+        pathway=decision.pathway_label,
+        runtime_mode=decision.runtime_mode,
+        tools_selected=decision.tool_sequence,
+    )
+
+    trace.add_step(
+        "Input validation",
+        "completed" if decision.provided_inputs_count > 0 else "failed",
+        f"{decision.provided_inputs_count} image(s) verified",
+    )
+
+    if input_metadata:
+        trace.add_step(
+            "GeoTIFF metadata extracted",
+            "completed",
+            f"Formats: {[m.format for m in input_metadata]}, Bands: {[m.band_count for m in input_metadata]}",
+        )
+        trace.add_step(
+            "Sensor detected",
+            "completed",
+            f"Modalities: {[m.modality.value for m in input_metadata]}",
+        )
+
+    trace.add_step(
+        "Query classified",
+        "completed",
+        f"Task: {decision.task_type.value} (confidence {decision.intent.confidence:.2f})",
+    )
+
+    trace.add_step(
+        "Pathway selected",
+        "completed" if decision.is_executable else "refused",
+        decision.pathway_label,
+    )
+
+    if not decision.is_executable:
+        trace.add_step(
+            "Routing refusal",
+            "failed",
+            decision.refusal_reason or "Execution stopped per routing rules",
+        )
+        status = "refused"
+    else:
+        trace.add_step(
+            "Tool execution sequence prepared",
+            "completed",
+            f"{len(decision.tool_sequence)} tool(s) scheduled",
+        )
+        status = "routed"
+
+    decision.execution_trace_id = trace.trace_id
+
+    return QueryResponse(
+        decision=decision,
+        trace=trace,
+        status=status,
+    )
+
 
 
 # ---------------------------------------------------------------------------
