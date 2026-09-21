@@ -14,6 +14,8 @@ from src.contracts.query_contracts import (
     QueryIntent,
     RoutingDecision,
     TaskType,
+    ToolExecutionRecord,
+    ToolExecutionStatus,
 )
 from src.contracts.raster_contracts import RasterMetadata, SensorModality
 from src.router.capability_registry import CapabilityRegistry, RuntimeMode
@@ -36,6 +38,29 @@ class AgenticRouter:
     ):
         self.parser = parser or QueryParser()
         self.registry = registry or CapabilityRegistry()
+
+    @staticmethod
+    def _build_tool_executions(tool_sequence: list[str]) -> list[ToolExecutionRecord]:
+        """
+        Distinguish SCHEDULED tools from those actually EXECUTED vs NOT_IMPLEMENTED.
+        Enforces the Golden Rule: never claim an analysis tool was executed before its day.
+        """
+        records = []
+        for tool in tool_sequence:
+            base_name = tool.split(" ")[0].strip()
+            if base_name in ("RasterInspector", "CompatibilityChecker"):
+                records.append(ToolExecutionRecord(
+                    tool_name=tool,
+                    status=ToolExecutionStatus.EXECUTED,
+                    details="Executed during raster ingestion & compatibility verification"
+                ))
+            else:
+                records.append(ToolExecutionRecord(
+                    tool_name=tool,
+                    status=ToolExecutionStatus.NOT_IMPLEMENTED,
+                    details="Workflow scheduled; execution engine scheduled for subsequent milestone"
+                ))
+        return records
 
     def route(
         self,
@@ -72,6 +97,7 @@ class AgenticRouter:
                 input_file_ids=[],
                 input_modalities=[],
                 tool_sequence=[],
+                tool_executions=[],
                 runtime_mode=self.registry.runtime_mode.value,
             )
 
@@ -99,10 +125,19 @@ class AgenticRouter:
                     input_file_ids=file_ids,
                     input_modalities=modalities,
                     tool_sequence=[],
+                    tool_executions=[],
                     runtime_mode=self.registry.runtime_mode.value,
                 )
 
             # Two observations supplied
+            tools = [
+                "CompatibilityChecker",
+                "RegistrationQualityGate (AROSICS)",
+                "TemporalConfoundCheck",
+                "DeterministicChangeEngine",
+                "L1L2DeclarationGate",
+                "EvidenceStore",
+            ]
             return RoutingDecision(
                 query=query,
                 intent=intent,
@@ -116,14 +151,8 @@ class AgenticRouter:
                 provided_inputs_count=provided_count,
                 input_file_ids=file_ids,
                 input_modalities=modalities,
-                tool_sequence=[
-                    "CompatibilityChecker",
-                    "RegistrationQualityGate (AROSICS)",
-                    "TemporalConfoundCheck",
-                    "DeterministicChangeEngine",
-                    "L1L2DeclarationGate",
-                    "EvidenceStore",
-                ],
+                tool_sequence=tools,
+                tool_executions=self._build_tool_executions(tools),
                 runtime_mode=self.registry.runtime_mode.value,
             )
 
@@ -153,9 +182,18 @@ class AgenticRouter:
                     input_file_ids=file_ids,
                     input_modalities=modalities,
                     tool_sequence=[],
+                    tool_executions=[],
                     runtime_mode=self.registry.runtime_mode.value,
                 )
 
+            tools = [
+                "CompatibilityChecker",
+                "CommonGridResampler",
+                "OpticalEvidenceExtractor (NDWI)",
+                "SARBackscatterExtractor (Thresholding)",
+                "CrossModalFusionEngine",
+                "AgreementTierClassifier",
+            ]
             return RoutingDecision(
                 query=query,
                 intent=intent,
@@ -169,14 +207,8 @@ class AgenticRouter:
                 provided_inputs_count=provided_count,
                 input_file_ids=file_ids,
                 input_modalities=modalities,
-                tool_sequence=[
-                    "CompatibilityChecker",
-                    "CommonGridResampler",
-                    "OpticalEvidenceExtractor (NDWI)",
-                    "SARBackscatterExtractor (Thresholding)",
-                    "CrossModalFusionEngine",
-                    "AgreementTierClassifier",
-                ],
+                tool_sequence=tools,
+                tool_executions=self._build_tool_executions(tools),
                 runtime_mode=self.registry.runtime_mode.value,
             )
 
@@ -188,6 +220,13 @@ class AgenticRouter:
 
         if primary_file.modality == SensorModality.SAR:
             # Section 9: SAR strictly routed to SAR deterministic tools
+            tools = [
+                "RasterInspector",
+                "SARBackscatterAnalysis (VV/VH stats)",
+                "LeeSpeckleFilter",
+                "PolarizationRatioEstimator",
+                "SARStructuredResponseComposer",
+            ]
             return RoutingDecision(
                 query=query,
                 intent=intent,
@@ -201,18 +240,20 @@ class AgenticRouter:
                 provided_inputs_count=1,
                 input_file_ids=file_ids[:1],
                 input_modalities=[primary_file.modality.value],
-                tool_sequence=[
-                    "RasterInspector",
-                    "SARBackscatterAnalysis (VV/VH stats)",
-                    "LeeSpeckleFilter",
-                    "PolarizationRatioEstimator",
-                    "SARStructuredResponseComposer",
-                ],
+                tool_sequence=tools,
+                tool_executions=self._build_tool_executions(tools),
                 runtime_mode=self.registry.runtime_mode.value,
             )
 
         # Optical / Multispectral single image
         if intent.task_type == TaskType.SINGLE_IMAGE_GROUNDING:
+            tools = [
+                "RasterInspector",
+                "TargetEntityDetector",
+                "SpectralRegionOfInterestExtractor",
+                "BoundingBoxCalculator",
+                "EvidenceOverlayRenderer",
+            ]
             return RoutingDecision(
                 query=query,
                 intent=intent,
@@ -226,13 +267,8 @@ class AgenticRouter:
                 provided_inputs_count=1,
                 input_file_ids=file_ids[:1],
                 input_modalities=[primary_file.modality.value],
-                tool_sequence=[
-                    "RasterInspector",
-                    "TargetEntityDetector",
-                    "SpectralRegionOfInterestExtractor",
-                    "BoundingBoxCalculator",
-                    "EvidenceOverlayRenderer",
-                ],
+                tool_sequence=tools,
+                tool_executions=self._build_tool_executions(tools),
                 runtime_mode=self.registry.runtime_mode.value,
             )
 
@@ -248,6 +284,12 @@ class AgenticRouter:
             else "Optical Deterministic Feature Pathway [Spectral Index Baseline]"
         )
 
+        tools = [
+            "RasterInspector",
+            "SpectralIndexEngine (NDVI/NDWI)",
+            "LandCoverClassProbabilityEstimator",
+            "ResponseComposer",
+        ]
         return RoutingDecision(
             query=query,
             intent=intent,
@@ -261,11 +303,8 @@ class AgenticRouter:
             provided_inputs_count=1,
             input_file_ids=file_ids[:1],
             input_modalities=[primary_file.modality.value],
-            tool_sequence=[
-                "RasterInspector",
-                "SpectralIndexEngine (NDVI/NDWI)",
-                "LandCoverClassProbabilityEstimator",
-                "ResponseComposer",
-            ],
+            tool_sequence=tools,
+            tool_executions=self._build_tool_executions(tools),
             runtime_mode=self.registry.runtime_mode.value,
         )
+

@@ -65,12 +65,14 @@ def test_query_parser_classification():
 
 
 def test_capability_registry():
-    """Verify capability registry state reporting and fallback indicators."""
+    """Verify capability registry state reporting and separated readiness indicators."""
     reg = CapabilityRegistry(runtime_mode=RuntimeMode.DEMO_FALLBACK)
     all_caps = reg.get_all()
 
     assert "single_image_vqa_sar" in all_caps
-    assert all_caps["single_image_vqa_sar"]["status"] == "READY"
+    assert all_caps["single_image_vqa_sar"]["routing_readiness"] == "READY"
+    assert "NOT_IMPLEMENTED" in all_caps["single_image_vqa_sar"]["execution_readiness"]
+    assert all_caps["single_image_vqa_sar"]["status"] == "NOT_IMPLEMENTED"
     assert "geochat" in all_caps
     assert all_caps["geochat"]["status"] == "UNAVAILABLE"
     assert "changechat" in all_caps
@@ -95,6 +97,9 @@ def test_sar_pathway_separation():
     assert "SAR Deterministic" in decision.pathway_label
     assert decision.is_executable is True
     assert "SARBackscatterAnalysis" in decision.tool_sequence[1]
+    assert len(decision.tool_executions) > 0
+    assert decision.tool_executions[0].status.value == "EXECUTED"
+    assert decision.tool_executions[1].status.value == "NOT_IMPLEMENTED"
 
 
 def test_missing_input_refusal_demo6():
@@ -180,6 +185,8 @@ def test_api_query_flow():
     res_data = q_resp.json()
     assert res_data["status"] == "routed"
     assert res_data["decision"]["pathway"] == "sar_deterministic_tools"
+    assert "result" in res_data
+    assert res_data["result"]["mechanism"] == "deterministic_sar_analysis"
     assert len(res_data["trace"]["steps"]) >= 4
 
     # 3. Query with temporal request but only 1 file -> Refusal

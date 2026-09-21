@@ -75,7 +75,8 @@ class QueryParser:
                 requested_outputs=["change_mask", "measurement", "explanation"],
                 measurement_required=measurement_required,
                 target_entities=entities,
-                confidence=0.95,
+                confidence_type="heuristic_uncalibrated",
+                confidence=1.0,
             )
 
         # 2. Optical-SAR fusion query check
@@ -89,7 +90,8 @@ class QueryParser:
                 requested_outputs=["optical_evidence", "sar_evidence", "fused_mask", "agreement_tier"],
                 measurement_required=measurement_required,
                 target_entities=entities,
-                confidence=0.92,
+                confidence_type="heuristic_uncalibrated",
+                confidence=1.0,
             )
 
         # 3. Grounding query check
@@ -103,7 +105,8 @@ class QueryParser:
                 requested_outputs=["bbox", "highlight_overlay", "confidence"],
                 measurement_required=measurement_required,
                 target_entities=entities,
-                confidence=0.90,
+                confidence_type="heuristic_uncalibrated",
+                confidence=1.0,
             )
 
         # 4. Explicit SAR query check
@@ -117,7 +120,8 @@ class QueryParser:
                 requested_outputs=["backscatter_stats", "feature_analysis", "structured_answer"],
                 measurement_required=measurement_required,
                 target_entities=entities,
-                confidence=0.92,
+                confidence_type="heuristic_uncalibrated",
+                confidence=1.0,
             )
 
         # 5. Caption / Describe check
@@ -131,7 +135,8 @@ class QueryParser:
                 requested_outputs=["caption_text", "key_attributes"],
                 measurement_required=False,
                 target_entities=entities,
-                confidence=0.88,
+                confidence_type="heuristic_uncalibrated",
+                confidence=1.0,
             )
 
         # 6. Default to Optical VQA (will be re-evaluated by router depending on input sensor modality)
@@ -144,7 +149,8 @@ class QueryParser:
             requested_outputs=["answer", "confidence"],
             measurement_required=measurement_required,
             target_entities=entities,
-            confidence=0.85,
+            confidence_type="heuristic_uncalibrated",
+            confidence=1.0,
         )
 
     def _extract_entities(self, query_lower: str) -> list[str]:

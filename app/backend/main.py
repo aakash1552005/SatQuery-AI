@@ -19,7 +19,12 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from src.contracts.query_contracts import QueryIntent, RoutingDecision, TaskType
+from src.contracts.query_contracts import (
+    AnalysisResult,
+    QueryIntent,
+    RoutingDecision,
+    TaskType,
+)
 from src.contracts.raster_contracts import (
     PairCompatibility,
     RasterMetadata,
@@ -235,6 +240,7 @@ class QueryRequest(BaseModel):
 class QueryResponse(BaseModel):
     decision: RoutingDecision
     trace: ExecutionTrace
+    result: Optional[AnalysisResult] = None
     status: str
 
 
@@ -263,6 +269,7 @@ async def process_query(req: QueryRequest):
         pathway=decision.pathway_label,
         runtime_mode=decision.runtime_mode,
         tools_selected=decision.tool_sequence,
+        tools_executed=[te.model_dump() for te in decision.tool_executions],
     )
 
     trace.add_step(
@@ -280,13 +287,13 @@ async def process_query(req: QueryRequest):
         trace.add_step(
             "Sensor detected",
             "completed",
-            f"Modalities: {[m.modality.value for m in input_metadata]}",
+            f"Modalities: {[m.modality.value for m in input_metadata]} (detection_method: {[m.detection_method for m in input_metadata]})",
         )
 
     trace.add_step(
         "Query classified",
         "completed",
-        f"Task: {decision.task_type.value} (confidence {decision.intent.confidence:.2f})",
+        f"Task: {decision.task_type.value} (classifier: rule_based, confidence_type: heuristic)",
     )
 
     trace.add_step(
@@ -312,9 +319,32 @@ async def process_query(req: QueryRequest):
 
     decision.execution_trace_id = trace.trace_id
 
+    # Construct honest AnalysisResult contract (Section 0 & Section 14)
+    analysis_result = AnalysisResult(
+        task=decision.task_type,
+        mechanism=(
+            "deterministic_sar_analysis"
+            if decision.task_type == TaskType.SINGLE_IMAGE_VQA_SAR
+            else (
+                "deterministic_optical_spectral_analysis"
+                if decision.task_type == TaskType.SINGLE_IMAGE_VQA_OPTICAL
+                else None
+            )
+        ),
+        model=None,
+        answer=None,
+        evidence=[],
+        confidence={"type": "heuristic", "calibrated": False},
+        limitations=[
+            "Routing & readiness verified. Numerical execution engine scheduled in subsequent milestone."
+        ],
+        status="ROUTED_PENDING_EXECUTION" if decision.is_executable else "REFUSED",
+    )
+
     return QueryResponse(
         decision=decision,
         trace=trace,
+        result=analysis_result,
         status=status,
     )
 

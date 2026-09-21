@@ -1,6 +1,7 @@
 {
   "version": "0.1.0",
   "description": "Sample imagery manifest for SatQuery AI engineering validation",
+  "disclaimer": "These synthetic rasters validate pipeline behavior, metadata handling, routing, compatibility, and deterministic computations. They are engineering validation data and do not support claims of remote-sensing model accuracy or benchmark performance.",
   "note": "These are development samples only, strictly for engineering validation, never presented as equivalent to ISRO/SAC hidden evaluation set",
   "samples": [
     {

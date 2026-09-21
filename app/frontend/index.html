@@ -538,6 +538,32 @@
             border-radius: var(--radius-sm);
             color: var(--accent-primary);
         }
+        .tool-pill.status-ready {
+            border-color: rgba(34, 197, 94, 0.4);
+            color: #4ade80;
+            background: rgba(34, 197, 94, 0.1);
+        }
+        .tool-pill.status-warn {
+            border-color: rgba(245, 158, 11, 0.4);
+            color: #fbbf24;
+            background: rgba(245, 158, 11, 0.1);
+        }
+        .tool-pill.status-subtle {
+            border-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            background: var(--bg-tertiary);
+        }
+        .mechanism-card {
+            margin-top: 12px;
+            padding: 10px 14px;
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: var(--radius-sm);
+            border-left: 3px solid var(--accent-primary);
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
 
         /* Execution Trace Panel */
         .trace-panel {
@@ -725,12 +751,12 @@
         </div>
 
         <div class="demo-prompts">
-            <span class="demo-label">Demo Presets:</span>
-            <button class="demo-chip" onclick="fillQuery('What type of land cover dominates this scene?')">Optical VQA</button>
-            <button class="demo-chip" onclick="fillQuery('Where is the largest water body? Highlight with bounding box.')">Grounding</button>
-            <button class="demo-chip" onclick="fillQuery('What changed between the two observations over time?')">Bi-Temporal Change</button>
-            <button class="demo-chip" onclick="fillQuery('Fuse optical and SAR observations to map surface water.')">Optical-SAR Fusion</button>
-            <button class="demo-chip" onclick="fillQuery('Analyze the radar backscatter and surface roughness in this SAR image.')">SAR Backscatter (Sec 9)</button>
+            <span class="demo-label">SIH Demo Workflows:</span>
+            <button class="demo-chip" onclick="fillQuery('What type of land cover dominates this scene?')">Optical VQA (Routing Demo)</button>
+            <button class="demo-chip" onclick="fillQuery('Where is the largest water body? Highlight with bounding box.')">Grounding (Routing Demo)</button>
+            <button class="demo-chip" onclick="fillQuery('What changed between the two observations over time?')">Bi-Temporal Change (Routing Demo)</button>
+            <button class="demo-chip" onclick="fillQuery('Fuse optical and SAR observations to map surface water.')">Optical-SAR Fusion (Routing Demo)</button>
+            <button class="demo-chip" onclick="fillQuery('Analyze the radar backscatter and surface roughness in this SAR image.')">SAR Backscatter (Routing Demo)</button>
             <button class="demo-chip" onclick="fillQuery('What changed in this area?')">Refusal Test (1 Image)</button>
         </div>
 
@@ -1110,14 +1136,43 @@ function renderRoutingResult(resp) {
         refusal.style.display = 'none';
         if (d.task_type.includes('sar')) {
             banner.classList.add('sar');
+            details.innerHTML = `<div><b>SAR ANALYSIS &mdash; Deterministic Radar Feature Pathway</b></div><div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">No SAR-native VLM available on this host. Answer generated from measured radar features.</div><div style="font-size:12px; margin-top:4px;">Task Intent: ${d.task_type.toUpperCase()} | Target Modalities: ${d.input_modalities.join(', ')}</div>`;
+        } else {
+            details.textContent = `Task Intent: ${d.task_type.toUpperCase()} | Target Modalities: ${d.input_modalities.join(', ')}`;
         }
-        details.textContent = `Task Intent: ${d.task_type.toUpperCase()} | Target Modalities: ${d.input_modalities.join(', ')}`;
     }
 
-    // Tool Sequence
-    tools.innerHTML = d.tool_sequence.length
-        ? d.tool_sequence.map(tool => `<span class="tool-pill">${tool}</span>`).join('')
-        : `<span style="color:var(--text-muted); font-size:12px;">No tools invoked (Refusal pathway)</span>`;
+    // Tool Sequence & Execution Status (Honest distinction between EXECUTED vs NOT_IMPLEMENTED)
+    const toolExecs = d.tool_executions || d.tools_executed;
+    if (toolExecs && toolExecs.length) {
+        tools.innerHTML = toolExecs.map(te => {
+            const cls = te.status === 'EXECUTED' ? 'status-ready' : (te.status === 'NOT_IMPLEMENTED' ? 'status-warn' : 'status-subtle');
+            return `<span class="tool-pill ${cls}" title="${te.details || te.notes || te.status}">${te.tool_name}: ${te.status}</span>`;
+        }).join('');
+    } else if (d.tool_sequence && d.tool_sequence.length) {
+        tools.innerHTML = d.tool_sequence.map(tool => `<span class="tool-pill status-subtle">${tool}: SCHEDULED</span>`).join('');
+    } else {
+        tools.innerHTML = `<span style="color:var(--text-muted); font-size:12px;">No tools scheduled (Refusal pathway)</span>`;
+    }
+
+    // Honest Mechanism & Answer Display
+    const existingCard = document.getElementById('resultMechanismCard');
+    if (existingCard) existingCard.remove();
+
+    if (resp.result) {
+        const resDiv = document.createElement('div');
+        resDiv.id = 'resultMechanismCard';
+        resDiv.className = 'mechanism-card';
+        const mech = resp.result.mechanism || 'None';
+        const vlm = resp.result.model || 'Not Used';
+        resDiv.innerHTML = `
+            <div><b>Mechanism:</b> <code>${mech}</code> | <b>VLM:</b> <code>${vlm}</code></div>
+            <div><b>Status:</b> <span class="status-pill ${resp.result.status === 'COMPLETED' ? 'ready' : 'warn'}">${resp.result.status}</span></div>
+            ${resp.result.answer ? `<div style="margin-top:6px; font-style:italic; color:var(--text-primary);">${resp.result.answer}</div>` : ''}
+            ${resp.result.limitations && resp.result.limitations.length ? `<div style="color:var(--status-warn); font-size:11px; margin-top:4px;">Limitations: ${resp.result.limitations.join('; ')}</div>` : ''}
+        `;
+        banner.appendChild(resDiv);
+    }
 
     // Execution Trace
     traceSteps.innerHTML = t.steps.map(step => {
@@ -1156,6 +1211,9 @@ async function showCapabilitiesModal() {
                     <div class="cap-desc">${cap.description}</div>
                     <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
                         Engine: <b>${cap.primary_engine}</b> ${cap.fallback_engine ? `| Fallback: ${cap.fallback_engine}` : ''}
+                    </div>
+                    <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">
+                        Routing: <b>${cap.routing_readiness || 'N/A'}</b> | Execution: <b>${cap.execution_readiness || 'N/A'}</b> | Model: <b>${cap.model_availability || 'N/A'}</b>
                     </div>
                     ${cap.license_note ? `<div style="font-size:11px; color:var(--status-warn); margin-top:2px;">License: ${cap.license_note}</div>` : ''}
                 </div>

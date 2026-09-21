@@ -1,6 +1,7 @@
 """
 SatQuery AI -- Capability Registry
 Section 10 (Runtime Modes) & Section 23 (Capability State Machine)
+Strict implementation integrity: clearly separates routing readiness from execution readiness.
 """
 
 from __future__ import annotations
@@ -20,6 +21,7 @@ class RuntimeMode(str, enum.Enum):
 class CapabilityStatus(str, enum.Enum):
     """Status of an individual engine capability."""
     READY = "READY"
+    ROUTING_READY = "ROUTING_READY"
     UNAVAILABLE = "UNAVAILABLE"
     BLOCKED_LICENSE = "BLOCKED_LICENSE"
     DISABLED = "DISABLED"
@@ -31,6 +33,11 @@ class CapabilityRecord(BaseModel):
     name: str
     description: str
     status: CapabilityStatus
+    routing_readiness: str = "READY"
+    execution_readiness: str = "NOT_IMPLEMENTED"
+    model_availability: str = "UNAVAILABLE"
+    compute_readiness: str = "CPU_COMPATIBLE"
+    automated_test_coverage: str = "ROUTING_TESTED"
     primary_engine: str
     fallback_engine: Optional[str] = None
     license_note: Optional[str] = None
@@ -40,7 +47,8 @@ class CapabilityRecord(BaseModel):
 class CapabilityRegistry:
     """
     Central registry tracking operational status of all SatQuery AI capabilities.
-    Maintains runtime mode and transparent fallback mapping per the Honesty Rule.
+    Enforces the Golden Rule: capabilities are only marked READY when both routing
+    and physical analysis tools actually execute on the host and pass tests.
     """
 
     def __init__(self, runtime_mode: RuntimeMode = RuntimeMode.DEMO_FALLBACK):
@@ -49,18 +57,28 @@ class CapabilityRegistry:
         self._init_defaults()
 
     def _init_defaults(self):
-        # Core data gateways
+        # 1. Core data gateways -- IMPLEMENTED & EXECUTED
         self.register(CapabilityRecord(
             name="upload",
             description="Raster file upload, format integrity, and metadata inspection",
             status=CapabilityStatus.READY,
+            routing_readiness="READY",
+            execution_readiness="READY",
+            model_availability="NOT_REQUIRED_DETERMINISTIC",
+            compute_readiness="CPU_READY",
+            automated_test_coverage="AUTOMATED_TESTS_PASSING (tests/test_day1.py)",
             primary_engine="RasterInspector (Rasterio/GDAL)",
             requires_gpu=False,
         ))
         self.register(CapabilityRecord(
             name="metadata_inspection",
-            description="GeoTIFF metadata extraction (CRS, transform, bands, bounds)",
+            description="GeoTIFF metadata extraction (CRS, transform, bands, bounds, modality)",
             status=CapabilityStatus.READY,
+            routing_readiness="READY",
+            execution_readiness="READY",
+            model_availability="NOT_REQUIRED_DETERMINISTIC",
+            compute_readiness="CPU_READY",
+            automated_test_coverage="AUTOMATED_TESTS_PASSING (tests/test_day1.py)",
             primary_engine="RasterInspector",
             requires_gpu=False,
         ))
@@ -68,75 +86,115 @@ class CapabilityRegistry:
             name="compatibility_check",
             description="Data readiness and pair spatial/spectral compatibility checking",
             status=CapabilityStatus.READY,
+            routing_readiness="READY",
+            execution_readiness="READY",
+            model_availability="NOT_REQUIRED_DETERMINISTIC",
+            compute_readiness="CPU_READY",
+            automated_test_coverage="AUTOMATED_TESTS_PASSING (tests/test_day1.py)",
             primary_engine="CompatibilityChecker",
             requires_gpu=False,
         ))
 
-        # Optical VQA
+        # 2. Optical VQA -- Routing implemented; execution engine scheduled for Day 3
         self.register(CapabilityRecord(
             name="single_image_vqa_optical",
             description="Optical remote sensing visual question answering",
-            status=CapabilityStatus.FALLBACK_ACTIVE if self.runtime_mode != RuntimeMode.FULL_AI else CapabilityStatus.READY,
+            status=CapabilityStatus.NOT_IMPLEMENTED,
+            routing_readiness="READY",
+            execution_readiness="NOT_IMPLEMENTED (Deterministic spectral baseline scheduled Day 3)",
+            model_availability="UNAVAILABLE (GeoChat-7B requires CUDA GPU; Host is Profile D)",
+            compute_readiness="FALLBACK_CPU_COMPATIBLE",
+            automated_test_coverage="ROUTING_TESTED (tests/test_day2.py)",
             primary_engine="GeoChat (7B RS-VLM)",
-            fallback_engine="Deterministic Optical Feature Extractor",
+            fallback_engine="Deterministic Optical Spectral Analysis (Scheduled Day 3)",
             license_note="GeoChat Apache-2.0 adapter over Llama-2 base (attribution required)",
             requires_gpu=True,
         ))
 
-        # SAR VQA -- Always independent of GPU / Optical VLM
+        # 3. SAR VQA -- Routing implemented; deterministic backscatter tools scheduled for Day 3
         self.register(CapabilityRecord(
             name="single_image_vqa_sar",
             description="Single-image SAR analysis and radar backscatter VQA",
-            status=CapabilityStatus.READY,
-            primary_engine="SAR Deterministic Feature Tools (Section 8.5)",
+            status=CapabilityStatus.NOT_IMPLEMENTED,
+            routing_readiness="READY",
+            execution_readiness="NOT_IMPLEMENTED (Deterministic SAR tools scheduled Day 3)",
+            model_availability="UNAVAILABLE (No SAR-native VLM; deterministic pathway scheduled Day 3)",
+            compute_readiness="CPU_COMPATIBLE (Deterministic tools require zero GPU)",
+            automated_test_coverage="ROUTING_TESTED (tests/test_day2.py)",
+            primary_engine="SAR Deterministic Feature Tools (Section 8.5 -- Scheduled Day 3)",
             fallback_engine=None,
             license_note="Native internal deterministic engine; zero optical hallucination",
             requires_gpu=False,
         ))
 
-        # Grounding
+        # 4. Grounding -- Routing implemented; head scheduled for Day 3
         self.register(CapabilityRecord(
             name="single_image_grounding",
             description="Text-guided geospatial object detection and bounding box localization",
-            status=CapabilityStatus.FALLBACK_ACTIVE if self.runtime_mode != RuntimeMode.FULL_AI else CapabilityStatus.READY,
+            status=CapabilityStatus.NOT_IMPLEMENTED,
+            routing_readiness="READY",
+            execution_readiness="NOT_IMPLEMENTED (Scheduled Day 3)",
+            model_availability="UNAVAILABLE (GeoChat Grounding Head requires CUDA GPU)",
+            compute_readiness="FALLBACK_CPU_COMPATIBLE",
+            automated_test_coverage="ROUTING_TESTED (tests/test_day2.py)",
             primary_engine="GeoChat Grounding Head",
             fallback_engine="Spectral Region-of-Interest (ROI) Extractor",
             requires_gpu=True,
         ))
 
-        # Temporal Change Detection
+        # 5. Temporal Change Detection -- Routing implemented; registration gate & engine scheduled Day 5
         self.register(CapabilityRecord(
             name="temporal_change",
             description="Bi-temporal change detection with registration gate and L1/L2 distinction",
-            status=CapabilityStatus.READY,
-            primary_engine="Deterministic Change Engine + AROSICS Gate",
+            status=CapabilityStatus.NOT_IMPLEMENTED,
+            routing_readiness="READY",
+            execution_readiness="NOT_IMPLEMENTED (Scheduled Day 5)",
+            model_availability="BLOCKED_LICENSE (ChangeChat licensing review required)",
+            compute_readiness="CPU_COMPATIBLE (Deterministic change engine requires zero GPU)",
+            automated_test_coverage="ROUTING_AND_REFUSAL_TESTED (tests/test_day2.py)",
+            primary_engine="Deterministic Change Engine + AROSICS Gate (Scheduled Day 5)",
             fallback_engine=None,
             requires_gpu=False,
         ))
 
-        # Optical-SAR Multimodal Fusion
+        # 6. Optical-SAR Multimodal Fusion -- Routing implemented; fusion engine scheduled Day 6
         self.register(CapabilityRecord(
             name="optical_sar_fusion",
             description="Cross-modal optical and SAR joint surface water and land analysis",
-            status=CapabilityStatus.READY,
-            primary_engine="Co-registered Spatial Fusion Engine (Section 18)",
+            status=CapabilityStatus.NOT_IMPLEMENTED,
+            routing_readiness="READY",
+            execution_readiness="NOT_IMPLEMENTED (Scheduled Day 6)",
+            model_availability="DISABLED (CROMA optional stretch model)",
+            compute_readiness="CPU_COMPATIBLE (Deterministic cross-modal grid fusion requires zero GPU)",
+            automated_test_coverage="ROUTING_TESTED (tests/test_day2.py)",
+            primary_engine="Co-registered Spatial Fusion Engine (Section 18 -- Scheduled Day 6)",
             fallback_engine=None,
             requires_gpu=False,
         ))
 
-        # Specialist models explicitly tracked
+        # 7. Specialist models explicitly tracked
         self.register(CapabilityRecord(
             name="geochat",
             description="GeoChat 7B multimodal RS foundation model",
-            status=CapabilityStatus.UNAVAILABLE if self.runtime_mode == RuntimeMode.DEMO_FALLBACK else CapabilityStatus.READY,
+            status=CapabilityStatus.UNAVAILABLE,
+            routing_readiness="N/A",
+            execution_readiness="UNAVAILABLE (Host is Profile D CPU; requires CUDA GPU)",
+            model_availability="UNAVAILABLE (No local GPU/weights)",
+            compute_readiness="GPU_REQUIRED",
+            automated_test_coverage="PREFLIGHT_PENDING_DAY_3",
             primary_engine="MBZUAI GeoChat-7B",
-            license_note="Apache-2.0 / Llama-2 License",
+            license_note="Apache-2.0 / Llama-2 License (Attribution required)",
             requires_gpu=True,
         ))
         self.register(CapabilityRecord(
             name="changechat",
             description="ChangeChat bi-temporal RS-VLM",
             status=CapabilityStatus.BLOCKED_LICENSE,
+            routing_readiness="N/A",
+            execution_readiness="BLOCKED (Academic license requires written clearance)",
+            model_availability="BLOCKED_LICENSE",
+            compute_readiness="GPU_REQUIRED",
+            automated_test_coverage="NONE",
             primary_engine="ChangeChat Model",
             license_note="License terms require audit clearance",
             requires_gpu=True,
@@ -145,6 +203,11 @@ class CapabilityRegistry:
             name="croma",
             description="CROMA cross-modal optical-SAR self-supervised representations",
             status=CapabilityStatus.DISABLED,
+            routing_readiness="N/A",
+            execution_readiness="DISABLED (Optional stretch model)",
+            model_availability="DISABLED",
+            compute_readiness="GPU_REQUIRED",
+            automated_test_coverage="NONE",
             primary_engine="CROMA Pretrained Checkpoint",
             requires_gpu=True,
         ))
@@ -161,6 +224,11 @@ class CapabilityRegistry:
                 "name": cap.name,
                 "description": cap.description,
                 "status": cap.status.value,
+                "routing_readiness": cap.routing_readiness,
+                "execution_readiness": cap.execution_readiness,
+                "model_availability": cap.model_availability,
+                "compute_readiness": cap.compute_readiness,
+                "automated_test_coverage": cap.automated_test_coverage,
                 "primary_engine": cap.primary_engine,
                 "fallback_engine": cap.fallback_engine,
                 "requires_gpu": cap.requires_gpu,
@@ -173,4 +241,10 @@ class CapabilityRegistry:
         cap = self.get(name)
         if not cap:
             return False
-        return cap.status in (CapabilityStatus.READY, CapabilityStatus.FALLBACK_ACTIVE)
+        return cap.status == CapabilityStatus.READY and cap.execution_readiness == "READY"
+
+    def is_routing_ready(self, name: str) -> bool:
+        cap = self.get(name)
+        if not cap:
+            return False
+        return cap.routing_readiness == "READY"

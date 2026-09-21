@@ -68,6 +68,10 @@ class RasterMetadata(BaseModel):
     sensor_name: Optional[str] = None
     acquisition_time: Optional[datetime] = None
     processing_level: Optional[str] = None
+    detection_method: str = Field(
+        default="metadata_assisted_heuristic",
+        description="Mechanism used to detect modality (metadata tag vs spectral heuristic)"
+    )
 
     # File integrity
     is_valid: bool = True

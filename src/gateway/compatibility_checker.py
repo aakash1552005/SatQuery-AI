@@ -22,7 +22,19 @@ class CompatibilityChecker:
     """
     Checks whether raster pairs are compatible for temporal change
     detection or optical-SAR analysis.
+
+    Note on Spatial Compatibility:
+    CRS equality does not by itself guarantee spatial compatibility.
+    Compatibility requires CRS alignment, spatial footprint overlap,
+    comparable Ground Sample Distance (GSD), grid alignment, and
+    compatible sensor modalities.
+
+    The GSD threshold is an engineering policy threshold, not an
+    absolute physical or universal scientific law.
     """
+
+    def __init__(self, max_gsd_ratio_policy: float = 3.0):
+        self.max_gsd_ratio_policy = max_gsd_ratio_policy
 
     def check_pair(
         self,

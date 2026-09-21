@@ -140,7 +140,7 @@ class RasterInspector:
             nodata_values.append(ds.nodata)
 
         # --- Sensor detection ---
-        modality = self._detect_modality(ds, band_names, file_path)
+        modality, detection_method = self._detect_modality(ds, band_names, file_path)
         polarization = self._detect_polarization(ds, band_names, modality)
         sensor_name = self._detect_sensor(ds, file_path)
         acq_time = self._detect_acquisition_time(ds)
@@ -170,6 +170,7 @@ class RasterInspector:
             band_dtypes=band_dtypes,
             nodata_values=nodata_values,
             modality=modality,
+            detection_method=detection_method,
             polarization=polarization,
             sensor_name=sensor_name,
             acquisition_time=acq_time,
@@ -203,48 +204,47 @@ class RasterInspector:
                         "gamma0", "beta0"]
         polarization_keywords = ["vv", "vh", "hh", "hv"]
 
+        # 1. Explicit metadata in tags
         if any(kw in all_text for kw in sar_keywords):
-            return SensorModality.SAR
-        if any(kw in fname_lower for kw in sar_keywords):
-            return SensorModality.SAR
+            return SensorModality.SAR, "explicit_metadata"
         if any(kw in band_text for kw in polarization_keywords):
-            return SensorModality.SAR
+            return SensorModality.SAR, "polarization_metadata"
+        if any(kw in fname_lower for kw in sar_keywords):
+            return SensorModality.SAR, "filename_inferred_heuristic"
 
-        # Multispectral indicators (> 3 bands typically)
-        if ds.count > 4:
-            return SensorModality.MULTISPECTRAL
-
+        # Multispectral indicators
         optical_keywords = ["sentinel-2", "sentinel2", "s2", "landsat",
                             "cartosat", "resourcesat", "modis", "spot",
                             "worldview", "pleiades", "quickbird", "ikonos"]
         if any(kw in all_text for kw in optical_keywords):
-            if ds.count > 3:
-                return SensorModality.MULTISPECTRAL
-            return SensorModality.OPTICAL
+            mod = SensorModality.MULTISPECTRAL if ds.count > 3 else SensorModality.OPTICAL
+            return mod, "explicit_metadata"
         if any(kw in fname_lower for kw in optical_keywords):
-            if ds.count > 3:
-                return SensorModality.MULTISPECTRAL
-            return SensorModality.OPTICAL
+            mod = SensorModality.MULTISPECTRAL if ds.count > 3 else SensorModality.OPTICAL
+            return mod, "filename_inferred_heuristic"
 
-        # Band count heuristics (last resort)
+        # Band count heuristics
+        if ds.count > 4:
+            return SensorModality.MULTISPECTRAL, "band_count_heuristic"
         if ds.count == 4:
-            return SensorModality.MULTISPECTRAL
+            return SensorModality.MULTISPECTRAL, "band_count_heuristic"
+
+        # Data type / range heuristic (check float with negative backscatter for SAR)
         if ds.count in (1, 2):
-            # Could be SAR or single-band optical -- check data range
             try:
                 sample = ds.read(1, window=rasterio.windows.Window(0, 0,
                                  min(256, ds.width), min(256, ds.height)))
                 if sample.dtype in (np.float32, np.float64):
-                    # Float data with negative values suggests SAR backscatter
                     if np.any(sample < 0):
-                        return SensorModality.SAR
+                        return SensorModality.SAR, "dtype_range_heuristic"
             except Exception:
                 pass
-            return SensorModality.UNKNOWN
-        if ds.count == 3:
-            return SensorModality.OPTICAL
+            return SensorModality.UNKNOWN, "dtype_range_heuristic"
 
-        return SensorModality.UNKNOWN
+        if ds.count == 3:
+            return SensorModality.OPTICAL, "band_count_heuristic"
+
+        return SensorModality.UNKNOWN, "unresolved_heuristic"
 
     def _detect_polarization(
         self, ds: rasterio.DatasetReader,

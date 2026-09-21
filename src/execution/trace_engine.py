@@ -1,6 +1,7 @@
 """
 SatQuery AI -- Execution Trace Engine
 Section 24: Execution Trace Logging (Factual, transparent, verifiable; no hidden CoT)
+Strict implementation integrity: clearly separates SCHEDULED tools from EXECUTED tools.
 """
 
 from __future__ import annotations
@@ -23,13 +24,22 @@ class TraceStep(BaseModel):
 class ExecutionTrace(BaseModel):
     """
     Immutable execution trace representing exact system steps executed.
-    Section 24: Facts only, shows selected tools, strictly prevents fabricated steps.
+    Section 24: Facts only, shows scheduled tools vs actual execution status.
+    Strictly prevents claiming tools were executed when only scheduled.
     """
     trace_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
     task_type: str
     pathway: str
     runtime_mode: str
-    tools_selected: list[str] = Field(default_factory=list)
+    tools_selected: list[str] = Field(
+        default_factory=list,
+        description="Alias for tools_scheduled for backward compatibility"
+    )
+    tools_scheduled: list[str] = Field(default_factory=list)
+    tools_executed: list[dict] = Field(
+        default_factory=list,
+        description="Detailed execution status for each scheduled tool"
+    )
     steps: list[TraceStep] = Field(default_factory=list)
     total_elapsed_ms: float = 0.0
     is_success: bool = True
@@ -59,7 +69,17 @@ class ExecutionTrace(BaseModel):
             icon = "✓" if step.status == "completed" else ("✗" if step.status == "failed" else "○")
             detail_str = f" -- {step.details}" if step.details else ""
             lines.append(f"  {icon} {step.name}{detail_str}")
-        lines.append(f"Tools Invoked: {', '.join(self.tools_selected) if self.tools_selected else 'None'}")
+
+        scheduled = self.tools_scheduled or self.tools_selected
+        lines.append(f"Tools Scheduled: {', '.join(scheduled) if scheduled else 'None'}")
+
+        if self.tools_executed:
+            lines.append("Tool Execution Status:")
+            for te in self.tools_executed:
+                tool_name = te.get("tool_name", "Unknown")
+                status = te.get("status", "UNKNOWN")
+                lines.append(f"  - {tool_name}: {status}")
+
         lines.append(f"Pathway Declared: {self.pathway}")
         lines.append(f"Total Time: {self.total_elapsed_ms:.1f}ms")
         return "\n".join(lines)
@@ -74,10 +94,14 @@ class TraceEngine:
         pathway: str,
         runtime_mode: str,
         tools_selected: Optional[list[str]] = None,
+        tools_executed: Optional[list[dict]] = None,
     ) -> ExecutionTrace:
+        tools = tools_selected or []
         return ExecutionTrace(
             task_type=task_type,
             pathway=pathway,
             runtime_mode=runtime_mode,
-            tools_selected=tools_selected or [],
+            tools_selected=tools,
+            tools_scheduled=tools,
+            tools_executed=tools_executed or [],
         )
