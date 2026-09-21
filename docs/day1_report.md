@@ -52,7 +52,7 @@ tests/test_day1.py::test_upload_and_compatibility_api PASSED             [100%]
 ---
 
 ## 5. Fallbacks Used & Blockers
-- **GPU Inference Unavailable Locally**: Operating in deterministic baseline mode. GeoChat and ChangeChat are bypassed via honest capability status reporting without preventing any core GIS, routing, or deterministic analysis workflows.
+- **GPU Inference Unavailable Locally**: Operating in `DEMO_FALLBACK` / `HYBRID` mode on Profile D host (CPU Only). GeoChat VLM is bypassed via capability status checks. Optical deterministic numerical analysis is available where implemented. SAR requests currently route to the deterministic SAR pathway, but the concrete SAR analysis tools remain `NOT_IMPLEMENTED` until Day 3.
 - **Synthetic Test Imagery**: Generated strictly for engineering validation of file format, CRS transformation, and coordinate alignment; explicitly recorded as non-equivalent to hidden SAC/ISRO test evaluation sets.
 
 ---

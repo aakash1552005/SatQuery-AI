@@ -83,15 +83,30 @@ Execution state is strictly separated between what has actually executed and wha
 - `BLOCKED`: Blocked by policy, licensing, or gate condition.
 - `UNAVAILABLE`: Hardware or dependencies absent on host.
 
-**Day 2 Status Breakdown**:
-- `RasterInspector`: **EXECUTED**
-- `CompatibilityChecker`: **EXECUTED** (when pair provided)
-- `SARBackscatterAnalysis`: **NOT_IMPLEMENTED** (Scheduled for Day 3)
-- `LeeSpeckleFilter`: **NOT_IMPLEMENTED** (Scheduled for Day 3)
-- `PolarizationRatioEstimator`: **NOT_IMPLEMENTED** (Scheduled for Day 3)
-- `SARStructuredResponseComposer`: **NOT_IMPLEMENTED** (Scheduled for Day 3)
+**Status Breakdown**:
+- **Gateway Tools**:
+  - `RasterInspector`: **EXECUTED**
+  - `CompatibilityChecker`: **EXECUTED** (when pair provided)
+- **SAR Analysis Tools**:
+  - `SARBackscatterAnalysis`: **NOT_IMPLEMENTED** (Scheduled for Day 3)
+  - `LeeSpeckleFilter`: **NOT_IMPLEMENTED** (Scheduled for Day 3)
+  - `PolarizationRatioEstimator`: **NOT_IMPLEMENTED** (Scheduled for Day 3)
+  - `SARStructuredResponseComposer`: **NOT_IMPLEMENTED** (Scheduled for Day 3)
+- **Optical Analysis Tools**:
+  - `SpectralIndexEngine (NDVI/NDWI)`: **NOT_IMPLEMENTED** (Numerical contracts tested; engine scheduled Day 3)
+  - `LandCoverClassProbabilityEstimator`: **NOT_IMPLEMENTED** (Scheduled for Day 3)
+  - `ResponseComposer`: **NOT_IMPLEMENTED** (Scheduled for Day 3)
 
-### 2.4 Live Capability Registry
+### 2.4 Optical Query Execution Path Audit
+Source code tracing of an optical query:
+$$\text{User optical query} \longrightarrow \text{QueryParser (rule-based intent)} \longrightarrow \text{AgenticRouter (pathway: OPTICAL\_DETERMINISTIC)} \longrightarrow \text{AnalysisResult (status: ROUTED\_PENDING\_EXECUTION)}$$
+1. **Routing**: `AgenticRouter` successfully routes optical queries to `OPTICAL_DETERMINISTIC` (or `OPTICAL_VLM` if GPU mode).
+2. **Tool Execution**: `RasterInspector` is `EXECUTED`. The downstream analysis tools (`SpectralIndexEngine`, `LandCoverClassProbabilityEstimator`, `ResponseComposer`) are marked `NOT_IMPLEMENTED`.
+3. **Numerical Math**: The mathematical contracts for NDVI, NDWI, and MNDWI are implemented and unit-tested in [`src/analysis/numerical_math.py`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/SatQuery%20AI/src/analysis/numerical_math.py), but they are **not yet connected** to the end-to-end optical query execution path in `main.py` (which returns `answer=None`).
+4. **Land-Cover Classification**: Rule-based land-cover classification does **not** yet exist (scheduled for Day 3 in `src/analysis/optical_tools.py`).
+5. **Truthful Status**: Optical query execution is truthfully reported as `ROUTED_PENDING_EXECUTION` (routing ready, end-to-end execution scheduled for Day 3).
+
+### 2.5 Live Capability Registry
 In [`src/router/capability_registry.py`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/SatQuery%20AI/src/router/capability_registry.py):
 Every capability reports multi-dimensional readiness:
 - `routing_readiness`: `READY`
@@ -101,34 +116,33 @@ Every capability reports multi-dimensional readiness:
 
 Capabilities `single_image_vqa_sar`, `single_image_vqa_optical`, `temporal_change`, and `optical_sar_fusion` honestly report `status: NOT_IMPLEMENTED` until their analysis engines are fully coded and tested.
 
-### 2.5 Analysis Result & Truthful Mechanism Contract
+### 2.6 Analysis Result & Truthful Mechanism Contract
 In [`src/contracts/query_contracts.py`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/SatQuery%20AI/src/contracts/query_contracts.py):
 Responses return a structured `AnalysisResult`:
 ```json
 {
-  "answer": "...",
   "task": "single_image_vqa_sar",
   "mechanism": "deterministic_sar_analysis",
   "model": null,
+  "answer": null,
   "evidence": [],
   "confidence": {
-    "confidence_type": "heuristic_uncalibrated",
-    "score": null
+    "type": "heuristic",
+    "calibrated": false
   },
   "limitations": [
-    "SAR analysis tool execution engine is scheduled for Day 3 implementation.",
-    "No SAR-native VLM available on this host. Output will be generated strictly from radar backscatter metrics."
+    "Routing & readiness verified. Numerical execution engine scheduled in subsequent milestone."
   ],
-  "status": "NOT_IMPLEMENTED"
+  "status": "ROUTED_PENDING_EXECUTION"
 }
 ```
 - Optical deterministic responses declare `mechanism: "deterministic_optical_spectral_analysis"` with `model: null` (VLM: Not Used).
 - GeoChat responses declare `mechanism: "geochat_vlm"` only when the model actually executes.
 
-### 2.6 Full-Stack Web Application Integration
+### 2.7 Full-Stack Web Application Integration
 - **FastAPI Backend** ([`app/backend/main.py`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/SatQuery%20AI/app/backend/main.py)):
   - `/api/health`, `/api/status`, `/api/upload`, `/api/compatibility`, `/api/capabilities`, `/api/query`.
-  - Injects `tools_executed` and `AnalysisResult` into query responses.
+  - Injects `tool_executions` and `AnalysisResult` into query responses.
 - **Interactive UI** ([`app/frontend/index.html`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/SatQuery%20AI/app/frontend/index.html)):
   - Labeled "SIH Demo Workflows".
   - SAR Pathway Banner honestly states: *"Deterministic Radar Feature Pathway. No SAR-native VLM available on this host. Answer generated from measured radar features."*
@@ -165,7 +179,28 @@ Documented as `PENDING_DAY_3`.
 
 ---
 
-## 4. Automated Test Verification
+## 4. Fallback Policy & Truthful Operational Records
+
+### 4.1 Truthful Fallback Policy Statement
+> **GeoChat VLM is bypassed via capability status checks. Optical deterministic numerical analysis is available where implemented (numerical math contracts for NDVI, NDWI, MNDWI verified in `src/analysis/numerical_math.py`; end-to-end query integration scheduled for Day 3). SAR requests currently route to the deterministic SAR pathway, but the concrete SAR analysis tools remain NOT_IMPLEMENTED until Day 3.**
+
+### 4.2 GeoChat Structured Status Matrix
+Day 3 will perform the actual GeoChat preflight. The current repository status is:
+
+| Dimension | Status | Evidence / Verification |
+| :--- | :--- | :--- |
+| **repository** | `ABSENT` | GeoChat model repository not cloned on host |
+| **dependencies** | `MISSING` | Flash-attention, deepspeed, transformers-vlm not in local environment |
+| **model_weights** | `ABSENT` | GeoChat 7B weights (~14 GB) not downloaded |
+| **CUDA** | `UNAVAILABLE` | PyTorch 2.13.0+cpu, 0 CUDA GPUs detected |
+| **GPU_VRAM** | `INSUFFICIENT` | 0 GB GPU VRAM available |
+| **environment_preflight** | `NOT_EXECUTED` | Scheduled for Day 3 |
+| **real_model_inference** | `NOT_EXECUTED` | Never report mock/stub execution as real inference |
+| **final_capability** | `UNAVAILABLE` | Correctly gated per Profile D CPU host |
+
+---
+
+## 5. Automated Test Verification
 
 Running `pytest tests/ -v`:
 ```text
@@ -183,18 +218,19 @@ tests/test_day2.py::test_multimodal_fusion_routing PASSED                [ 57%]
 tests/test_day2.py::test_execution_trace_engine PASSED                   [ 63%]
 tests/test_day2.py::test_api_capabilities_endpoint PASSED                [ 68%]
 tests/test_day2.py::test_api_query_flow PASSED                           [ 73%]
-tests/test_scientific_contracts.py::test_spectral_indices_known_values PASSED [ 78%]
-tests/test_scientific_contracts.py::test_spectral_indices_zero_denominator PASSED [ 84%]
-tests/test_scientific_contracts.py::test_spectral_indices_nodata PASSED   [ 89%]
-tests/test_scientific_contracts.py::test_sar_db_linear_roundtrip PASSED  [ 94%]
-tests/test_scientific_contracts.py::test_sar_polarization_ratio_physics PASSED [100%]
+tests/test_scientific_contracts.py::test_ndvi_known_values PASSED        [ 78%]
+tests/test_scientific_contracts.py::test_ndvi_zero_denominator_guard PASSED [ 84%]
+tests/test_scientific_contracts.py::test_ndwi_and_mndwi_known_values PASSED [ 89%]
+tests/test_scientific_contracts.py::test_sar_linear_ratio_from_db PASSED [ 94%]
+tests/test_scientific_contracts.py::test_sar_db_linear_roundtrip PASSED  [100%]
 
-======================== 19 passed, 1 warning in 0.88s ========================
+======================== 19 passed, 1 warning in 0.62s ========================
 ```
 
 ---
 
-## 5. Git Milestones
+## 6. Git Milestones
 - `day-1-stable` (`aa3b04f`): Core GIS infrastructure, raster inspector, compatibility gate, test data.
 - `day-2-stable` (`d9cb2ca`): Query parsing, sensor-aware agentic routing, SAR separation, trace engine.
-- `day-2-corrected-stable`: Complete implementation-integrity audit, honest execution state tracking, multi-dimensional capability registry, scientific numerical test suite.
+- `day-2-corrected-stable` (`dfe10ac`): Implementation-integrity audit, honest execution state tracking, multi-dimensional capability registry, scientific numerical test suite.
+- `day-2-final-stable`: Final capability status consistency check, optical query path audit, GeoChat structured preflight record, and unified fallback wording.

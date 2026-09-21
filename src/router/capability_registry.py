@@ -42,6 +42,7 @@ class CapabilityRecord(BaseModel):
     fallback_engine: Optional[str] = None
     license_note: Optional[str] = None
     requires_gpu: bool = False
+    structured_status: Optional[dict] = None
 
 
 class CapabilityRegistry:
@@ -101,10 +102,10 @@ class CapabilityRegistry:
             description="Optical remote sensing visual question answering",
             status=CapabilityStatus.NOT_IMPLEMENTED,
             routing_readiness="READY",
-            execution_readiness="NOT_IMPLEMENTED (Deterministic spectral baseline scheduled Day 3)",
+            execution_readiness="NOT_IMPLEMENTED (Numerical contracts in src/analysis/numerical_math.py tested; end-to-end query execution scheduled Day 3)",
             model_availability="UNAVAILABLE (GeoChat-7B requires CUDA GPU; Host is Profile D)",
             compute_readiness="FALLBACK_CPU_COMPATIBLE",
-            automated_test_coverage="ROUTING_TESTED (tests/test_day2.py)",
+            automated_test_coverage="ROUTING_TESTED (tests/test_day2.py) + NUMERICAL_CONTRACTS_TESTED (tests/test_scientific_contracts.py)",
             primary_engine="GeoChat (7B RS-VLM)",
             fallback_engine="Deterministic Optical Spectral Analysis (Scheduled Day 3)",
             license_note="GeoChat Apache-2.0 adapter over Llama-2 base (attribution required)",
@@ -117,10 +118,10 @@ class CapabilityRegistry:
             description="Single-image SAR analysis and radar backscatter VQA",
             status=CapabilityStatus.NOT_IMPLEMENTED,
             routing_readiness="READY",
-            execution_readiness="NOT_IMPLEMENTED (Deterministic SAR tools scheduled Day 3)",
+            execution_readiness="NOT_IMPLEMENTED (Deterministic SAR tools scheduled Day 3; numerical ratio contracts verified)",
             model_availability="UNAVAILABLE (No SAR-native VLM; deterministic pathway scheduled Day 3)",
             compute_readiness="CPU_COMPATIBLE (Deterministic tools require zero GPU)",
-            automated_test_coverage="ROUTING_TESTED (tests/test_day2.py)",
+            automated_test_coverage="ROUTING_TESTED (tests/test_day2.py) + NUMERICAL_RATIO_TESTED (tests/test_scientific_contracts.py)",
             primary_engine="SAR Deterministic Feature Tools (Section 8.5 -- Scheduled Day 3)",
             fallback_engine=None,
             license_note="Native internal deterministic engine; zero optical hallucination",
@@ -185,6 +186,16 @@ class CapabilityRegistry:
             primary_engine="MBZUAI GeoChat-7B",
             license_note="Apache-2.0 / Llama-2 License (Attribution required)",
             requires_gpu=True,
+            structured_status={
+                "repository": "ABSENT",
+                "dependencies": "MISSING",
+                "model_weights": "ABSENT",
+                "CUDA": "UNAVAILABLE",
+                "GPU_VRAM": "INSUFFICIENT",
+                "environment_preflight": "NOT_EXECUTED",
+                "real_model_inference": "NOT_EXECUTED",
+                "final_capability": "UNAVAILABLE",
+            },
         ))
         self.register(CapabilityRecord(
             name="changechat",
@@ -219,6 +230,7 @@ class CapabilityRegistry:
         return self._capabilities.get(name)
 
     def get_all(self) -> dict[str, dict]:
+        """Return dict representation of all registered capabilities."""
         return {
             name: {
                 "name": cap.name,
@@ -233,8 +245,28 @@ class CapabilityRegistry:
                 "fallback_engine": cap.fallback_engine,
                 "requires_gpu": cap.requires_gpu,
                 "license_note": cap.license_note,
+                "structured_status": cap.structured_status,
             }
             for name, cap in self._capabilities.items()
+        }
+
+    def get_geochat_preflight_status(self) -> dict:
+        """
+        Return structured GeoChat preflight and readiness status per Section 3.
+        Distinguishes environment preflight from real model inference.
+        """
+        geochat_rec = self.get("geochat")
+        if geochat_rec and geochat_rec.structured_status:
+            return geochat_rec.structured_status
+        return {
+            "repository": "ABSENT",
+            "dependencies": "MISSING",
+            "model_weights": "ABSENT",
+            "CUDA": "UNAVAILABLE",
+            "GPU_VRAM": "INSUFFICIENT",
+            "environment_preflight": "NOT_EXECUTED",
+            "real_model_inference": "NOT_EXECUTED",
+            "final_capability": "UNAVAILABLE",
         }
 
     def is_ready(self, name: str) -> bool:

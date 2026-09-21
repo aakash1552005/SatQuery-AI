@@ -68,7 +68,16 @@ tests/test_scientific_contracts.py::test_sar_polarization_ratio_physics PASSED [
 ---
 
 ## 5. Blockers & Fallback Records
-- **VLM Local GPU**: Profile D host has no CUDA GPU; GeoChat is marked `UNAVAILABLE` and optical VQA runs through `OPTICAL_DETERMINISTIC` baseline without disrupting application execution or routing.
+- **Fallback Policy**: GeoChat VLM is bypassed via capability status checks. Optical deterministic numerical analysis is available where implemented (numerical math contracts for NDVI, NDWI, MNDWI verified in `src/analysis/numerical_math.py`; end-to-end query integration scheduled for Day 3). SAR requests currently route to the deterministic SAR pathway, but the concrete SAR analysis tools remain `NOT_IMPLEMENTED` until Day 3.
+- **GeoChat Structured Preflight Record**:
+  - `repository`: `ABSENT`
+  - `dependencies`: `MISSING`
+  - `model_weights`: `ABSENT`
+  - `CUDA`: `UNAVAILABLE` (Host is Profile D CPU-only)
+  - `GPU_VRAM`: `INSUFFICIENT` (0 GB GPU VRAM)
+  - `environment_preflight`: `NOT_EXECUTED` (Scheduled Day 3)
+  - `real_model_inference`: `NOT_EXECUTED` (Never report mock/stub execution as real inference)
+  - `final_capability`: `UNAVAILABLE`
 - **ChangeChat**: Remains gated as `BLOCKED_LICENSE` pending licensing clearance per Section 4.1.
 - **SAR Analysis Tool Implementation**: In Day 2, the pathway is routed and tool sequence scheduled (`RasterInspector`, `SARBackscatterAnalysis`, `LeeSpeckleFilter`, `PolarizationRatioEstimator`, `SARStructuredResponseComposer`). `RasterInspector` is `EXECUTED`; analysis tools are honestly tagged `NOT_IMPLEMENTED` pending Day 3 execution.
 - **Synthetic Data Disclaimer**: Synthetic GeoTIFFs validate pipeline plumbing, metadata, and routing. They are engineering validation assets and do NOT support claims of real-world remote sensing accuracy.
