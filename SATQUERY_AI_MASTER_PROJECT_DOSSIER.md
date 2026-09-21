@@ -348,7 +348,8 @@ Operator points to the GIS Measurement Card and Number Guard telemetry.
 Operator uploads a single image and queries: 'What changed between these dates?'
 "The Data Readiness Gate intercepts the query. Because only one acquisition date was provided,
  SatQuery AI halts execution and explains: 'Change detection requires two distinct acquisition dates.
- Please provide a baseline T1 image.' The system refuses to fabricate ungrounded answers."
+ Please provide a baseline T1 image.' The system refuses to fabricate ungrounded answers.
+ "
 
 [2:40 - 3:00] TACTICAL DISSEMINATION TO THE FIELD
 Operator clicks 'Download 1-Click Field Pack'.

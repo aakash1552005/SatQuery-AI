@@ -1,0 +1,62 @@
+# SatQuery AI — .gitignore
+# Section 44 — Public Repository Hygiene
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# Virtual environments
+env*/
+venv*/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Model checkpoints — NEVER commit (Section 44)
+models/*.bin
+models/*.safetensors
+models/*.pt
+models/*.pth
+models/*.ckpt
+models/*.onnx
+models/geochat/
+models/changechat/
+models/croma/
+
+# Large data — NEVER commit
+data/benchmarks/images/
+data/benchmarks/**/images/
+data/samples/**/*.tif
+data/samples/**/*.tiff
+data/outputs/
+*.tif
+*.tiff
+!data/manifests/
+
+# Secrets
+.env
+.env.*
+*.key
+*.pem
+
+# Reports / generated
+data/system_report.json
+
+# Logs
+*.log
+logs/

@@ -1,0 +1,91 @@
+{
+  "version": "0.1.0",
+  "description": "Sample imagery manifest for SatQuery AI engineering validation",
+  "note": "These are development samples only, strictly for engineering validation, never presented as equivalent to ISRO/SAC hidden evaluation set",
+  "samples": [
+    {
+      "id": "synthetic_optical_rgb",
+      "filename": "synthetic_optical_rgb.tif",
+      "path": "data/samples/optical/synthetic_optical_rgb.tif",
+      "modality": "OPTICAL",
+      "sensor": "SYNTHETIC_OPTICAL",
+      "band_count": 3,
+      "bands": ["Red", "Green", "Blue"],
+      "crs": "EPSG:4326",
+      "width": 256,
+      "height": 256,
+      "acquisition_date": "2025-01-15",
+      "purpose": "Single-image optical VQA & basic metadata testing"
+    },
+    {
+      "id": "synthetic_multispectral_4band",
+      "filename": "synthetic_multispectral_4band.tif",
+      "path": "data/samples/optical/synthetic_multispectral_4band.tif",
+      "modality": "MULTISPECTRAL",
+      "sensor": "SYNTHETIC_MULTISPECTRAL",
+      "band_count": 4,
+      "bands": ["Red", "Green", "Blue", "NIR"],
+      "crs": "EPSG:32643",
+      "width": 256,
+      "height": 256,
+      "acquisition_date": "2025-03-20",
+      "purpose": "Multispectral index calculation (NDVI/NDWI) and spectral band inspection"
+    },
+    {
+      "id": "synthetic_sar_vv_vh",
+      "filename": "synthetic_sar_vv_vh.tif",
+      "path": "data/samples/sar/synthetic_sar_vv_vh.tif",
+      "modality": "SAR",
+      "sensor": "SYNTHETIC_SAR",
+      "platform": "Sentinel-1",
+      "polarization": "VV+VH",
+      "band_count": 2,
+      "bands": ["VV", "VH"],
+      "crs": "EPSG:4326",
+      "width": 256,
+      "height": 256,
+      "acquisition_date": "2025-01-15",
+      "purpose": "SAR deterministic backscatter analysis and single-image SAR VQA"
+    },
+    {
+      "id": "temporal_pair",
+      "type": "bi-temporal",
+      "modality": "OPTICAL",
+      "t1": {
+        "filename": "temporal_t1_2024_jan.tif",
+        "path": "data/samples/temporal/temporal_t1_2024_jan.tif",
+        "acquisition_date": "2024-01-10",
+        "crs": "EPSG:32643",
+        "dimensions": "256x256"
+      },
+      "t2": {
+        "filename": "temporal_t2_2025_jan.tif",
+        "path": "data/samples/temporal/temporal_t2_2025_jan.tif",
+        "acquisition_date": "2025-01-10",
+        "crs": "EPSG:32643",
+        "dimensions": "256x256"
+      },
+      "purpose": "Bi-temporal change detection and registration quality gate verification"
+    },
+    {
+      "id": "optical_sar_pair",
+      "type": "co-registered-pair",
+      "optical": {
+        "filename": "pair_optical.tif",
+        "path": "data/samples/optical_sar/pair_optical.tif",
+        "modality": "OPTICAL",
+        "crs": "EPSG:4326",
+        "dimensions": "256x256"
+      },
+      "sar": {
+        "filename": "pair_sar.tif",
+        "path": "data/samples/optical_sar/pair_sar.tif",
+        "modality": "SAR",
+        "polarization": "VV+VH",
+        "crs": "EPSG:4326",
+        "dimensions": "256x256"
+      },
+      "purpose": "Cross-modal optical-SAR fusion and agreement tier verification"
+    }
+  ]
+}

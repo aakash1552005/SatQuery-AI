@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SatQuery AI - Interactive Vision-Language Assistant for Multimodal Remote Sensing Image Analysis">
+    <title>SatQuery AI - Remote Sensing Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================================
+           SATQUERY AI — DESIGN SYSTEM
+           Dark-mode, data-driven satellite intelligence aesthetic
+           ============================================================ */
+
+        :root {
+            /* Core palette */
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-tertiary: #1a2236;
+            --bg-card: #151d2e;
+            --bg-card-hover: #1c2742;
+
+            /* Accent — satellite blue-cyan */
+            --accent-primary: #00d4ff;
+            --accent-secondary: #0091ff;
+            --accent-gradient: linear-gradient(135deg, #00d4ff, #0091ff);
+            --accent-glow: rgba(0, 212, 255, 0.15);
+
+            /* Status colors */
+            --status-ready: #22c55e;
+            --status-warn: #f59e0b;
+            --status-error: #ef4444;
+            --status-blocked: #6366f1;
+            --status-unavailable: #6b7280;
+
+            /* Text */
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+
+            /* Borders */
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-accent: rgba(0, 212, 255, 0.2);
+
+            /* Typography */
+            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Cascadia Code', monospace;
+
+            /* Spacing */
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ---- Background grid effect ---- */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 64px 64px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ---- Header ---- */
+        .header {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 32px;
+            border-bottom: 1px solid var(--border-subtle);
+            backdrop-filter: blur(12px);
+            background: rgba(10, 14, 23, 0.85);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo {
+            width: 36px;
+            height: 36px;
+            background: var(--accent-gradient);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+            color: var(--bg-primary);
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .header-title span {
+            color: var(--accent-primary);
+        }
+
+        .header-badge {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border-accent);
+            color: var(--accent-primary);
+            background: var(--accent-glow);
+        }
+
+        .runtime-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .runtime-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--status-warn);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* ---- Main Layout ---- */
+        .main {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        /* ---- Upload Zone ---- */
+        .upload-zone {
+            border: 2px dashed var(--border-accent);
+            border-radius: var(--radius-lg);
+            padding: 48px;
+            text-align: center;
+            background: rgba(0, 212, 255, 0.02);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            border-color: var(--accent-primary);
+            background: rgba(0, 212, 255, 0.06);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.1);
+        }
+
+        .upload-zone-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.7;
+        }
+
+        .upload-zone h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .upload-zone p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .upload-zone .formats {
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .format-tag {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: var(--radius-sm);
+            background: var(--bg-tertiary);
+            color: var(--text-muted);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .upload-input {
+            display: none;
+        }
+
+        /* ---- Cards ---- */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-top: 24px;
+            transition: border-color 0.2s;
+        }
+
+        .card:hover {
+            border-color: var(--border-accent);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .status-pill {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-weight: 500;
+        }
+
+        .status-pill.ready { background: rgba(34,197,94,0.15); color: var(--status-ready); }
+        .status-pill.warn { background: rgba(245,158,11,0.15); color: var(--status-warn); }
+        .status-pill.error { background: rgba(239,68,68,0.15); color: var(--status-error); }
+        .status-pill.blocked { background: rgba(99,102,241,0.15); color: var(--status-blocked); }
+        .status-pill.unavailable { background: rgba(107,114,128,0.15); color: var(--status-unavailable); }
+
+        /* ---- Metadata Grid ---- */
+        .metadata-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .meta-item {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .meta-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .meta-value {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+
+        .meta-value.accent { color: var(--accent-primary); }
+        .meta-value.sensor-sar { color: #f59e0b; }
+        .meta-value.sensor-optical { color: #22c55e; }
+        .meta-value.sensor-multispectral { color: #8b5cf6; }
+
+        /* ---- Files List ---- */
+        .files-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .file-item:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--border-accent);
+        }
+
+        .file-item-name {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .file-item-info {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .file-item-tag {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+        }
+
+        /* ---- Compatibility Card ---- */
+        .compat-result {
+            padding: 16px;
+            border-radius: var(--radius-md);
+            margin-top: 12px;
+        }
+
+        .compat-result.compatible {
+            background: rgba(34, 197, 94, 0.08);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .compat-result.incompatible {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .compat-result.warning {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        /* ---- Loading ---- */
+        .loading {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .loading.active { display: flex; }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border-subtle);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ---- Empty State ---- */
+        .empty-state {
+            text-align: center;
+            padding: 32px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 768px) {
+            .header { padding: 12px 16px; }
+            .main { padding: 16px; }
+            .upload-zone { padding: 32px 16px; }
+            .metadata-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+    <div class="header-brand">
+        <div class="header-logo">SQ</div>
+        <h1 class="header-title">Sat<span>Query</span> AI</h1>
+        <span class="header-badge">PS 26167</span>
+    </div>
+    <div class="runtime-badge">
+        <div class="runtime-dot" id="runtimeDot"></div>
+        <span id="runtimeMode">Connecting...</span>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main class="main">
+
+    <!-- Upload Zone -->
+    <section class="upload-zone" id="uploadZone">
+        <div class="upload-zone-icon">&#128752;</div>
+        <h2>Upload Remote Sensing Imagery</h2>
+        <p>Drop a GeoTIFF, TIFF, PNG, or JPEG file to begin analysis</p>
+        <div class="formats">
+            <span class="format-tag">.tif</span>
+            <span class="format-tag">.tiff</span>
+            <span class="format-tag">.geotiff</span>
+            <span class="format-tag">.png</span>
+            <span class="format-tag">.jpg</span>
+        </div>
+        <input type="file" class="upload-input" id="uploadInput"
+               accept=".tif,.tiff,.geotiff,.png,.jpg,.jpeg" multiple>
+    </section>
+
+    <div class="loading" id="uploadLoading">
+        <div class="spinner"></div>
+        <span>Processing upload...</span>
+    </div>
+
+    <!-- Uploaded Files -->
+    <section class="card" id="filesCard" style="display:none;">
+        <div class="card-header">
+            <span class="card-title">Uploaded Files</span>
+            <span class="status-pill ready" id="filesCount">0 files</span>
+        </div>
+        <div class="files-list" id="filesList"></div>
+    </section>
+
+    <!-- Metadata Viewer -->
+    <section class="card" id="metadataCard" style="display:none;">
+        <div class="card-header">
+            <span class="card-title" id="metadataTitle">Raster Metadata</span>
+            <span class="status-pill" id="metadataStatus"></span>
+        </div>
+        <div class="metadata-grid" id="metadataGrid"></div>
+    </section>
+
+    <!-- Compatibility -->
+    <section class="card" id="compatCard" style="display:none;">
+        <div class="card-header">
+            <span class="card-title">Pair Compatibility</span>
+        </div>
+        <div id="compatResult"></div>
+    </section>
+
+</main>
+
+<script>
+// ============================================================
+// SatQuery AI -- Frontend Logic (Day 1)
+// ============================================================
+
+const API = '';
+const uploadedFiles = {};
+
+// ---- Runtime Status ----
+async function checkStatus() {
+    try {
+        const res = await fetch(`${API}/api/status`);
+        const data = await res.json();
+        const dot = document.getElementById('runtimeDot');
+        const mode = document.getElementById('runtimeMode');
+        mode.textContent = data.runtime_mode;
+        dot.style.background = data.runtime_mode === 'FULL_AI'
+            ? 'var(--status-ready)'
+            : data.runtime_mode === 'HYBRID'
+                ? 'var(--status-warn)'
+                : 'var(--status-error)';
+    } catch (e) {
+        document.getElementById('runtimeMode').textContent = 'Disconnected';
+    }
+}
+
+// ---- Upload ----
+const uploadZone = document.getElementById('uploadZone');
+const uploadInput = document.getElementById('uploadInput');
+const loadingEl = document.getElementById('uploadLoading');
+
+uploadZone.addEventListener('click', () => uploadInput.click());
+uploadZone.addEventListener('dragover', e => {
+    e.preventDefault();
+    uploadZone.classList.add('dragover');
+});
+uploadZone.addEventListener('dragleave', () => {
+    uploadZone.classList.remove('dragover');
+});
+uploadZone.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+});
+uploadInput.addEventListener('change', e => {
+    if (e.target.files.length) handleFiles(e.target.files);
+});
+
+async function handleFiles(files) {
+    loadingEl.classList.add('active');
+    for (const file of files) {
+        await uploadFile(file);
+    }
+    loadingEl.classList.remove('active');
+    renderFilesList();
+    autoCheckCompatibility();
+}
+
+async function uploadFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+        const res = await fetch(`${API}/api/upload`, { method: 'POST', body: formData });
+        const data = await res.json();
+        uploadedFiles[data.file_id] = data;
+        if (data.status === 'accepted') {
+            showMetadata(data.metadata);
+        }
+    } catch (e) {
+        console.error('Upload failed:', e);
+    }
+}
+
+// ---- Files List ----
+function renderFilesList() {
+    const card = document.getElementById('filesCard');
+    const list = document.getElementById('filesList');
+    const count = document.getElementById('filesCount');
+    const ids = Object.keys(uploadedFiles);
+
+    if (ids.length === 0) {
+        card.style.display = 'none';
+        return;
+    }
+
+    card.style.display = 'block';
+    count.textContent = `${ids.length} file${ids.length > 1 ? 's' : ''}`;
+    list.innerHTML = '';
+
+    ids.forEach(id => {
+        const f = uploadedFiles[id];
+        const meta = f.metadata;
+        const item = document.createElement('div');
+        item.className = 'file-item';
+        item.onclick = () => showMetadata(meta);
+
+        const sensorClass = meta.modality === 'sar' ? 'sensor-sar'
+            : meta.modality === 'multispectral' ? 'sensor-multispectral'
+            : 'sensor-optical';
+
+        item.innerHTML = `
+            <span class="file-item-name">${meta.filename}</span>
+            <div class="file-item-info">
+                <span class="file-item-tag ${sensorClass}">${meta.modality.toUpperCase()}</span>
+                <span class="file-item-tag">${meta.width}x${meta.height}</span>
+                <span class="file-item-tag">${meta.band_count} bands</span>
+                <span class="status-pill ${f.status === 'accepted' ? 'ready' : 'error'}">${f.status}</span>
+            </div>
+        `;
+        list.appendChild(item);
+    });
+}
+
+// ---- Metadata Display ----
+function showMetadata(meta) {
+    const card = document.getElementById('metadataCard');
+    const title = document.getElementById('metadataTitle');
+    const status = document.getElementById('metadataStatus');
+    const grid = document.getElementById('metadataGrid');
+
+    card.style.display = 'block';
+    title.textContent = meta.filename;
+
+    if (meta.is_valid) {
+        status.textContent = 'VALID';
+        status.className = 'status-pill ready';
+    } else {
+        status.textContent = 'REJECTED';
+        status.className = 'status-pill error';
+    }
+
+    const sensorClass = meta.modality === 'sar' ? 'sensor-sar'
+        : meta.modality === 'multispectral' ? 'sensor-multispectral'
+        : meta.modality === 'optical' ? 'sensor-optical'
+        : '';
+
+    const items = [
+        ['Format', meta.format],
+        ['Dimensions', `${meta.width} x ${meta.height}`],
+        ['Bands', meta.band_count],
+        ['Modality', meta.modality.toUpperCase(), sensorClass],
+        ['CRS', meta.crs || 'Not defined'],
+        ['Resolution', meta.resolution_x
+            ? `${meta.resolution_x.toFixed(4)} ${meta.resolution_unit || ''}`
+            : 'Unknown'],
+        ['Polarization', meta.polarization !== 'not_applicable'
+            ? meta.polarization.toUpperCase()
+            : 'N/A'],
+        ['Sensor', meta.sensor_name || 'Unknown'],
+        ['Acquisition', meta.acquisition_time || 'Unknown'],
+        ['Processing', meta.processing_level || 'Unknown'],
+        ['File Size', formatBytes(meta.file_size_bytes)],
+        ['Nodata', meta.nodata_values && meta.nodata_values[0] !== null
+            ? meta.nodata_values[0] : 'None'],
+    ];
+
+    grid.innerHTML = items.map(([label, value, cls]) => `
+        <div class="meta-item">
+            <div class="meta-label">${label}</div>
+            <div class="meta-value ${cls || ''}">${value}</div>
+        </div>
+    `).join('');
+
+    // Show warnings/errors
+    if (meta.validation_warnings && meta.validation_warnings.length) {
+        grid.innerHTML += meta.validation_warnings.map(w => `
+            <div class="meta-item" style="grid-column: 1/-1;">
+                <div class="meta-label" style="color: var(--status-warn);">Warning</div>
+                <div class="meta-value" style="color: var(--status-warn); font-size:12px;">${w}</div>
+            </div>
+        `).join('');
+    }
+    if (meta.validation_errors && meta.validation_errors.length) {
+        grid.innerHTML += meta.validation_errors.map(e => `
+            <div class="meta-item" style="grid-column: 1/-1;">
+                <div class="meta-label" style="color: var(--status-error);">Error</div>
+                <div class="meta-value" style="color: var(--status-error); font-size:12px;">${e}</div>
+            </div>
+        `).join('');
+    }
+}
+
+// ---- Compatibility Auto-Check ----
+async function autoCheckCompatibility() {
+    const ids = Object.keys(uploadedFiles);
+    if (ids.length < 2) return;
+
+    // Check last two uploaded files
+    const a = ids[ids.length - 2];
+    const b = ids[ids.length - 1];
+
+    try {
+        const res = await fetch(`${API}/api/compatibility`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ file_id_a: a, file_id_b: b }),
+        });
+        const data = await res.json();
+        showCompatibility(data);
+    } catch (e) {
+        console.error('Compatibility check failed:', e);
+    }
+}
+
+function showCompatibility(result) {
+    const card = document.getElementById('compatCard');
+    const div = document.getElementById('compatResult');
+    card.style.display = 'block';
+
+    const cls = result.status === 'compatible' ? 'compatible'
+        : result.status === 'incompatible' ? 'incompatible'
+        : 'warning';
+
+    let html = `<div class="compat-result ${cls}">
+        <div style="margin-bottom:8px; font-weight:600;">
+            Status: ${result.status.toUpperCase().replace('_', ' ')}
+        </div>
+        <div style="font-size:13px; color: var(--text-secondary);">
+            Pair type: ${result.pair_type} |
+            CRS match: ${result.crs_match ? 'Yes' : 'No'} |
+            Overlap: ${result.bounds_overlap !== null ? (result.bounds_overlap * 100).toFixed(1) + '%' : 'N/A'} |
+            Resolution match: ${result.resolution_match ? 'Yes' : 'No'}
+            ${result.temporal_gap_days !== null ? '| Temporal gap: ' + result.temporal_gap_days + ' days' : ''}
+        </div>`;
+
+    if (result.issues.length) {
+        html += `<div style="margin-top:8px; font-size:12px; color: var(--status-error);">
+            Issues: ${result.issues.join('; ')}
+        </div>`;
+    }
+    if (result.warnings.length) {
+        html += `<div style="margin-top:4px; font-size:12px; color: var(--status-warn);">
+            Warnings: ${result.warnings.join('; ')}
+        </div>`;
+    }
+
+    html += '</div>';
+    div.innerHTML = html;
+}
+
+// ---- Helpers ----
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+// ---- Init ----
+checkStatus();
+setInterval(checkStatus, 15000);
+</script>
+</body>
+</html>
