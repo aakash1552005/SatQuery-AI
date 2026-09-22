@@ -323,3 +323,10 @@ class CapabilityRegistry:
         if not cap:
             return False
         return cap.routing_readiness == "READY"
+
+
+def run_geochat_preflight() -> dict:
+    """Module-level helper to execute GeoChat host environment preflight."""
+    registry = CapabilityRegistry()
+    return registry.run_geochat_preflight()
+
