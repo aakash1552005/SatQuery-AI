@@ -133,7 +133,7 @@ assert reg["datasets"]["bigearthnet_txt"]["training_allowed"] is True
 assert reg["datasets"]["bigearthnet_txt"]["evaluation_allowed"] is False
 assert reg["datasets"]["vrsbench"]["training_allowed"] is False
 assert reg["datasets"]["vrsbench"]["evaluation_allowed"] is True
-print(f"[PASS] 8. Dataset Registry: Governance separation between BigEarthNet-MM (training) and VRSBench (evaluation) verified")
+print(f"[PASS] 8. Dataset Registry: Governance separation between BigEarthNet.txt (training) and VRSBench (evaluation) verified")
 
 print("=" * 65)
 print("ALL DAY 3 VERIFICATION CHECKS PASSED SUCCESSFULLY (100%)")

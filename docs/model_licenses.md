@@ -35,7 +35,8 @@ In accordance with the Honesty Rule (Section 0) and Licensing Safeguards (Sectio
 
 ## 3. Dataset Licensing
 
-### A. BigEarthNet / BigEarthNet-S2 / BigEarthNet-MM
+### A. BigEarthNet.txt / BigEarthNet / BigEarthNet-S2
+- **Citation**: arXiv:2603.29630 (2026)
 - **Provider**: TU Berlin / Bifold
 - **License**: CDLA-Permissive-1.0 (Community Data License Agreement -- Permissive, Version 1.0)
 - **Usage**: Permitted for benchmark creation and PEFT adaptation. Attribution given.

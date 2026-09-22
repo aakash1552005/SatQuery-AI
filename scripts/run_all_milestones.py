@@ -171,7 +171,7 @@ def run_all():
     assert registry_data["datasets"]["bigearthnet_txt"]["evaluation_allowed"] is False
     assert registry_data["datasets"]["vrsbench"]["training_allowed"] is False
     assert registry_data["datasets"]["vrsbench"]["evaluation_allowed"] is True
-    step_pass("Dataset Governance: Verified strict training/evaluation separation between BigEarthNet-MM and VRSBench")
+    step_pass("Dataset Governance: Verified strict training/evaluation separation between BigEarthNet.txt and VRSBench")
 
     # ---------------------------------------------------------
     # 5. END-TO-END FASTAPI API TEST

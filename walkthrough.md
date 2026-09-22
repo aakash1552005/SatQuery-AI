@@ -340,3 +340,9 @@ tests/test_scientific_contracts.py (5 passed)
 - `day-3-stable` (`c39fbba`): Baseline deterministic SAR engine, deterministic optical spectral engine, end-to-end query execution, dataset registry, truthful GeoChat preflight audit.
 - `day-3-final-stable`: Final scientific and dataset integrity audited checkpoint with 60 automated tests across 7 test modules.
 
+---
+
+## 9. Day 3 Status & Day 4 Gate
+The Day 3 milestone is verified and frozen within the documented engineering and scientific assumptions. Real-world scientific validation on labeled remote-sensing datasets remains pending.
+Day 4 (multimodal dataset pipeline for BigEarthNet.txt and LoRA RS adaptation) is ready to begin upon user command.
+
