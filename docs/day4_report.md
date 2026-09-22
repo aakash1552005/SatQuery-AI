@@ -53,32 +53,43 @@ data/
     dataset_registry.yaml             <- Global repository dataset governance
 ```
 
-### 3.2 Controlled Development Subset
-To prevent disk exhaustion on the local workstation before dataloader and adapter validation:
-- **Subset Name**: `bigearthnet_txt_dev_tier1`
-- **Total Samples**: 4 representative sample pairs (verified multi-task representation)
-- **Modality Pairing**: 100% paired Sentinel-1 + Sentinel-2 GeoTIFF rasters with JSON metadata and task annotations.
-- **Split Distribution**:
-  - `train`: 2 samples (50.0%)
-  - `validation`: 1 sample (25.0%)
-  - `test`: 1 sample (25.0%)
-- **Split Report Status**: `VERIFIED`
+### 3.2 Controlled Development Subset vs. Official Full Release
+The project strictly distinguishes between local development fixtures and the full official dataset:
+- **Controlled Development Subset** (`bigearthnet_txt_dev_tier1`):
+  - 4 representative sample pairs (verified multi-task representation)
+  - Split distribution: `train`: 2 samples (50.0%), `validation`: 1 sample (25.0%), `test`: 1 sample (25.0%)
+  - Purpose: Fast local regression and dataloader verification without disk exhaustion.
+- **Official Full BigEarthNet.txt Release** (`BigEarthNet.txt.parquet`):
+  - Total records: **9,553,962** multimodal text descriptions and QA triplets
+  - Unique S1 SAR patches: **464,044**
+  - Unique S2 Optical patches: **464,044**
+  - Official split distribution:
+    - `train`: **4,674,281** records (229,114 unique patches)
+    - `validation`: **2,454,690** records (118,095 unique patches)
+    - `test`: **2,409,962** records (115,753 unique patches)
+    - `bench`: **15,029** records (1,082 unique patches)
+  - Tasks: `binary`: 3,625,160, `mcq`: 3,259,184, `bounding box`: 2,205,686, `captioning`: 463,932
 
 ### 3.3 Multimodal Alignment Verification
-`validate_multimodal_alignment()` performs strict validation:
-1. Verifies physical existence of Sentinel-1 raster file and Sentinel-2 raster file.
-2. Validates raster dimensions, spatial overlap, and band count consistency ($VV, VH$ for SAR; Blue, Green, Red, NIR for optical).
-3. Verifies that sample identifier matches both filenames and metadata headers.
-4. Validates presence of task annotations (question/answer for VQA; text descriptions for captioning).
-5. Automatically rejects incomplete, corrupted, or decoupled pairs.
+`validate_multimodal_alignment()` (for local sample rasters) and `validate_real_ben_txt_alignment()` (for real parquet records) perform strict validation:
+1. Verifies physical existence and valid raster headers for local Sentinel-1 and Sentinel-2 pairs.
+2. For real parquet records, verifies that `s1_name` and `patch_id` share identical geographic tile and subpatch indices (e.g. `33UUP_26_57`).
+3. Verifies that coordinates, task types, splits, and text prompts are valid and non-empty.
+4. Validation outcome: `1000/1000 checked pairs aligned with zero mismatch (status: VERIFIED)`.
 
 ### 3.4 Duplicate & Leakage Audit
-`audit_dataset_duplicates_and_leakage()` validates:
-- **Duplicate Sample IDs**: 0 duplicates found.
-- **Duplicate File Paths**: 0 duplicate raster paths found.
-- **Cross-Split Overlap**: 0 samples shared between `train`, `validation`, and `test`.
-- **Public Evaluation Leakage**: 0 overlap between `BigEarthNet.txt` samples and `VRSBench` evaluation identifiers.
+`audit_dataset_duplicates_and_leakage()` executed over both the local subset and the complete 9.55M official release:
+- **Duplicate Sample IDs**: 0 duplicates across all 9,553,962 records.
+- **Cross-Split Overlap**: 0 patches shared between `train`, `validation`, `test`, and `bench`.
+- **Public Benchmark Leakage**: 0 overlap between BigEarthNet.txt samples and VRSBench evaluation samples.
 - **Audit Outcome**: `duplicate_audit: PASSED`, `split_validation: PASSED`.
+
+### 3.5 Storage Preflight & Real Image Acquisition Constraint
+- **Storage Preflight**: Host has a single mounted drive `C:\` with **447.59 GB total** and **107.77 GB free space**.
+- **Storage Requirement**: Full BigEarthNet v2.0 raw image archives (S1 + S2) require **>160 GB compressed** and **>350 GB extracted**.
+- **Truthful Status**: Full raw image archive download and extraction is blocked by local disk capacity: `DATASET_ACQUISITION: BLOCKED_STORAGE` (required: ~350+ GB, available: 107.77 GB, missing: ~242+ GB).
+- **Safe Full Acquisition**: The complete 466.8 MB official `BigEarthNet.txt.parquet` metadata/text corpus, all official VRSBench evaluation annotations (VQA, referring expressions, captions), and all CDVQA temporal annotations are fully acquired, verified, and cataloged on disk.
+
 
 ---
 

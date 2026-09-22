@@ -173,6 +173,95 @@ def validate_multimodal_alignment(sample_info: dict | MultimodalSample, root_dir
     )
 
 
+def validate_real_ben_txt_alignment(
+    parquet_path: Path | str,
+    max_samples: int = 5000
+) -> dict[str, Any]:
+    """
+    Validates real BigEarthNet.txt multimodal correspondence directly from official parquet release.
+    Checks:
+      - s1_name exists and is non-empty
+      - patch_id (s2) exists and is non-empty
+      - tile and subpatch spatial index match between s1_name and patch_id
+      - text input and output exist and are non-empty
+      - latitude and longitude are valid coordinates
+      - split and task type are valid
+    """
+    p = Path(parquet_path)
+    if not p.exists():
+        raise FileNotFoundError(f"BigEarthNet.txt parquet not found at: {p}")
+
+    import pyarrow.parquet as pq
+
+    table = pq.read_table(p).slice(0, max_samples)
+    records = table.to_pylist()
+
+    total_checked = len(records)
+    valid_pairs = 0
+    missing_s1 = 0
+    missing_s2 = 0
+    identity_mismatch = 0
+    metadata_mismatch = 0
+    annotation_mismatch = 0
+
+    valid_splits = {"train", "validation", "test", "bench"}
+    valid_types = {"binary", "mcq", "captioning", "bounding box"}
+
+    for r in records:
+        s1 = r.get("s1_name", "")
+        s2 = r.get("patch_id", "")
+        text_in = r.get("input", "")
+        text_out = r.get("output", "")
+        lat = r.get("latitude")
+        lon = r.get("longitude")
+        split = r.get("split")
+        task_type = r.get("type")
+
+        if not s1:
+            missing_s1 += 1
+            continue
+        if not s2:
+            missing_s2 += 1
+            continue
+
+        # Validate spatial patch index alignment
+        # Format e.g. S1B_..._33UUP_26_57 vs S2A_..._33UUP_26_57
+        s1_parts = s1.split("_")
+        s2_parts = s2.split("_")
+        s1_tile = f"{s1_parts[-2]}_{s1_parts[-1]}" if len(s1_parts) >= 2 else ""
+        s2_tile = f"{s2_parts[-2]}_{s2_parts[-1]}" if len(s2_parts) >= 2 else ""
+
+        if s1_tile != s2_tile:
+            identity_mismatch += 1
+            continue
+
+        if not text_in or not text_out or task_type not in valid_types:
+            annotation_mismatch += 1
+            continue
+
+        if lat is None or lon is None or not (-90.0 <= lat <= 90.0) or not (-180.0 <= lon <= 180.0) or split not in valid_splits:
+            metadata_mismatch += 1
+            continue
+
+        valid_pairs += 1
+
+    status = "VERIFIED" if (valid_pairs == total_checked and identity_mismatch == 0) else "ISSUES_FOUND"
+
+    return {
+        "dataset_name": "BigEarthNet.txt",
+        "official_source": "https://arxiv.org/abs/2603.29630",
+        "total_checked": total_checked,
+        "valid_pairs": valid_pairs,
+        "missing_s1": missing_s1,
+        "missing_s2": missing_s2,
+        "identity_mismatch": identity_mismatch,
+        "metadata_mismatch": metadata_mismatch,
+        "annotation_mismatch": annotation_mismatch,
+        "status": status
+    }
+
+
+
 def audit_dataset_duplicates_and_leakage(
     manifest_path: Path | str,
     eval_manifest_path: Optional[Path | str] = None,

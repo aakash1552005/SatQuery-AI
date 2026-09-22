@@ -45,3 +45,25 @@ In accordance with the Honesty Rule (Section 0) and Licensing Safeguards (Sectio
 - **Provider**: European Space Agency (ESA) / Copernicus Programme
 - **License**: Open Access under Copernicus Sentinel Data Policy (free, full, and open access).
 - **Usage**: Satellite imagery testing, optical and SAR validation data.
+
+### C. VRSBench (Public Evaluation Benchmark)
+- **Citation**: Li et al., 2024 ("VRSBench: A Versatile Vision-Language Benchmark Dataset for Remote Sensing Image Understanding")
+- **Repository**: xiang709/VRSBench / lx709/VRSBench
+- **Text Annotations License**: Creative Commons Attribution Non Commercial 4.0 (CC-BY-NC 4.0)
+- **Source Imagery Provenance**: DOTA-v2 and DIOR datasets with individual non-commercial research conditions. Commercial usage is restricted by underlying aerial image sources.
+- **Role**: Strictly public evaluation benchmark. Model training/fine-tuning is prohibited.
+
+### D. CDVQA (Temporal Change VQA)
+- **Citation**: Yuan et al., IEEE Transactions on Geoscience and Remote Sensing, 2022
+- **Repository**: YZHJessica/CDVQA
+- **License**: Apache-2.0 (Open research access for change detection visual question answering).
+- **Underlying Imagery**: SECOND change detection dataset.
+
+### E. SpaceNet 7 (Auxiliary Multi-Temporal Validation)
+- **Source**: SpaceNet 7 Multi-Temporal Urban Development Challenge
+- **License**: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0).
+
+### F. SEN12MS (Auxiliary Multimodal Dataset)
+- **Source**: Technical University of Munich (MediaTUM)
+- **License**: Creative Commons Attribution 4.0 International (CC BY 4.0).
+

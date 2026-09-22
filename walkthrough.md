@@ -329,7 +329,8 @@ tests/test_day3_sar.py (14 passed)
 tests/test_scientific_contracts.py (5 passed)
 tests/test_day4_dataset.py (9 passed)
 tests/test_day4_adaptation.py (8 passed)
-======================== 77 passed, 1 warning in 8.51s ========================
+tests/test_day4_real_datasets.py (10 passed)
+======================== 87 passed, 1 warning in 14.13s ========================
 ```
 
 ---
@@ -341,18 +342,21 @@ tests/test_day4_adaptation.py (8 passed)
 - `day-2-final-stable` (`1cfcb10`): Final capability status consistency check, dataset provenance metadata (`InputSource`, `DatasetRole`), and strict evaluation governance rules.
 - `day-3-stable` (`c39fbba`): Baseline deterministic SAR engine, deterministic optical spectral engine, end-to-end query execution, dataset registry, truthful GeoChat preflight audit.
 - `day-3-final-stable`: Final scientific and dataset integrity audited checkpoint with 60 automated tests across 7 test modules.
-- `day-4-stable`: BigEarthNet.txt multimodal dataset pipeline, strict S1/S2/Text alignment, duplicate & leakage audit, RS-VLM / LoRA adaptation architecture, and truthful hardware training preflight with 77 automated tests across 9 test modules.
+- `day-4-stable` (`cba03a4`): Initial BigEarthNet.txt multimodal dataset pipeline, LoRA adaptation architecture, and truthful hardware training preflight with 77 automated tests across 9 test modules.
+- `day-4-final-stable`: Real dataset acquisition and validation (official 9,553,962-record BigEarthNet.txt parquet, VRSBench public evaluation annotations, CDVQA temporal annotations, grounding coordinate normalizer, storage audit, unified dataset inventory) with 87 automated tests across 10 test modules.
 
 ---
 
-## 9. Day 4 Status & Day 5 Readiness Gate
-The Day 4 milestone is verified and frozen:
-1. **BigEarthNet.txt Dataset Subsystem**: Structured under `data/external/bigearthnet_txt/` with official provenance (arXiv:2603.29630), machine-readable manifests (`data/manifests/bigearthnet_txt_manifest.json`), split report, and controlled development subset (`bigearthnet_txt_dev_tier1`).
-2. **Multimodal Alignment & Governance**: Validated spatial/temporal S1/S2/Text alignment with strict duplicate and leakage audit (`audit_dataset_duplicates_and_leakage`). VRSBench remains locked as evaluation-only.
-3. **PEFT/LoRA RS Adaptation Pipeline**: Fully specified configuration (`configs/training/bigearthnet_txt_lora.yaml`), PyTorch `DataLoader` with multimodal collation, and physics-preserving preprocessing.
-4. **Truthful Compute Preflight**: Local Profile D host (AMD64 12-core, CPU-only, ~15 GB RAM, 0 CUDA GPUs) truthfully reports `training_status: NOT_EXECUTED`, `pipeline_status: PIPELINE_READY`, `compute_target: remote_gpu`. No fake training or fake checkpoints.
-5. **Regression Verification**: 77/77 tests passing across 9 modules.
+## 9. Day 4 Final Status & Day 5 Readiness Gate
+The Day 4 milestone is finalized and audited against real remote sensing datasets:
+1. **BigEarthNet.txt Official Corpus**: Downloaded and validated official 466.8 MB parquet release (`BigEarthNet.txt.parquet`, 9,553,962 records, 464,044 unique S1/S2 patch pairs, CDLA-Permissive-1.0 license, arXiv:2603.29630). Verified zero duplicate IDs, zero cross-split patch leakage across train (4,674,281), validation (2,454,690), test (2,409,962), and bench (15,029).
+2. **Storage Audit & Provenance**: Storage audit truthfully reports host has 107.77 GB free on `C:\`. Downloading and extracting the full >350 GB raw BigEarthNet v2.0 image archives is constrained by local disk (`BLOCKED_STORAGE`); full metadata, text packages, evaluation annotations, and controlled development rasters are verified.
+3. **VRSBench Public Evaluation Benchmark**: Downloaded official evaluation annotations (`VRSBench_EVAL_vqa.json`, `VRSBench_EVAL_referring.json`, `VRSBench_EVAL_Cap.json`, `Annotations_val.zip`, >62,000 evaluation samples). Implemented `normalize_grounding_coordinates()` supporting tokenized integer $\{<ymin><xmin><ymax><xmax>\}$ ($0-100$), normalized float $[0.0, 1.0]$, and pixel coordinates. Evaluation-only policy strictly enforced (training forbidden).
+4. **CDVQA Temporal Change Benchmark**: Downloaded official question/answer/image metadata packages from `YZHJessica/CDVQA` (>120,000 QA pairs across train, validation, and test). Image acquisition from underlying SECOND aerial dataset marked as pending/optional.
+5. **Unified Inventory & Governance**: `data/manifests/dataset_inventory.json` created as the single source of truth for all datasets.
+6. **Regression Verification**: 87/87 tests passing across all 10 test modules.
 
 Day 5 (multitemporal analysis, AROSICS coregistration, optical-SAR fusion) is ready to begin upon user command.
+
 
 

@@ -43,6 +43,11 @@ data/benchmarks/images/
 data/benchmarks/**/images/
 data/samples/**/*.tif
 data/samples/**/*.tiff
+data/external/**/*.parquet
+data/external/**/*.zip
+data/external/**/VRSBench_train.json
+data/external/cdvqa/*.json
+data/external/vrsbench/**/*.json
 data/outputs/
 *.tif
 *.tiff

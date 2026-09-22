@@ -2,10 +2,30 @@
   "dataset_name": "BigEarthNet.txt",
   "dataset_version": "1.0",
   "split_protocol": "official_recommended_train_val_test_split",
+  "status": "VERIFIED",
   "train_count": 2,
   "validation_count": 1,
   "test_count": 1,
   "total_samples": 4,
-  "status": "VERIFIED",
-  "notes": "Verified on controlled development subset. Scale-up will preserve these exact split partitions."
+  "development_subset_fixture": {
+    "train_count": 2,
+    "validation_count": 1,
+    "test_count": 1,
+    "total_samples": 4
+  },
+  "official_full_release": {
+    "split_source": "official_bifold_release_parquet",
+    "train_count": 4674281,
+    "validation_count": 2454690,
+    "test_count": 2409962,
+    "bench_count": 15029,
+    "total_count": 9553962,
+    "official_split_counts": {
+      "test": 2409962,
+      "bench": 15029,
+      "validation": 2454690,
+      "train": 4674281
+    }
+  },
+  "notes": "Verified on controlled development subset (4 samples: 2 train, 1 val, 1 test). The official release comprises 4,674,281 train, 2,454,690 val, 2,409,962 test, and 15,029 bench records."
 }

@@ -1,0 +1,39 @@
+{
+  "dataset_name": "VRSBench",
+  "dataset_version": "v1.0",
+  "official_source": "https://huggingface.co/datasets/xiang709/VRSBench",
+  "official_github": "https://github.com/lx709/VRSBench",
+  "role": "public_evaluation",
+  "training_allowed": false,
+  "evaluation_allowed": true,
+  "evaluation_status": "NOT_EVALUATED",
+  "license_provenance": {
+    "annotations_license": "CC-BY-NC-4.0",
+    "source_images_provenance": "DOTA-v2 and DIOR datasets with individual non-commercial research terms",
+    "commercial_use": "Restricted by underlying aerial image sources"
+  },
+  "grounding_coordinate_format": {
+    "token_format": "token_0_100_ymin_xmin_ymax_xmax ({<ymin><xmin><ymax><xmax>})",
+    "corner_format": "obj_corner (8 normalized floats in [0.0, 1.0])"
+  },
+  "evaluation_files": {
+    "eval_vqa": {
+      "path": "data/external/vrsbench/annotations/VRSBench_EVAL_vqa.json",
+      "sample_count": 37409
+    },
+    "eval_referring": {
+      "path": "data/external/vrsbench/annotations/VRSBench_EVAL_referring.json",
+      "sample_count": 16159
+    },
+    "eval_captioning": {
+      "path": "data/external/vrsbench/annotations/VRSBench_EVAL_Cap.json",
+      "sample_count": 9350
+    },
+    "eval_detailed_annotations_archive": {
+      "path": "data/external/vrsbench/annotations/Annotations_val.zip",
+      "size_bytes": 12789474
+    }
+  },
+  "total_eval_samples": 62918,
+  "status": "VALIDATED"
+}

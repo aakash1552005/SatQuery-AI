@@ -1,65 +1,97 @@
-version: "1.0.0"
-description: "SatQuery AI Machine-Readable Dataset Registry & Governance Manifest"
+version: 1.0.0
+description: SatQuery AI Machine-Readable Dataset Registry & Governance Manifest
 governance_rules:
-  - "Training datasets must never automatically become evaluation datasets."
-  - "VRSBench evaluation data must never be used for fine-tuning."
-  - "Synthetic engineering rasters are strictly for engineering validation, never benchmark evidence."
-  - "Hidden ISRO/SAC evaluation data must never be used for training, fine-tuning, or threshold tuning."
-
+- Training datasets must never automatically become evaluation datasets.
+- VRSBench evaluation data must never be used for fine-tuning.
+- Synthetic engineering rasters are strictly for engineering validation, never benchmark
+  evidence.
+- Hidden ISRO/SAC evaluation data must never be used for training, fine-tuning, or
+  threshold tuning.
 datasets:
   synthetic_engineering:
-    role: "engineering_validation"
-    status: "READY"
+    role: engineering_validation
+    status: READY
     training_allowed: false
     evaluation_allowed: false
-    description: "Synthetic GeoTIFF rasters for unit, integration, numerical, and routing tests."
-    samples_directory: "data/samples"
-    manifest: "data/manifests/sample_manifest.json"
-
+    description: Synthetic GeoTIFF rasters for unit, integration, numerical, and routing
+      tests.
+    samples_directory: data/samples
+    manifest: data/manifests/sample_manifest.json
   bigearthnet_txt:
-    role: "training_finetuning"
-    status: "PLANNED"
-    pipeline_status: "PIPELINE_READY"
+    role: training_finetuning
+    status: PLANNED
+    pipeline_status: PIPELINE_READY
+    actual_data_status: METADATA_READY
     training_allowed: true
     evaluation_allowed: false
-    manifest: "data/manifests/bigearthnet_txt_manifest.json"
-    split_report: "data/manifests/bigearthnet_txt_split_report.json"
-    subset: "data/manifests/bigearthnet_txt_subset.json"
+    manifest: data/manifests/bigearthnet_txt_manifest.json
+    split_report: data/manifests/bigearthnet_txt_split_report.json
+    subset: data/manifests/bigearthnet_txt_subset.json
     modalities:
-      - "sentinel_1_sar"
-      - "sentinel_2_multispectral"
-      - "text"
-    description: "Multi-modal vision-language adaptation corpus pairing Sentinel-1 SAR and Sentinel-2 optical imagery with text descriptions."
+    - sentinel_1_sar
+    - sentinel_2_multispectral
+    - text
+    description: Multi-modal vision-language adaptation corpus pairing Sentinel-1
+      SAR and Sentinel-2 optical imagery with text descriptions.
     source:
-      url: "https://arxiv.org/abs/2603.29630"
-      official_page: "https://txt.bigearth.net/"
+      url: https://arxiv.org/abs/2603.29630
+      official_page: https://txt.bigearth.net/
     pair_integrity:
-      s1_s2_correspondence: "STRICT_1_TO_1"
-      text_correspondence: "PAIR_GROUNDED"
+      s1_s2_correspondence: STRICT_1_TO_1
+      text_correspondence: PAIR_GROUNDED
     expected_splits:
-      - "train"
-      - "val"
-      - "test"
-    split_validation: "PASSED"
-    duplicate_audit: "PASSED"
-    licensing: "Community Data License Agreement (CDLA) / Research"
-
+    - train
+    - val
+    - test
+    split_validation: PASSED
+    duplicate_audit: PASSED
+    licensing: Community Data License Agreement (CDLA-Permissive-1.0) / Research
+    notes: 9,553,962 official text records downloaded; full S1/S2 raw image archive
+      blocked by host storage.
   vrsbench:
-    role: "public_evaluation"
-    status: "PLANNED"
+    role: public_evaluation
+    status: PLANNED
+    actual_data_status: VALIDATED
     training_allowed: false
     evaluation_allowed: true
     modalities:
-      - "high_resolution_optical"
-      - "text_vqa"
-      - "text_grounding"
-      - "captioning"
-    description: "Comprehensive Visual Remote Sensing Benchmark for evaluating VQA, object localization/grounding, and image captioning."
+    - high_resolution_optical
+    - text_vqa
+    - text_grounding
+    - captioning
+    description: Comprehensive Visual Remote Sensing Benchmark for evaluating VQA,
+      object localization/grounding, and image captioning.
     source:
-      official_page: "https://github.com/DV-Lab/VRSBench"
-      arxiv: "https://arxiv.org/abs/2406.12450"
+      official_page: https://github.com/DV-Lab/VRSBench
+      arxiv: https://arxiv.org/abs/2406.12450
+      huggingface: https://huggingface.co/datasets/xiang709/VRSBench
     leakage_governance:
-      role_policy: "enforced"
-      split_validation: "PENDING"
-      duplicate_audit: "PENDING"
-      note: "Dataset-role separation policy enforced by registry; split and duplicate validation pending actual dataset acquisition."
+      role_policy: enforced
+      split_validation: PENDING
+      duplicate_audit: PENDING
+      note: Dataset-role separation policy enforced by registry; split and duplicate
+        validation pending actual dataset acquisition.
+    notes: Official evaluation annotations (VQA, referring expressions, captions)
+      downloaded and validated.
+  cdvqa:
+    role: temporal_vqa_validation
+    status: METADATA_READY
+    training_allowed: false
+    evaluation_allowed: true
+    source: https://github.com/YZHJessica/CDVQA
+    notes: Official train/val/test question/answer/image metadata acquired from YZHJessica/CDVQA.
+  spacenet7:
+    role: auxiliary_temporal_validation
+    training_allowed: false
+    evaluation_allowed: true
+    status: OPTIONAL
+  sen12ms:
+    role: auxiliary_multimodal_validation
+    training_allowed: false
+    evaluation_allowed: true
+    status: OPTIONAL
+  isro_sac_hidden:
+    role: isolated_sac_evaluation_only
+    training_allowed: false
+    evaluation_allowed: true
+    status: ISOLATED

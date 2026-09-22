@@ -1,0 +1,20 @@
+{
+  "dataset_name": "BigEarthNet.txt",
+  "dataset_version": "v1.0",
+  "audit_scope": "official_parquet_and_cross_benchmark",
+  "total_records": 9553962,
+  "unique_ids": 9553962,
+  "duplicate_id_count": 0,
+  "unique_patches": 464044,
+  "train_unique_patches": 229114,
+  "validation_unique_patches": 118095,
+  "test_unique_patches": 115753,
+  "bench_unique_patches": 1082,
+  "train_val_overlap": 0,
+  "train_test_overlap": 0,
+  "val_test_overlap": 0,
+  "train_bench_overlap": 0,
+  "vrsbench_overlap": 0,
+  "status": "PASSED",
+  "notes": "Audited complete 9,553,962 record release. Zero duplicate IDs. Zero cross-split patch leakage across train, validation, test, and bench. Zero leakage into evaluation benchmarks."
+}

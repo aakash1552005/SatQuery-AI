@@ -1,0 +1,29 @@
+{
+  "dataset_name": "CDVQA",
+  "dataset_version": "v1.0",
+  "official_source": "https://github.com/YZHJessica/CDVQA",
+  "citation": "Change detection meets visual question answering (Yuan et al., IEEE TGRS 2022)",
+  "role": "temporal_vqa_validation",
+  "training_allowed": false,
+  "evaluation_allowed": true,
+  "evaluation_status": "NOT_EVALUATED",
+  "annotations_downloaded": true,
+  "images_downloaded": false,
+  "image_source": "SECOND change detection dataset (aerial optical pairs)",
+  "image_status": "PENDING_UPSTREAM_EXTRACTION",
+  "splits": {
+    "train": {
+      "question_count": 65967,
+      "image_metadata_count": 25600
+    },
+    "validation": {
+      "question_count": 16441,
+      "image_metadata_count": 6400
+    },
+    "test": {
+      "question_count": 39686,
+      "image_metadata_count": 15488
+    }
+  },
+  "status": "METADATA_READY"
+}

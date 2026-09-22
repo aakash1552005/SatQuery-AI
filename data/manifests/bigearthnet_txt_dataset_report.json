@@ -1,0 +1,49 @@
+{
+  "dataset_name": "BigEarthNet.txt",
+  "dataset_version": "v1.0",
+  "official_source": "https://arxiv.org/abs/2603.29630",
+  "official_website": "https://txt.bigearth.net/",
+  "license": "CDLA-Permissive-1.0",
+  "record_count": 9553962,
+  "unique_sample_count": 464044,
+  "unique_s1_patches": 464044,
+  "unique_s2_patches": 464044,
+  "unique_ids": 9553962,
+  "duplicate_ids": 0,
+  "task_types": {
+    "binary": 3625160,
+    "bounding box": 2205686,
+    "captioning": 463932,
+    "mcq": 3259184
+  },
+  "modalities": [
+    "Sentinel-1 SAR (VV, VH)",
+    "Sentinel-2 MSI (12 bands)",
+    "Text"
+  ],
+  "countries": [
+    "Austria",
+    "Belgium",
+    "Finland",
+    "Ireland",
+    "Kosovo",
+    "Lithuania",
+    "Luxembourg",
+    "Portugal",
+    "Serbia",
+    "Switzerland"
+  ],
+  "seasons": [
+    "Summer",
+    "Spring",
+    "Autumn",
+    "Winter"
+  ],
+  "split_names": {
+    "test": 2409962,
+    "bench": 15029,
+    "validation": 2454690,
+    "train": 4674281
+  },
+  "validation_status": "VALIDATED"
+}
