@@ -1,0 +1,27 @@
+{
+  "dataset_name": "BigEarthNet.txt",
+  "dataset_version": "v1.0",
+  "split_source": "official_bifold_parquet_metadata",
+  "split_names": [
+    "train",
+    "validation",
+    "test",
+    "bench"
+  ],
+  "record_counts": {
+    "train": 4674281,
+    "validation": 2454690,
+    "test": 2409962,
+    "bench": 15029,
+    "total": 9553962
+  },
+  "unique_patch_counts": {
+    "train": 229114,
+    "validation": 118095,
+    "test": 115753,
+    "bench": 1082,
+    "total": 464044
+  },
+  "status": "PASSED",
+  "notes": "Verified from real downloaded 466.8 MB BigEarthNet.txt.parquet metadata. Disjoint partition confirmed across 9,553,962 records and 464,044 unique S1/S2 patch pairs."
+}

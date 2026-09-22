@@ -1,0 +1,253 @@
+{
+  "audit_version": "1.0",
+  "audit_date": "2026-09-22",
+  "target_milestone": "day-4-final-audited-stable",
+  "governing_rules": [
+    "Golden Rule: A capability is implemented only when its code exists, executes, is tested, and is consistent.",
+    "Honesty Rule: Zero fabrication of models, datasets, metrics, checkpoints, or split claims."
+  ],
+  "capabilities": [
+    {
+      "name": "Raster Gateway (GeoTIFF Parsing & Metadata Extraction)",
+      "day_introduced": "Day 1",
+      "source_files": [
+        "src/gateway/raster_inspector.py",
+        "src/contracts/raster_contracts.py"
+      ],
+      "routing_status": "IMPLEMENTED",
+      "implementation_status": "IMPLEMENTED",
+      "execution_status": "IMPLEMENTED",
+      "test_status": "TESTED",
+      "runtime_status": "IMPLEMENTED",
+      "dataset_dependency": "None (Operates on single raster input)",
+      "model_dependency": "None (Deterministic GIS parsing via Rasterio)",
+      "final_status": "IMPLEMENTED",
+      "evidence": "tests/test_day1.py::test_raster_inspector_* passes; extracts bounds, CRS, affine transform, nodata, band stats, and auto-detects modality.",
+      "limitations": "Requires valid GeoTIFF format with readable spatial profile; returns structured error on malformed files."
+    },
+    {
+      "name": "Spatial & Multimodal Compatibility Checker",
+      "day_introduced": "Day 1",
+      "source_files": [
+        "src/gateway/compatibility_checker.py"
+      ],
+      "routing_status": "IMPLEMENTED",
+      "implementation_status": "IMPLEMENTED",
+      "execution_status": "IMPLEMENTED",
+      "test_status": "TESTED",
+      "runtime_status": "IMPLEMENTED",
+      "dataset_dependency": "None (Evaluates uploaded raster pair pairs)",
+      "model_dependency": "None (Geometric intersection and spatial math)",
+      "final_status": "IMPLEMENTED",
+      "evidence": "tests/test_day1.py::test_compatibility_temporal_pair passes; computes spatial overlap IoU, CRS match, and resolution ratio.",
+      "limitations": "Strict CRS requirement; rejects pairs without reprojection when CRS differs."
+    },
+    {
+      "name": "Query Parser & Heuristic Classification",
+      "day_introduced": "Day 2",
+      "source_files": [
+        "src/router/query_parser.py",
+        "src/contracts/query_contracts.py"
+      ],
+      "routing_status": "IMPLEMENTED",
+      "implementation_status": "IMPLEMENTED",
+      "execution_status": "IMPLEMENTED",
+      "test_status": "TESTED",
+      "runtime_status": "IMPLEMENTED",
+      "dataset_dependency": "None (Regex & NLP keyword heuristic)",
+      "model_dependency": "None (Explicitly labeled heuristic confidence, not ML probability)",
+      "final_status": "IMPLEMENTED",
+      "evidence": "tests/test_day2.py::test_query_parser_classification passes; classifies intent, task type, and extracts target entities.",
+      "limitations": "Rule-based parser; cannot resolve complex syntactic ambiguity outside remote sensing taxonomy."
+    },
+    {
+      "name": "Agentic Router & Sensor Separation",
+      "day_introduced": "Day 2",
+      "source_files": [
+        "src/router/agentic_router.py"
+      ],
+      "routing_status": "IMPLEMENTED",
+      "implementation_status": "IMPLEMENTED",
+      "execution_status": "IMPLEMENTED",
+      "test_status": "TESTED",
+      "runtime_status": "IMPLEMENTED",
+      "dataset_dependency": "None (Routes uploaded rasters + query)",
+      "model_dependency": "None (Deterministic routing engine)",
+      "final_status": "IMPLEMENTED",
+      "evidence": "tests/test_day2.py::test_sar_pathway_separation passes; prevents SAR data from entering optical pathways.",
+      "limitations": "Routes strictly according to verified raster metadata and sensor physical modality."
+    },
+    {
+      "name": "Sufficiency Refusal Gates",
+      "day_introduced": "Day 2",
+      "source_files": [
+        "src/router/agentic_router.py"
+      ],
+      "routing_status": "IMPLEMENTED",
+      "implementation_status": "IMPLEMENTED",
+      "execution_status": "IMPLEMENTED",
+      "test_status": "TESTED",
+      "runtime_status": "IMPLEMENTED",
+      "dataset_dependency": "None (Inspects input count and modalities)",
+      "model_dependency": "None (Deterministic gate checks)",
+      "final_status": "IMPLEMENTED",
+      "evidence": "tests/test_day2.py::test_missing_input_refusal_demo6 passes; single-image temporal request honestly refused with missing input explanation.",
+      "limitations": "Hard refusal gate; requires minimum 2 co-registered rasters for temporal queries and paired optical+SAR for fusion queries."
+    },
+    {
+      "name": "Factual Execution Trace Engine",
+      "day_introduced": "Day 2",
+      "source_files": [
+        "src/execution/trace_engine.py"
+      ],
+      "routing_status": "IMPLEMENTED",
+      "implementation_status": "IMPLEMENTED",
+      "execution_status": "IMPLEMENTED",
+      "test_status": "TESTED",
+      "runtime_status": "IMPLEMENTED",
+      "dataset_dependency": "None",
+      "model_dependency": "None",
+      "final_status": "IMPLEMENTED",
+      "evidence": "tests/test_day2_consistency.py::test_sar_scheduled_vs_executed passes; strictly distinguishes SCHEDULED from EXECUTED events.",
+      "limitations": "Records post-execution facts only; never marks unexecuted tools as executed."
+    },
+    {
+      "name": "Deterministic SAR Analysis Engine",
+      "day_introduced": "Day 3",
+      "source_files": [
+        "src/analysis/sar_tools.py",
+        "src/analysis/numerical_math.py"
+      ],
+      "routing_status": "IMPLEMENTED",
+      "implementation_status": "IMPLEMENTED",
+      "execution_status": "IMPLEMENTED",
+      "test_status": "TESTED",
+      "runtime_status": "IMPLEMENTED",
+      "dataset_dependency": "Dual-pol SAR raster (Sentinel-1 VV/VH format)",
+      "model_dependency": "None (Explicitly mechanism=deterministic_sar_analysis, model=null)",
+      "final_status": "IMPLEMENTED",
+      "evidence": "tests/test_day3_sar.py (13 tests) and tests/test_scientific_contracts.py pass; Lee speckle filter operates in linear power domain; Otsu water detector bounded by [-24 dB, -12 dB].",
+      "limitations": "Requires valid dual-pol VV/VH SAR bands; water threshold is scene-dependent heuristic, not universal."
+    },
+    {
+      "name": "Deterministic Optical Spectral Engine",
+      "day_introduced": "Day 3",
+      "source_files": [
+        "src/analysis/optical_tools.py",
+        "src/analysis/numerical_math.py"
+      ],
+      "routing_status": "IMPLEMENTED",
+      "implementation_status": "IMPLEMENTED",
+      "execution_status": "IMPLEMENTED",
+      "test_status": "TESTED",
+      "runtime_status": "IMPLEMENTED",
+      "dataset_dependency": "Multispectral optical raster (Sentinel-2 band schema)",
+      "model_dependency": "None (Explicitly mechanism=deterministic_optical_spectral_analysis, model=null)",
+      "final_status": "IMPLEMENTED",
+      "evidence": "tests/test_day3_optical.py (10 tests) and tests/test_scientific_contracts.py pass; verifies NDVI, NDWI, MNDWI, zero-denominator guards, and rule-based heuristic classifier.",
+      "limitations": "Band mapping requires explicit wavelength metadata; refuses ambiguous band sets without guessing."
+    },
+    {
+      "name": "Remote Sensing Foundation Model Preflight (GeoChat)",
+      "day_introduced": "Day 3",
+      "source_files": [
+        "src/router/agentic_router.py"
+      ],
+      "routing_status": "IMPLEMENTED",
+      "implementation_status": "PARTIAL",
+      "execution_status": "UNAVAILABLE",
+      "test_status": "TESTED",
+      "runtime_status": "FALLBACK_USED",
+      "dataset_dependency": "None (Hardware & model check)",
+      "model_dependency": "MBZUAI/geochat-7b (External Pretrained)",
+      "final_status": "UNAVAILABLE",
+      "evidence": "tests/test_day2_consistency.py::test_geochat_preflight_does_not_claim_real_inference passes; detects CPU-only host and routes to deterministic fallback.",
+      "limitations": "Cannot run 7B model locally on CPU; requires remote CUDA GPU with >=16GB VRAM."
+    },
+    {
+      "name": "BigEarthNet.txt Multimodal Dataset Subsystem",
+      "day_introduced": "Day 4",
+      "source_files": [
+        "src/data/bigearthnet_txt.py",
+        "src/data/preprocessing.py"
+      ],
+      "routing_status": "IMPLEMENTED",
+      "implementation_status": "IMPLEMENTED",
+      "execution_status": "IMPLEMENTED",
+      "test_status": "TESTED",
+      "runtime_status": "IMPLEMENTED",
+      "dataset_dependency": "BigEarthNet.txt (Parquet metadata: 466.8 MB, 9.55M records, 464K patch pairs)",
+      "model_dependency": "None (Data pipeline & PyTorch Dataset/DataLoader)",
+      "final_status": "IMPLEMENTED",
+      "evidence": "tests/test_day4_dataset.py and tests/test_day4_real_datasets.py pass; verified disjoint official splits and zero cross-split leakage.",
+      "limitations": "Full 350+ GB raw image archives are BLOCKED_STORAGE on host drive C: (106.6 GB free); dev patch pairs and complete text/metadata are present."
+    },
+    {
+      "name": "RS-VLM LoRA Adaptation Pipeline",
+      "day_introduced": "Day 4",
+      "source_files": [
+        "src/adaptation/lora_config.py",
+        "src/adaptation/training_preflight.py",
+        "src/adaptation/pipeline.py"
+      ],
+      "routing_status": "IMPLEMENTED",
+      "implementation_status": "IMPLEMENTED",
+      "execution_status": "PIPELINE_READY",
+      "test_status": "TESTED",
+      "runtime_status": "PIPELINE_READY",
+      "dataset_dependency": "BigEarthNet.txt",
+      "model_dependency": "Configured for HuggingFace Transformers & PEFT LoRA (rank 16, alpha 32)",
+      "final_status": "PIPELINE_READY",
+      "evidence": "tests/test_day4_adaptation.py (8 tests) pass; hardware preflight verifies CPU host and halts without generating fake weights or fake loss curves.",
+      "limitations": "Actual model optimization has NOT been executed locally (training_status: NOT_EXECUTED). Remote NVIDIA GPU required."
+    },
+    {
+      "name": "Public Benchmark Governance (VRSBench & CDVQA)",
+      "day_introduced": "Day 4",
+      "source_files": [
+        "src/data/vrsbench.py",
+        "src/data/cdvqa.py"
+      ],
+      "routing_status": "IMPLEMENTED",
+      "implementation_status": "IMPLEMENTED",
+      "execution_status": "IMPLEMENTED",
+      "test_status": "TESTED",
+      "runtime_status": "IMPLEMENTED",
+      "dataset_dependency": "VRSBench (62,918 eval annotations) & CDVQA (122,797 QA pairs)",
+      "model_dependency": "None (Governance rules and coordinate normalizer)",
+      "final_status": "IMPLEMENTED",
+      "evidence": "tests/test_day4_real_datasets.py passes; enforces training_allowed=false for VRSBench; normalizes grounding coordinates between [0, 100] tokens and normalized float.",
+      "limitations": "Evaluation data only; evaluation has not been executed yet pending trained model checkpoint."
+    },
+    {
+      "name": "Temporal Change Detection Engine (Day 5 Scope)",
+      "day_introduced": "Day 5",
+      "source_files": [],
+      "routing_status": "NOT_IMPLEMENTED",
+      "implementation_status": "NOT_IMPLEMENTED",
+      "execution_status": "NOT_IMPLEMENTED",
+      "test_status": "NOT_IMPLEMENTED",
+      "runtime_status": "NOT_IMPLEMENTED",
+      "dataset_dependency": "Bitemporal co-registered pairs",
+      "model_dependency": "AROSICS / ChangeChat / Differencing",
+      "final_status": "NOT_IMPLEMENTED",
+      "evidence": "Day 2 router and API explicitly reject or refuse temporal execution until Day 5 implementation.",
+      "limitations": "Reserved for Day 5 implementation. DO NOT IMPLEMENT in Day 1-4 audit."
+    },
+    {
+      "name": "Optical-SAR Deep Fusion Engine (Day 5 Scope)",
+      "day_introduced": "Day 5",
+      "source_files": [],
+      "routing_status": "NOT_IMPLEMENTED",
+      "implementation_status": "NOT_IMPLEMENTED",
+      "execution_status": "NOT_IMPLEMENTED",
+      "test_status": "NOT_IMPLEMENTED",
+      "runtime_status": "NOT_IMPLEMENTED",
+      "dataset_dependency": "Paired Optical + SAR",
+      "model_dependency": "CROMA / Cross-attention",
+      "final_status": "NOT_IMPLEMENTED",
+      "evidence": "Day 2 router routes to fusion branch with execution_status=NOT_IMPLEMENTED.",
+      "limitations": "Reserved for Day 5 implementation. DO NOT IMPLEMENT in Day 1-4 audit."
+    }
+  ]
+}

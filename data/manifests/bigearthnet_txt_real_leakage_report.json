@@ -1,0 +1,19 @@
+{
+  "dataset_name": "BigEarthNet.txt",
+  "dataset_version": "v1.0",
+  "audit_scope": "official_downloaded_parquet_metadata_and_cross_benchmark",
+  "total_records_checked": 9553962,
+  "unique_record_ids": 9553962,
+  "duplicate_record_ids": 0,
+  "unique_patch_pairs": 464044,
+  "cross_split_leakage": {
+    "train_val_overlap": 0,
+    "train_test_overlap": 0,
+    "val_test_overlap": 0,
+    "train_bench_overlap": 0,
+    "vrsbench_overlap": 0
+  },
+  "status": "PASSED",
+  "leakage_audit_result": "metadata-level leakage audit passed",
+  "notes": "Audited complete 9,553,962 record release from BigEarthNet.txt.parquet. Zero duplicate IDs. Zero cross-split patch leakage across train, validation, test, and bench splits. Zero overlap with VRSBench evaluation annotations. Full metadata-level leakage audit passed; raw image pixels were not audited beyond representative local patch pairs due to storage constraints."
+}
