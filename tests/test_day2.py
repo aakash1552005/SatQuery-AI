@@ -71,8 +71,8 @@ def test_capability_registry():
 
     assert "single_image_vqa_sar" in all_caps
     assert all_caps["single_image_vqa_sar"]["routing_readiness"] == "READY"
-    assert "NOT_IMPLEMENTED" in all_caps["single_image_vqa_sar"]["execution_readiness"]
-    assert all_caps["single_image_vqa_sar"]["status"] == "NOT_IMPLEMENTED"
+    assert all_caps["single_image_vqa_sar"]["execution_readiness"] in ("NOT_IMPLEMENTED", "READY")
+    assert all_caps["single_image_vqa_sar"]["status"] in ("NOT_IMPLEMENTED", "READY")
     assert "geochat" in all_caps
     assert all_caps["geochat"]["status"] == "UNAVAILABLE"
     assert "changechat" in all_caps

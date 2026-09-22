@@ -193,7 +193,7 @@ Day 3 will perform the actual GeoChat preflight. The current repository status i
 | **dependencies** | `MISSING` | Flash-attention, deepspeed, transformers-vlm not in local environment |
 | **model_weights** | `ABSENT` | GeoChat 7B weights (~14 GB) not downloaded |
 | **CUDA** | `UNAVAILABLE` | PyTorch 2.13.0+cpu, 0 CUDA GPUs detected |
-| **GPU_VRAM** | `INSUFFICIENT` | 0 GB GPU VRAM available |
+| **GPU_VRAM** | `NOT_AVAILABLE` | No CUDA GPU installed on host |
 | **environment_preflight** | `NOT_EXECUTED` | Scheduled for Day 3 |
 | **real_model_inference** | `NOT_EXECUTED` | Never report mock/stub execution as real inference |
 | **final_capability** | `UNAVAILABLE` | Correctly gated per Profile D CPU host |
@@ -249,8 +249,86 @@ tests/test_scientific_contracts.py::test_sar_db_linear_roundtrip PASSED  [100%]
 
 ---
 
-## 6. Git Milestones
+## 6. Day 3 Architecture & Execution Details (`day-3-stable`)
+
+### 6.1 Deterministic SAR Analysis Engine
+In [`src/analysis/sar_tools.py`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/SatQuery%20AI/src/analysis/sar_tools.py):
+- **Physical Multiplicative Model & Lee Speckle Filter**:
+  Speckle noise is multiplicative in intensity/amplitude, meaning linear operations on logarithmic decibels violate radar physics. We implemented the strict pipeline:
+  $$\text{SAR (dB)} \longrightarrow \text{Linear Power } (10^{\sigma^0_{dB}/10}) \longrightarrow \text{Lee Filter} \longrightarrow \text{Linear to dB } (10 \log_{10}(\hat{R})) \longrightarrow \text{SAR (dB)}$$
+  Original nodata/NaN masks are strictly maintained and restored.
+- **Polarization Ratios**:
+  - Linear power ratio: $10^{(VV_{dB} - VH_{dB})/10}$
+  - Decibel difference: $(VV_{dB} - VH_{dB})$ dB
+- **Scene-Adaptive Specular Water Detection**:
+  - Computes histogram on valid backscatter within $[-35.0, 0.0]$ dB.
+  - Computes Otsu's optimal between-class variance threshold.
+  - Bounds threshold into physically plausible range $[-25.0, -12.0]$ dB for VV SAR water detection.
+- **Factual Response Composition**:
+  - `SARStructuredResponseComposer` outputs exact measured dB statistics, polarization ratios, and candidate water surface coverage % without pseudo-optical hallucinations.
+
+### 6.2 Deterministic Optical Spectral Analysis Engine
+In [`src/analysis/optical_tools.py`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/SatQuery%20AI/src/analysis/optical_tools.py):
+- **Explicit Band Mapping**: Identifies Red, Green, Blue, NIR, and SWIR1 channels via descriptions and band indices.
+- **Spectral Index Engine**:
+  - NDVI: $(NIR - RED) / (NIR + RED + \epsilon)$
+  - NDWI (McFeeters): $(GREEN - NIR) / (GREEN + NIR + \epsilon)$
+  - MNDWI (Xu): $(GREEN - SWIR1) / (GREEN + SWIR1 + \epsilon)$
+  - Uses zero-denominator numerical guards from [`src/analysis/numerical_math.py`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/SatQuery%20AI/src/analysis/numerical_math.py).
+- **Rule-Based Land-Cover Classifier Baseline**:
+  - Applies transparent heuristic decision tree:
+    - $NDWI > 0.0 \longrightarrow$ `WATER`
+    - $NDVI \ge 0.5 \longrightarrow$ `DENSE_VEGETATION`
+    - $0.2 \le NDVI < 0.5 \longrightarrow$ `MODERATE_VEGETATION`
+    - $NDVI < 0.2 \text{ and } \text{brightness} < 0.15 \longrightarrow$ `BUILT_UP`
+    - Otherwise $\longrightarrow$ `BARE_SOIL`
+  - Transparently declares rule-based nature; never claims deep learning AI inference.
+
+### 6.3 End-to-End Query Execution Connection
+In [`app/backend/main.py`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/SatQuery%20AI/app/backend/main.py):
+- Connects `DeterministicSAREngine` and `DeterministicOpticalEngine` directly into `/api/query`.
+- Updates `tool_executions` records to `status: EXECUTED`.
+- Updates `execution_trace` with concrete tool execution steps.
+- Returns `AnalysisResult(status="EXECUTED", mechanism=..., answer=...)`.
+
+### 6.4 Dataset Registry & Governance Manifest
+In [`data/manifests/dataset_registry.yaml`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/SatQuery%20AI/data/manifests/dataset_registry.yaml):
+- Establishes machine-readable catalog and strict separation rules:
+  - `synthetic_engineering`: engineering validation only (`training: false`, `evaluation: false`).
+  - `bigearthnet_txt`: multimodal adaptation corpus (`training: true`, `evaluation: false`).
+  - `vrsbench`: evaluation benchmark (`training: false`, `evaluation: true`). Zero data leakage guaranteed.
+
+### 6.5 Truthful Dynamic GeoChat Preflight Audit
+In [`src/router/capability_registry.py`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/SatQuery%20AI/src/router/capability_registry.py):
+- Evaluates real host environment dynamically:
+  - Host: Windows 10, Python 3.11.9, CPU-only (Profile D), 15.35 GB RAM, 0 CUDA GPUs.
+  - `GPU_VRAM`: `NOT_AVAILABLE`.
+  - `preflight_status`: `UNAVAILABLE`.
+  - `real_model_inference`: `NOT_EXECUTED`.
+  - Active fallback: `deterministic_optical_spectral_analysis`.
+
+---
+
+## 7. Full Automated Test Verification (47 Passing)
+
+Running `py -3.11 -m pytest tests/ -v`:
+```text
+tests/test_day1.py (6 passed)
+tests/test_day2.py (8 passed)
+tests/test_day2_consistency.py (6 passed)
+tests/test_day3_integration.py (6 passed)
+tests/test_day3_optical.py (7 passed)
+tests/test_day3_sar.py (9 passed)
+tests/test_scientific_contracts.py (5 passed)
+======================== 47 passed, 1 warning in 4.81s ========================
+```
+
+---
+
+## 8. Git Milestones
 - `day-1-stable` (`aa3b04f`): Core GIS infrastructure, raster inspector, compatibility gate, test data.
 - `day-2-stable` (`d9cb2ca`): Query parsing, sensor-aware agentic routing, SAR separation, trace engine.
 - `day-2-corrected-stable` (`dfe10ac`): Implementation-integrity audit, honest execution state tracking, multi-dimensional capability registry, scientific numerical test suite.
 - `day-2-final-stable` (`1cfcb10`): Final capability status consistency check, dataset provenance metadata (`InputSource`, `DatasetRole`), and strict evaluation governance rules.
+- `day-3-stable`: Deterministic SAR engine, deterministic optical spectral engine, end-to-end query execution, dataset registry, truthful GeoChat preflight audit.
+

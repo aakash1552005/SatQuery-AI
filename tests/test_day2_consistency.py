@@ -25,9 +25,8 @@ SAMPLES_DIR = Path(__file__).resolve().parent.parent / "data" / "samples"
 def test_optical_mechanism_matches_actual_execution():
     """
     Verify optical query execution path:
-    Routing is READY; tool execution marks RasterInspector as EXECUTED,
-    downstream analysis as NOT_IMPLEMENTED, and result as ROUTED_PENDING_EXECUTION.
-    Does not falsely claim full VQA or land-cover classification is executed.
+    Routing is READY; tool execution executes deterministic spectral engine,
+    and returns factual status EXECUTED with real measured answer.
     """
     opt_path = SAMPLES_DIR / "optical" / "synthetic_optical_rgb.tif"
     with open(opt_path, "rb") as f:
@@ -51,14 +50,14 @@ def test_optical_mechanism_matches_actual_execution():
     res = data["result"]
     assert res["mechanism"] == "deterministic_optical_spectral_analysis"
     assert res["model"] is None  # VLM Not Used
-    assert res["status"] == "ROUTED_PENDING_EXECUTION"
-    assert res["answer"] is None  # Factual: no fake generated answer before Day 3 execution engine
+    assert res["status"] == "EXECUTED"
+    assert res["answer"] is not None  # Day 3 executes real deterministic answer
 
 
-def test_sar_not_implemented_status():
+def test_sar_execution_status():
     """
-    Verify SAR query routing to deterministic pathway, but honestly declaring
-    that concrete analysis tools remain NOT_IMPLEMENTED until Day 3.
+    Verify SAR query routing to deterministic pathway and executing
+    factual radar backscatter analysis without hallucination.
     """
     sar_path = SAMPLES_DIR / "sar" / "synthetic_sar_vv_vh.tif"
     with open(sar_path, "rb") as f:
@@ -76,15 +75,15 @@ def test_sar_not_implemented_status():
     assert data["decision"]["task_type"] == TaskType.SINGLE_IMAGE_VQA_SAR
     assert data["decision"]["pathway"] == PathwayType.SAR_DETERMINISTIC_TOOLS
     assert data["result"]["mechanism"] == "deterministic_sar_analysis"
-    assert data["result"]["status"] == "ROUTED_PENDING_EXECUTION"
+    assert data["result"]["status"] == "EXECUTED"
+    assert data["result"]["answer"] is not None
 
 
 def test_sar_scheduled_vs_executed():
     """
-    Verify scheduled tools vs executed tools separation:
-    RasterInspector is EXECUTED.
-    SARBackscatterAnalysis, LeeSpeckleFilter, PolarizationRatioEstimator,
-    SARStructuredResponseComposer are NOT_IMPLEMENTED.
+    Verify scheduled tools vs executed tools:
+    In Day 3, RasterInspector, SARBackscatterAnalysis, LeeSpeckleFilter,
+    PolarizationRatioEstimator, and SARStructuredResponseComposer are EXECUTED.
     """
     sar_path = SAMPLES_DIR / "sar" / "synthetic_sar_vv_vh.tif"
     with open(sar_path, "rb") as f:
@@ -102,11 +101,11 @@ def test_sar_scheduled_vs_executed():
     tool_execs = {t["tool_name"]: t["status"] for t in data["decision"]["tool_executions"]}
     assert tool_execs["RasterInspector"] == ToolExecutionStatus.EXECUTED.value
 
-    # Concrete SAR tools must be NOT_IMPLEMENTED
+    # Concrete SAR tools must be EXECUTED in Day 3
     sar_analysis_tools = [k for k in tool_execs if k != "RasterInspector"]
     assert len(sar_analysis_tools) >= 3
     for tool_name in sar_analysis_tools:
-        assert tool_execs[tool_name] == ToolExecutionStatus.NOT_IMPLEMENTED.value
+        assert tool_execs[tool_name] == ToolExecutionStatus.EXECUTED.value
 
 
 def test_geochat_preflight_does_not_claim_real_inference():
@@ -119,7 +118,7 @@ def test_geochat_preflight_does_not_claim_real_inference():
 
     assert preflight["repository"] in ("ABSENT", "PRESENT", "UNKNOWN")
     assert preflight["CUDA"] == "UNAVAILABLE"
-    assert preflight["GPU_VRAM"] == "INSUFFICIENT"
+    assert preflight["GPU_VRAM"] == "NOT_AVAILABLE"
     assert preflight["environment_preflight"] in ("PASSED", "FAILED", "NOT_EXECUTED")
     assert preflight["real_model_inference"] == "NOT_EXECUTED"
     assert preflight["final_capability"] == "UNAVAILABLE"
@@ -128,7 +127,8 @@ def test_geochat_preflight_does_not_claim_real_inference():
 def test_capability_registry_matches_actual_execution_state():
     """
     Verify capability registry truthfully separates routing_readiness from execution_readiness.
-    Capabilities whose analysis engines are scheduled for Day 3+ must report status=NOT_IMPLEMENTED.
+    Day 3 implemented capabilities (SAR and Optical) report status=READY and execution_readiness=READY.
+    Capabilities scheduled for Day 5/6 (temporal_change, optical_sar_fusion) report status=NOT_IMPLEMENTED.
     """
     registry = CapabilityRegistry(runtime_mode=RuntimeMode.DEMO_FALLBACK)
     all_caps = registry.get_all()
@@ -138,8 +138,15 @@ def test_capability_registry_matches_actual_execution_state():
     assert all_caps["metadata_inspection"]["status"] == "READY"
     assert all_caps["compatibility_check"]["status"] == "READY"
 
-    # Analysis capabilities: routing is READY, execution is NOT_IMPLEMENTED
-    for cap_name in ("single_image_vqa_sar", "single_image_vqa_optical", "temporal_change", "optical_sar_fusion"):
+    # Day 3 implemented capabilities are READY
+    for cap_name in ("single_image_vqa_sar", "single_image_vqa_optical"):
+        cap = all_caps[cap_name]
+        assert cap["status"] == "READY"
+        assert cap["routing_readiness"] == "READY"
+        assert cap["execution_readiness"] == "READY"
+
+    # Future capabilities remain NOT_IMPLEMENTED
+    for cap_name in ("temporal_change", "optical_sar_fusion"):
         cap = all_caps[cap_name]
         assert cap["status"] == "NOT_IMPLEMENTED"
         assert cap["routing_readiness"] == "READY"

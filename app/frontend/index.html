@@ -1137,6 +1137,8 @@ function renderRoutingResult(resp) {
         if (d.task_type.includes('sar')) {
             banner.classList.add('sar');
             details.innerHTML = `<div><b>SAR ANALYSIS &mdash; Deterministic Radar Feature Pathway</b></div><div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">No SAR-native VLM available on this host. Answer generated from measured radar features.</div><div style="font-size:12px; margin-top:4px;">Task Intent: ${d.task_type.toUpperCase()} | Target Modalities: ${d.input_modalities.join(', ')}</div>`;
+        } else if (d.task_type.includes('optical')) {
+            details.innerHTML = `<div><b>OPTICAL ANALYSIS &mdash; Deterministic Spectral Index Pathway</b></div><div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Deterministic spectral analysis baseline (NDVI, NDWI, Land Cover). Host CPU profile active (GPU_VRAM: NOT_AVAILABLE).</div><div style="font-size:12px; margin-top:4px;">Task Intent: ${d.task_type.toUpperCase()} | Target Modalities: ${d.input_modalities.join(', ')}</div>`;
         } else {
             details.textContent = `Task Intent: ${d.task_type.toUpperCase()} | Target Modalities: ${d.input_modalities.join(', ')}`;
         }
@@ -1165,9 +1167,10 @@ function renderRoutingResult(resp) {
         resDiv.className = 'mechanism-card';
         const mech = resp.result.mechanism || 'None';
         const vlm = resp.result.model || 'Not Used';
+        const isOk = resp.result.status === 'COMPLETED' || resp.result.status === 'EXECUTED';
         resDiv.innerHTML = `
             <div><b>Mechanism:</b> <code>${mech}</code> | <b>VLM:</b> <code>${vlm}</code></div>
-            <div><b>Status:</b> <span class="status-pill ${resp.result.status === 'COMPLETED' ? 'ready' : 'warn'}">${resp.result.status}</span></div>
+            <div><b>Status:</b> <span class="status-pill ${isOk ? 'ready' : 'warn'}">${resp.result.status}</span></div>
             ${resp.result.answer ? `<div style="margin-top:6px; font-style:italic; color:var(--text-primary);">${resp.result.answer}</div>` : ''}
             ${resp.result.limitations && resp.result.limitations.length ? `<div style="color:var(--status-warn); font-size:11px; margin-top:4px;">Limitations: ${resp.result.limitations.join('; ')}</div>` : ''}
         `;

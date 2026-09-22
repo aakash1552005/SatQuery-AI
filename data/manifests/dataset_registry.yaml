@@ -1,0 +1,55 @@
+version: "1.0.0"
+description: "SatQuery AI Machine-Readable Dataset Registry & Governance Manifest"
+governance_rules:
+  - "Training datasets must never automatically become evaluation datasets."
+  - "VRSBench evaluation data must never be used for fine-tuning."
+  - "Synthetic engineering rasters are strictly for engineering validation, never benchmark evidence."
+  - "Hidden ISRO/SAC evaluation data must never be used for training, fine-tuning, or threshold tuning."
+
+datasets:
+  synthetic_engineering:
+    role: "engineering_validation"
+    status: "READY"
+    training_allowed: false
+    evaluation_allowed: false
+    description: "Synthetic GeoTIFF rasters for unit, integration, numerical, and routing tests."
+    samples_directory: "data/samples"
+    manifest: "data/manifests/sample_manifest.json"
+
+  bigearthnet_txt:
+    role: "training_finetuning"
+    status: "PLANNED"
+    training_allowed: true
+    evaluation_allowed: false
+    modalities:
+      - "sentinel_1_sar"
+      - "sentinel_2_multispectral"
+      - "text"
+    description: "Multi-modal vision-language adaptation corpus pairing Sentinel-1 SAR and Sentinel-2 optical imagery with text descriptions."
+    source:
+      url: "https://arxiv.org/abs/2603.29630"
+      official_page: "https://txt.bigearth.net/"
+    pair_integrity:
+      s1_s2_correspondence: "STRICT_1_TO_1"
+      text_correspondence: "PAIR_GROUNDED"
+    expected_splits:
+      - "train"
+      - "val"
+      - "test"
+    licensing: "Community Data License Agreement (CDLA) / Research"
+
+  vrsbench:
+    role: "public_evaluation"
+    status: "PLANNED"
+    training_allowed: false
+    evaluation_allowed: true
+    modalities:
+      - "high_resolution_optical"
+      - "text_vqa"
+      - "text_grounding"
+      - "captioning"
+    description: "Comprehensive Visual Remote Sensing Benchmark for evaluating VQA, object localization/grounding, and image captioning."
+    source:
+      official_page: "https://github.com/DV-Lab/VRSBench"
+      arxiv: "https://arxiv.org/abs/2406.12450"
+    evaluation_separation: "STRICT_ZERO_DATA_LEAKAGE"

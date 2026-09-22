@@ -74,7 +74,7 @@ tests/test_scientific_contracts.py::test_sar_polarization_ratio_physics PASSED [
   - `dependencies`: `MISSING`
   - `model_weights`: `ABSENT`
   - `CUDA`: `UNAVAILABLE` (Host is Profile D CPU-only)
-  - `GPU_VRAM`: `INSUFFICIENT` (0 GB GPU VRAM)
+  - `GPU_VRAM`: `NOT_AVAILABLE` (No CUDA GPU installed on host)
   - `environment_preflight`: `NOT_EXECUTED` (Scheduled Day 3)
   - `real_model_inference`: `NOT_EXECUTED` (Never report mock/stub execution as real inference)
   - `final_capability`: `UNAVAILABLE`
