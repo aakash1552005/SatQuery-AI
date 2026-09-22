@@ -144,3 +144,77 @@ def test_capability_registry_matches_actual_execution_state():
         assert cap["status"] == "NOT_IMPLEMENTED"
         assert cap["routing_readiness"] == "READY"
         assert "NOT_IMPLEMENTED" in cap["execution_readiness"]
+
+
+def test_dataset_provenance_and_governance_rules():
+    """
+    Verify dataset provenance tracking and governance rules:
+    1. InputSource and DatasetRole correctly detected from raster source.
+    2. Training datasets must never automatically become evaluation datasets.
+    3. VRSBench evaluation data must never be used for fine-tuning.
+    4. RoutingDecision explicitly preserves input_sources and dataset_roles.
+    """
+    from src.contracts.raster_contracts import (
+        InputSource,
+        DatasetRole,
+        validate_dataset_governance,
+    )
+    from src.gateway.raster_inspector import RasterInspector
+
+    inspector = RasterInspector()
+
+    # Provenance detection heuristics
+    src, role = inspector._detect_input_source(Path("vrsbench_eval_sample_01.tif"))
+    assert src == InputSource.VRSBENCH
+    assert role == DatasetRole.BENCHMARK_EVALUATION
+
+    src, role = inspector._detect_input_source(Path("bigearthnet_s2_patch_04.tif"))
+    assert src == InputSource.BIGEARTHNET_TXT
+    assert role == DatasetRole.TRAINING
+
+    src, role = inspector._detect_input_source(Path("data/samples/optical/synthetic_optical_rgb.tif"))
+    assert src == InputSource.SYNTHETIC_ENGINEERING
+    assert role == DatasetRole.VALIDATION
+
+    src, role = inspector._detect_input_source(Path("my_field_survey.tif"))
+    assert src == InputSource.USER_UPLOAD
+    assert role == DatasetRole.INFERENCE
+
+    # Governance rule 1: VRSBench must never be used for fine-tuning/training
+    valid, err = validate_dataset_governance(InputSource.VRSBENCH, DatasetRole.TRAINING)
+    assert valid is False
+    assert "VRSBench evaluation data must never be used for fine-tuning" in err
+
+    # Governance rule 2: Training datasets (BigEarthNet) must never automatically become evaluation datasets
+    valid, err = validate_dataset_governance(InputSource.BIGEARTHNET_TXT, DatasetRole.BENCHMARK_EVALUATION)
+    assert valid is False
+    assert "must never automatically become benchmark evaluation datasets" in err
+
+    # Legitimate assignments pass
+    valid, err = validate_dataset_governance(InputSource.VRSBENCH, DatasetRole.BENCHMARK_EVALUATION)
+    assert valid is True
+    assert err is None
+
+    valid, err = validate_dataset_governance(InputSource.BIGEARTHNET_TXT, DatasetRole.TRAINING)
+    assert valid is True
+    assert err is None
+
+    # End-to-end API upload & query preserves provenance
+    opt_path = SAMPLES_DIR / "optical" / "synthetic_optical_rgb.tif"
+    with open(opt_path, "rb") as f:
+        up_resp = client.post("/api/upload", files={"file": ("synthetic_optical_rgb.tif", f, "image/tiff")})
+    assert up_resp.status_code == 200
+    meta = up_resp.json()["metadata"]
+    assert meta["input_source"] == InputSource.SYNTHETIC_ENGINEERING.value
+    assert meta["dataset_role"] == DatasetRole.VALIDATION.value
+
+    file_id = up_resp.json()["file_id"]
+    q_resp = client.post(
+        "/api/query",
+        json={"query": "Identify land cover features", "file_ids": [file_id]},
+    )
+    assert q_resp.status_code == 200
+    decision = q_resp.json()["decision"]
+    assert InputSource.SYNTHETIC_ENGINEERING.value in decision["input_sources"]
+    assert DatasetRole.VALIDATION.value in decision["dataset_roles"]
+

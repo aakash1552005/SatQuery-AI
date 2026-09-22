@@ -74,6 +74,14 @@ class AgenticRouter:
         provided_count = len(input_files)
         file_ids = [f.file_id for f in input_files]
         modalities = [f.modality.value for f in input_files]
+        input_sources = [
+            f.input_source.value if hasattr(f.input_source, "value") else str(f.input_source)
+            for f in input_files
+        ]
+        dataset_roles = [
+            f.dataset_role.value if hasattr(f.dataset_role, "value") else str(f.dataset_role)
+            for f in input_files
+        ]
 
         # -------------------------------------------------------------------
         # Rule 0: Zero input rasters
@@ -96,6 +104,8 @@ class AgenticRouter:
                 provided_inputs_count=0,
                 input_file_ids=[],
                 input_modalities=[],
+                input_sources=[],
+                dataset_roles=[],
                 tool_sequence=[],
                 tool_executions=[],
                 runtime_mode=self.registry.runtime_mode.value,
@@ -124,6 +134,8 @@ class AgenticRouter:
                     provided_inputs_count=provided_count,
                     input_file_ids=file_ids,
                     input_modalities=modalities,
+                    input_sources=input_sources,
+                    dataset_roles=dataset_roles,
                     tool_sequence=[],
                     tool_executions=[],
                     runtime_mode=self.registry.runtime_mode.value,
@@ -151,6 +163,8 @@ class AgenticRouter:
                 provided_inputs_count=provided_count,
                 input_file_ids=file_ids,
                 input_modalities=modalities,
+                input_sources=input_sources,
+                dataset_roles=dataset_roles,
                 tool_sequence=tools,
                 tool_executions=self._build_tool_executions(tools),
                 runtime_mode=self.registry.runtime_mode.value,
@@ -181,6 +195,8 @@ class AgenticRouter:
                     provided_inputs_count=provided_count,
                     input_file_ids=file_ids,
                     input_modalities=modalities,
+                    input_sources=input_sources,
+                    dataset_roles=dataset_roles,
                     tool_sequence=[],
                     tool_executions=[],
                     runtime_mode=self.registry.runtime_mode.value,
@@ -207,6 +223,8 @@ class AgenticRouter:
                 provided_inputs_count=provided_count,
                 input_file_ids=file_ids,
                 input_modalities=modalities,
+                input_sources=input_sources,
+                dataset_roles=dataset_roles,
                 tool_sequence=tools,
                 tool_executions=self._build_tool_executions(tools),
                 runtime_mode=self.registry.runtime_mode.value,
@@ -240,6 +258,8 @@ class AgenticRouter:
                 provided_inputs_count=1,
                 input_file_ids=file_ids[:1],
                 input_modalities=[primary_file.modality.value],
+                input_sources=input_sources[:1],
+                dataset_roles=dataset_roles[:1],
                 tool_sequence=tools,
                 tool_executions=self._build_tool_executions(tools),
                 runtime_mode=self.registry.runtime_mode.value,
@@ -267,6 +287,8 @@ class AgenticRouter:
                 provided_inputs_count=1,
                 input_file_ids=file_ids[:1],
                 input_modalities=[primary_file.modality.value],
+                input_sources=input_sources[:1],
+                dataset_roles=dataset_roles[:1],
                 tool_sequence=tools,
                 tool_executions=self._build_tool_executions(tools),
                 runtime_mode=self.registry.runtime_mode.value,
@@ -303,6 +325,8 @@ class AgenticRouter:
             provided_inputs_count=1,
             input_file_ids=file_ids[:1],
             input_modalities=[primary_file.modality.value],
+            input_sources=input_sources[:1],
+            dataset_roles=dataset_roles[:1],
             tool_sequence=tools,
             tool_executions=self._build_tool_executions(tools),
             runtime_mode=self.registry.runtime_mode.value,

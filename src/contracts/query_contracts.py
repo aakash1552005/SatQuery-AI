@@ -92,6 +92,14 @@ class RoutingDecision(BaseModel):
     provided_inputs_count: int = 0
     input_file_ids: list[str] = Field(default_factory=list)
     input_modalities: list[str] = Field(default_factory=list)
+    input_sources: list[str] = Field(
+        default_factory=list,
+        description="Dataset provenance: USER_UPLOAD, SYNTHETIC_ENGINEERING, BIGEARTHNET_TXT, VRSBENCH, UNKNOWN"
+    )
+    dataset_roles: list[str] = Field(
+        default_factory=list,
+        description="Operational roles: INFERENCE, TRAINING, VALIDATION, BENCHMARK_EVALUATION, UNASSIGNED"
+    )
     tool_sequence: list[str] = Field(default_factory=list, description="Tool names scheduled")
     tool_executions: list[ToolExecutionRecord] = Field(
         default_factory=list,

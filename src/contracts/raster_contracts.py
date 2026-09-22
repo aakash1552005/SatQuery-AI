@@ -33,17 +33,65 @@ class PolarizationMode(str, enum.Enum):
     NOT_APPLICABLE = "not_applicable"
 
 
+class InputSource(str, enum.Enum):
+    """
+    Explicit dataset provenance and origin for raster inputs.
+    Enforces strict separation between user uploads, synthetic engineering validation,
+    adaptation datasets (BigEarthNet), and evaluation benchmarks (VRSBench).
+    """
+    USER_UPLOAD = "USER_UPLOAD"
+    SYNTHETIC_ENGINEERING = "SYNTHETIC_ENGINEERING"
+    BIGEARTHNET_TXT = "BIGEARTHNET_TXT"
+    VRSBENCH = "VRSBENCH"
+    UNKNOWN = "UNKNOWN"
+
+
+class DatasetRole(str, enum.Enum):
+    """
+    Operational role of dataset.
+    Enforces governance rules:
+    - Training datasets must never automatically become evaluation datasets.
+    - VRSBench evaluation data must never be used for fine-tuning.
+    """
+    INFERENCE = "INFERENCE"
+    TRAINING = "TRAINING"
+    VALIDATION = "VALIDATION"
+    BENCHMARK_EVALUATION = "BENCHMARK_EVALUATION"
+    UNASSIGNED = "UNASSIGNED"
+
+
+def validate_dataset_governance(source: InputSource, role: DatasetRole) -> tuple[bool, Optional[str]]:
+    """
+    Validate dataset governance and integrity rules:
+    1. Training datasets must never automatically become evaluation datasets.
+    2. VRSBench evaluation data must never be used for fine-tuning/training.
+    """
+    if source == InputSource.VRSBENCH and role in (DatasetRole.TRAINING, DatasetRole.VALIDATION):
+        return False, "Governance Violation: VRSBench evaluation data must never be used for fine-tuning or training."
+    if source == InputSource.BIGEARTHNET_TXT and role == DatasetRole.BENCHMARK_EVALUATION:
+        return False, "Governance Violation: Training/adaptation datasets (BigEarthNet) must never automatically become benchmark evaluation datasets."
+    return True, None
+
+
 class RasterMetadata(BaseModel):
     """
     Metadata extracted from a single raster file.
     Section 12: dimensions, CRS, transform, bounds, resolution,
     band count, band metadata, nodata, acquisition time, modality,
-    sensor metadata, polarization.
+    sensor metadata, polarization, input_source, dataset_role.
     """
     file_id: str = Field(..., description="Unique identifier for this upload")
     filename: str
     file_size_bytes: int
     format: str = Field(default="unknown", description="e.g. GeoTIFF, TIFF, PNG, JPEG")
+    input_source: InputSource = Field(
+        default=InputSource.USER_UPLOAD,
+        description="Dataset provenance: USER_UPLOAD, SYNTHETIC_ENGINEERING, BIGEARTHNET_TXT, VRSBENCH, UNKNOWN"
+    )
+    dataset_role: DatasetRole = Field(
+        default=DatasetRole.INFERENCE,
+        description="Operational role: INFERENCE, TRAINING, VALIDATION, BENCHMARK_EVALUATION, UNASSIGNED"
+    )
 
     # Spatial
     width: int

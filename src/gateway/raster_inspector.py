@@ -23,6 +23,8 @@ from rasterio.crs import CRS
 from rasterio.errors import RasterioIOError
 
 from src.contracts.raster_contracts import (
+    DatasetRole,
+    InputSource,
     PolarizationMode,
     RasterMetadata,
     SensorModality,
@@ -40,6 +42,32 @@ class RasterInspector:
     the file itself, never assumes sensor-specific conventions.
     """
 
+    def _detect_input_source(self, file_path: Path) -> tuple[InputSource, DatasetRole]:
+        """
+        Identify dataset provenance and operational role from raster path/naming.
+        Strict separation rules:
+        - Synthetic validation rasters -> SYNTHETIC_ENGINEERING, VALIDATION
+        - BigEarthNet text/image adaptation files -> BIGEARTHNET_TXT, TRAINING
+        - VRSBench evaluation benchmark files -> VRSBENCH, BENCHMARK_EVALUATION
+        - Regular user uploads -> USER_UPLOAD, INFERENCE
+        """
+        path_str = str(file_path).replace("\\", "/").lower()
+        name_lower = file_path.name.lower()
+
+        if "vrsbench" in path_str or "vrsbench" in name_lower:
+            return InputSource.VRSBENCH, DatasetRole.BENCHMARK_EVALUATION
+        if "bigearthnet" in path_str or "bigearthnet" in name_lower:
+            return InputSource.BIGEARTHNET_TXT, DatasetRole.TRAINING
+        if (
+            "data/samples" in path_str
+            or "data/test" in path_str
+            or "synthetic_" in name_lower
+            or "temporal_" in name_lower
+            or "pair_" in name_lower
+        ):
+            return InputSource.SYNTHETIC_ENGINEERING, DatasetRole.VALIDATION
+        return InputSource.USER_UPLOAD, DatasetRole.INFERENCE
+
     def inspect(self, file_path: str | Path) -> RasterMetadata:
         """
         Open a raster file and extract all available metadata.
@@ -49,22 +77,29 @@ class RasterInspector:
         file_id = str(uuid.uuid4())[:12]
         errors: list[str] = []
         warnings: list[str] = []
+        input_source, dataset_role = self._detect_input_source(file_path)
 
         # Basic file checks
         if not file_path.exists():
             return self._rejected(file_id, file_path.name, 0,
-                                  [f"File not found: {file_path}"])
+                                  [f"File not found: {file_path}"],
+                                  input_source=input_source,
+                                  dataset_role=dataset_role)
 
         file_size = file_path.stat().st_size
         if file_size == 0:
             return self._rejected(file_id, file_path.name, 0,
-                                  ["File is empty (0 bytes)"])
+                                  ["File is empty (0 bytes)"],
+                                  input_source=input_source,
+                                  dataset_role=dataset_role)
 
         ext = file_path.suffix.lower()
         if ext not in SUPPORTED_EXTENSIONS:
             return self._rejected(file_id, file_path.name, file_size,
                                   [f"Unsupported format: {ext}. "
-                                   f"Supported: {', '.join(sorted(SUPPORTED_EXTENSIONS))}"])
+                                   f"Supported: {', '.join(sorted(SUPPORTED_EXTENSIONS))}"],
+                                  input_source=input_source,
+                                  dataset_role=dataset_role)
 
         # Attempt rasterio open
         try:
@@ -73,10 +108,14 @@ class RasterInspector:
                                               errors, warnings)
         except RasterioIOError as e:
             return self._rejected(file_id, file_path.name, file_size,
-                                  [f"Cannot open raster: {e}"])
+                                  [f"Cannot open raster: {e}"],
+                                  input_source=input_source,
+                                  dataset_role=dataset_role)
         except Exception as e:
             return self._rejected(file_id, file_path.name, file_size,
-                                  [f"Unexpected error reading raster: {e}"])
+                                  [f"Unexpected error reading raster: {e}"],
+                                  input_source=input_source,
+                                  dataset_role=dataset_role)
 
     def _extract_metadata(
         self,
@@ -151,11 +190,16 @@ class RasterInspector:
         if fmt.lower() == "gtiff":
             fmt = "GeoTIFF"
 
+        # --- Dataset Provenance & Governance ---
+        input_source, dataset_role = self._detect_input_source(file_path)
+
         return RasterMetadata(
             file_id=file_id,
             filename=file_path.name,
             file_size_bytes=file_size,
             format=fmt,
+            input_source=input_source,
+            dataset_role=dataset_role,
             width=ds.width,
             height=ds.height,
             crs=crs_str,
@@ -368,13 +412,17 @@ class RasterInspector:
 
     def _rejected(
         self, file_id: str, filename: str,
-        file_size: int, errors: list[str]
+        file_size: int, errors: list[str],
+        input_source: InputSource = InputSource.UNKNOWN,
+        dataset_role: DatasetRole = DatasetRole.UNASSIGNED,
     ) -> RasterMetadata:
         """Create a rejected metadata response."""
         return RasterMetadata(
             file_id=file_id,
             filename=filename,
             file_size_bytes=file_size,
+            input_source=input_source,
+            dataset_role=dataset_role,
             width=0,
             height=0,
             band_count=0,
