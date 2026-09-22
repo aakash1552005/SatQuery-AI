@@ -52,4 +52,8 @@ datasets:
     source:
       official_page: "https://github.com/DV-Lab/VRSBench"
       arxiv: "https://arxiv.org/abs/2406.12450"
-    evaluation_separation: "STRICT_ZERO_DATA_LEAKAGE"
+    leakage_governance:
+      role_policy: "enforced"
+      split_validation: "PENDING"
+      duplicate_audit: "PENDING"
+      note: "Dataset-role separation policy enforced by registry; split and duplicate validation pending actual dataset acquisition."

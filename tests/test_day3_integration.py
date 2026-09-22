@@ -158,6 +158,67 @@ def test_geochat_dynamic_preflight():
 
     assert preflight["CUDA"] == "UNAVAILABLE"
     assert preflight["GPU_VRAM"] == "NOT_AVAILABLE"
-    assert preflight["environment_preflight"] == "FAILED"
+    assert preflight["environment_preflight"] in ["COMPLETED", "FAILED"]
+    assert preflight["environment_result"] == "UNAVAILABLE"
     assert preflight["real_model_inference"] == "NOT_EXECUTED"
     assert preflight["final_capability"] == "UNAVAILABLE"
+
+
+def test_dataset_roles():
+    """Verify explicit dataset roles defined in registry."""
+    reg_path = MANIFESTS_DIR / "dataset_registry.yaml"
+    with open(reg_path, "r", encoding="utf-8") as f:
+        manifest = yaml.safe_load(f)
+    datasets = manifest["datasets"]
+    assert datasets["synthetic_engineering"]["role"] == "engineering_validation"
+    assert datasets["bigearthnet_txt"]["role"] == "training_finetuning"
+    assert datasets["vrsbench"]["role"] == "public_evaluation"
+
+
+def test_training_evaluation_separation():
+    """Verify training datasets are barred from evaluation and evaluation datasets barred from training."""
+    reg_path = MANIFESTS_DIR / "dataset_registry.yaml"
+    with open(reg_path, "r", encoding="utf-8") as f:
+        manifest = yaml.safe_load(f)
+    datasets = manifest["datasets"]
+    # BigEarthNet.txt (training) cannot be used as evaluation benchmark
+    assert datasets["bigearthnet_txt"]["training_allowed"] is True
+    assert datasets["bigearthnet_txt"]["evaluation_allowed"] is False
+    # VRSBench (evaluation) cannot be used for fine-tuning
+    assert datasets["vrsbench"]["training_allowed"] is False
+    assert datasets["vrsbench"]["evaluation_allowed"] is True
+
+
+def test_no_false_zero_leakage_claim():
+    """Verify that dataset registry does NOT claim zero data leakage guaranteed before audits."""
+    reg_path = MANIFESTS_DIR / "dataset_registry.yaml"
+    with open(reg_path, "r", encoding="utf-8") as f:
+        raw_text = f.read()
+        manifest = yaml.safe_load(raw_text)
+
+    # Must NOT claim zero leakage guaranteed
+    assert "ZERO_DATA_LEAKAGE" not in raw_text
+    assert "Zero data leakage guaranteed" not in raw_text
+
+    # Must represent split_validation and duplicate_audit as PENDING
+    leakage = manifest["datasets"]["vrsbench"]["leakage_governance"]
+    assert leakage["role_policy"] == "enforced"
+    assert leakage["split_validation"] == "PENDING"
+    assert leakage["duplicate_audit"] == "PENDING"
+
+
+def test_cpu_host_gpu_vram_not_available():
+    """Verify CPU host truthfully reports GPU_VRAM: NOT_AVAILABLE, not INSUFFICIENT."""
+    registry = CapabilityRegistry()
+    preflight = registry.run_geochat_preflight()
+    assert preflight["GPU_VRAM"] == "NOT_AVAILABLE"
+    assert preflight["GPU_VRAM"] != "INSUFFICIENT"
+
+
+def test_environment_preflight_not_real_inference():
+    """Verify that completing environment preflight never counts as real model inference."""
+    registry = CapabilityRegistry()
+    preflight = registry.run_geochat_preflight()
+    assert preflight["environment_preflight"] == "COMPLETED"
+    assert preflight["real_model_inference"] == "NOT_EXECUTED"
+

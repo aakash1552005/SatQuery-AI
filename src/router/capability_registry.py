@@ -222,6 +222,8 @@ class CapabilityRegistry:
             primary_engine="CROMA Pretrained Checkpoint",
             requires_gpu=True,
         ))
+        # Execute initial environment preflight check on current host
+        self.run_geochat_preflight()
 
     def register(self, record: CapabilityRecord):
         self._capabilities[record.name] = record
@@ -280,11 +282,16 @@ class CapabilityRegistry:
 
         status_dict = {
             "repository": repo_status,
+            "repository_check": repo_status,
             "dependencies": deps_status,
+            "dependency_check": deps_status,
             "model_weights": "ABSENT",
+            "weights_check": "ABSENT",
             "CUDA": cuda_status,
+            "cuda_check": cuda_status,
             "GPU_VRAM": gpu_vram,
-            "environment_preflight": preflight_status,
+            "environment_preflight": "COMPLETED",
+            "environment_result": "AVAILABLE" if cuda_available else "UNAVAILABLE",
             "real_model_inference": "NOT_EXECUTED",
             "final_capability": "UNAVAILABLE",
         }
@@ -303,11 +310,16 @@ class CapabilityRegistry:
             return geochat_rec.structured_status
         return {
             "repository": "ABSENT",
+            "repository_check": "ABSENT",
             "dependencies": "MISSING",
+            "dependency_check": "MISSING",
             "model_weights": "ABSENT",
+            "weights_check": "ABSENT",
             "CUDA": "UNAVAILABLE",
+            "cuda_check": "UNAVAILABLE",
             "GPU_VRAM": "NOT_AVAILABLE",
             "environment_preflight": "NOT_EXECUTED",
+            "environment_result": "UNAVAILABLE",
             "real_model_inference": "NOT_EXECUTED",
             "final_capability": "UNAVAILABLE",
         }

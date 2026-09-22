@@ -44,6 +44,7 @@ class BackscatterStats:
     std: float
     min: float
     max: float
+    domain_notes: str = ""
 
 
 @dataclass
@@ -78,6 +79,10 @@ class WaterDetectionResult:
     water_fraction: float
     polarization_used: str
     filtering_applied: bool
+    raw_threshold_db: Optional[float] = None
+    accepted_threshold_db: Optional[float] = None
+    threshold_adjusted: bool = False
+    threshold_policy: dict[str, Any] = field(default_factory=dict)
     limitations: list[str] = field(default_factory=list)
 
 
@@ -119,6 +124,11 @@ class SARBackscatterAnalysis:
                 max=0.0,
             )
 
+        domain_notes = (
+            f"Backscatter statistics calculated in logarithmic decibel (dB) domain for {polarization}."
+            if input_domain == "dB"
+            else f"Backscatter statistics calculated in linear power domain for {polarization}."
+        )
         return BackscatterStats(
             polarization=polarization,
             input_domain=input_domain,
@@ -129,6 +139,7 @@ class SARBackscatterAnalysis:
             std=float(np.std(valid_vals)),
             min=float(np.min(valid_vals)),
             max=float(np.max(valid_vals)),
+            domain_notes=domain_notes,
         )
 
 
@@ -139,6 +150,7 @@ class LeeSpeckleFilter:
     Speckle is multiplicative in the linear intensity/power domain.
     Therefore, dB inputs MUST be converted to linear power before filtering,
     and converted back to dB for output.
+    Preserves nodata masks and uses explicit boundary handling (reflection padding).
     """
 
     def __init__(self, window_size: int = 7, enl: float = 4.0):
@@ -167,18 +179,20 @@ class LeeSpeckleFilter:
             linear = np.where(valid_mask, np.maximum(arr, 0.0), 0.0)
             in_domain = "linear_power"
 
-        # 2. Local moving statistics in linear power
-        local_mean = uniform_filter(linear, size=self.window_size, mode="reflect")
-        local_sqr = uniform_filter(linear ** 2, size=self.window_size, mode="reflect")
+        # 2. Local moving statistics in linear power with explicit boundary reflection and NaN-normalization
+        mask_f = valid_mask.astype(np.float64)
+        sum_linear = uniform_filter(linear, size=self.window_size, mode="reflect")
+        sum_mask = uniform_filter(mask_f, size=self.window_size, mode="reflect")
+        local_mean = np.where(sum_mask > 1e-6, sum_linear / np.maximum(sum_mask, 1e-6), 0.0)
+
+        sum_sqr = uniform_filter(linear ** 2, size=self.window_size, mode="reflect")
+        local_sqr = np.where(sum_mask > 1e-6, sum_sqr / np.maximum(sum_mask, 1e-6), 0.0)
         local_var = np.maximum(0.0, local_sqr - local_mean ** 2)
 
         # 3. Noise variance estimate from Equivalent Number of Looks (ENL)
-        # Noise variance sigma_v^2 = 1.0 / ENL for intensity data
         noise_var_coeff = 1.0 / max(self.enl, 1.0)
 
         # 4. Lee adaptive weighting factor W
-        # W = max(0, (var - mean^2 * noise_var) / (var * (1 + noise_var)))
-        # Or classic formula: W = (var - noise_var_actual) / var
         noise_var_spatial = (local_mean ** 2) * noise_var_coeff
         denom = local_var + 1e-10
         weight = np.clip((local_var - noise_var_spatial) / denom, 0.0, 1.0)
@@ -208,6 +222,7 @@ class LeeSpeckleFilter:
                 f"Multiplicative speckle noise model in linear power domain (window={self.window_size}x{self.window_size})",
                 f"Assumed Equivalent Number of Looks (ENL) = {self.enl} for Sentinel-1 GRD product",
                 "Converted dB -> linear power -> Lee filter -> dB to maintain physical validity",
+                "Preserves nodata masks and uses explicit boundary handling (scipy reflect mode)",
             ],
         )
 
@@ -279,10 +294,21 @@ class PolarizationRatioEstimator:
 class SARWaterDetector:
     """
     Scene-adaptive water candidate detector based on SAR backscatter.
-    Never relies on a fragile hardcoded constant. Estimates threshold adaptively
-    from scene histogram/distribution (bimodal valley or lower percentile split),
-    while recording limitations transparently.
+    Never relies on a fragile hardcoded constant or universal threshold claim.
+    Estimates threshold adaptively from scene histogram/distribution (Otsu method),
+    with explicit distinction between raw and accepted thresholds, and transparent
+    engineering sanity bounds.
     """
+
+    def __init__(
+        self,
+        sanity_min_db: float = -25.0,
+        sanity_max_db: float = -12.0,
+        enforce_sanity_bounds: bool = True,
+    ):
+        self.sanity_min_db = sanity_min_db
+        self.sanity_max_db = sanity_max_db
+        self.enforce_sanity_bounds = enforce_sanity_bounds
 
     def detect(
         self,
@@ -321,12 +347,24 @@ class SARWaterDetector:
                 water_fraction=0.0,
                 polarization_used=polarization,
                 filtering_applied=filtering_applied,
+                raw_threshold_db=None,
+                accepted_threshold_db=None,
+                threshold_adjusted=False,
+                threshold_policy={"type": "none", "reason": "no_valid_data"},
                 limitations=["No valid SAR data available for water detection"],
             )
 
         # Adaptive thresholding
         if manual_threshold_db is not None:
-            threshold = float(manual_threshold_db)
+            raw_threshold = float(manual_threshold_db)
+            accepted_threshold = raw_threshold
+            threshold_adjusted = False
+            threshold_policy = {
+                "type": "manual_user_specified",
+                "enforced": False,
+                "adjusted": False,
+                "value_db": accepted_threshold,
+            }
             method = "manual_configured_heuristic"
         else:
             # Otsu thresholding on the dB histogram within plausible backscatter range [-35, 0] dB
@@ -348,13 +386,50 @@ class SARWaterDetector:
                 between_class_var[valid_idx] = numerator[valid_idx] / denom[valid_idx]
                 best_idx = np.argmax(between_class_var)
                 otsu_thresh = float(bin_centers[best_idx])
-                # Sanity bound for SAR water threshold (typically between -22 dB and -13 dB for VV)
-                threshold = float(np.clip(otsu_thresh, -25.0, -12.0))
-                method = f"adaptive_otsu_histogram (computed {round(otsu_thresh, 2)} dB, bounded to {round(threshold, 2)} dB)"
+                raw_threshold = float(round(otsu_thresh, 2))
+
+                if self.enforce_sanity_bounds:
+                    accepted_thresh = float(np.clip(otsu_thresh, self.sanity_min_db, self.sanity_max_db))
+                    accepted_threshold = float(round(accepted_thresh, 2))
+                    threshold_adjusted = bool(accepted_threshold != raw_threshold)
+                    threshold_policy = {
+                        "type": "configurable_sanity_bounds",
+                        "min_db": self.sanity_min_db,
+                        "max_db": self.sanity_max_db,
+                        "enforced": True,
+                        "adjusted": threshold_adjusted,
+                        "notes": (
+                            f"Configurable engineering sanity policy [{self.sanity_min_db}, {self.sanity_max_db}] dB applied. "
+                            "This is NOT a universal physical threshold across all SAR sensors, incidence angles, and conditions."
+                        ),
+                    }
+                    if threshold_adjusted:
+                        method = f"adaptive_otsu_clamped_by_sanity_policy (raw: {raw_threshold} dB, accepted: {accepted_threshold} dB)"
+                    else:
+                        method = f"adaptive_otsu_within_sanity_policy (accepted: {accepted_threshold} dB)"
+                else:
+                    accepted_threshold = raw_threshold
+                    threshold_adjusted = False
+                    threshold_policy = {
+                        "type": "unbounded_adaptive_otsu",
+                        "enforced": False,
+                        "adjusted": False,
+                    }
+                    method = f"unbounded_adaptive_otsu_histogram (computed {accepted_threshold} dB)"
             else:
                 # Fallback: lower 15th percentile
-                threshold = float(np.percentile(valid_vals, 15))
+                raw_threshold = float(round(float(np.percentile(valid_vals, 15)), 2))
+                accepted_threshold = raw_threshold
+                threshold_adjusted = False
+                threshold_policy = {
+                    "type": "distribution_percentile_fallback",
+                    "percentile": 15,
+                    "enforced": False,
+                    "adjusted": False,
+                }
                 method = "distribution_15th_percentile_fallback"
+
+        threshold = accepted_threshold
 
         # Water exhibits low specular backscatter
         water_mask = valid_mask & (proc_arr < threshold)
@@ -370,11 +445,16 @@ class SARWaterDetector:
             water_fraction=water_frac,
             polarization_used=polarization,
             filtering_applied=filtering_applied,
+            raw_threshold_db=raw_threshold,
+            accepted_threshold_db=accepted_threshold,
+            threshold_adjusted=threshold_adjusted,
+            threshold_policy=threshold_policy,
             limitations=[
-                "Scene-dependent backscatter thresholding based on specular reflection",
-                "Wind-induced surface roughness can elevate water backscatter and create false negatives",
-                "Smooth tarmac, sand dunes, or radar shadow regions can create false positive water detections",
-                "No optical or NIR confirmation in single-image SAR mode",
+                "Scene-dependent backscatter thresholding based on specular reflection; does NOT constitute calibrated water-detection accuracy.",
+                "Sanity bounds [-25.0 dB, -12.0 dB] represent a configurable engineering policy, NOT a universal physical law across all SAR sensors, incidence angles, polarizations, or weather states.",
+                "Wind-induced surface roughness can elevate water backscatter, causing false negatives.",
+                "Smooth flat surfaces (tarmac, sand dunes) or radar shadow regions can cause false positive water detections.",
+                "No optical or NIR confirmation available in single-image SAR mode.",
             ],
         )
 
@@ -452,6 +532,10 @@ class SARStructuredResponseComposer:
                 "water_fraction_pct": round(water.water_fraction * 100, 2),
                 "water_pixels": water.water_pixels,
                 "threshold_db": water.threshold_value_db,
+                "raw_threshold_db": water.raw_threshold_db,
+                "accepted_threshold_db": water.accepted_threshold_db,
+                "threshold_adjusted": water.threshold_adjusted,
+                "threshold_policy": water.threshold_policy,
                 "threshold_method": water.threshold_method,
             }
             evidence.append(

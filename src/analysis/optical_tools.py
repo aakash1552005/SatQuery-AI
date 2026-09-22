@@ -68,59 +68,103 @@ class LandCoverDistribution:
 
 class OpticalBandMapper:
     """
-    Identifies and validates spectral band positions.
+    Identifies and validates spectral band positions following a strict hierarchy:
+    1. Explicit metadata descriptions (e.g. TIFF tags, band descriptions).
+    2. Dataset-specific schemas (e.g. bigearthnet_s2, sentinel2_l2a, landsat8).
+    3. Validated band mapping.
+    4. Fallback indexing ONLY when explicitly allowed/configured.
     NEVER silently guesses or shuffles bands without verification.
     """
+
+    def __init__(
+        self,
+        dataset_schema: Optional[str] = None,
+        allow_fallback_assumptions: bool = True,
+    ):
+        self.dataset_schema = dataset_schema
+        self.allow_fallback_assumptions = allow_fallback_assumptions
 
     def map_bands(
         self,
         band_count: int,
         band_names: Optional[list[str]] = None,
+        schema_override: Optional[str] = None,
     ) -> BandMap:
+        schema = schema_override or self.dataset_schema
         bnames = [b.lower() for b in (band_names or [])]
         detected = BandMap(band_names_detected=bnames or [f"band_{i}" for i in range(1, band_count + 1)])
 
-        # 1. Match explicit descriptions
+        # 1. Match explicit metadata descriptions
+        explicit_matches = 0
         for i, name in enumerate(bnames, start=1):
-            if any(k in name for k in ("nir", "near_ir", "b08", "b8", "band_8")):
+            if any(k in name for k in ("nir", "near_ir", "b08", "b8")):
                 detected.nir_idx = i
-            elif any(k in name for k in ("swir1", "swir_1", "b11", "band_11", "swir")):
+                explicit_matches += 1
+            elif any(k in name for k in ("swir1", "swir_1", "b11")):
                 detected.swir1_idx = i
-            elif any(k in name for k in ("red", "b04", "b4", "band_4")):
+                explicit_matches += 1
+            elif any(k in name for k in ("red", "b04", "b4")):
                 detected.red_idx = i
-            elif any(k in name for k in ("green", "b03", "b3", "band_3")):
+                explicit_matches += 1
+            elif any(k in name for k in ("green", "b03", "b3")):
                 detected.green_idx = i
-            elif any(k in name for k in ("blue", "b02", "b2", "band_2")):
+                explicit_matches += 1
+            elif any(k in name for k in ("blue", "b02", "b2")):
                 detected.blue_idx = i
+                explicit_matches += 1
 
-        # 2. Heuristic default conventions when names are generic
-        if detected.red_idx is None or detected.green_idx is None or detected.blue_idx is None:
-            if band_count == 3:
-                # Standard RGB convention
+        if explicit_matches > 0:
+            detected.mapping_source = f"explicit_metadata ({explicit_matches} bands matched)"
+            return detected
+
+        # 2. Dataset-specific schema matching
+        if schema:
+            s_lower = schema.lower()
+            if s_lower in ("sentinel2", "bigearthnet_s2", "s2_l2a"):
+                detected.blue_idx = 2
+                detected.green_idx = 3
+                detected.red_idx = 4
+                detected.nir_idx = 8
+                if band_count >= 11:
+                    detected.swir1_idx = 11
+                detected.mapping_source = f"dataset_schema_{schema}"
+                return detected
+            elif s_lower in ("standard_rgb", "rgb"):
                 detected.red_idx = 1
                 detected.green_idx = 2
                 detected.blue_idx = 3
-                detected.mapping_source = "rgb_3band_standard_assumption"
-            elif band_count == 4:
-                # Common RGB-NIR convention (R=1, G=2, B=3, NIR=4)
+                detected.mapping_source = "dataset_schema_standard_rgb"
+                return detected
+            elif s_lower in ("standard_rgbnir", "rgbnir"):
                 detected.red_idx = 1
                 detected.green_idx = 2
                 detected.blue_idx = 3
                 detected.nir_idx = 4
-                detected.mapping_source = "rgb_nir_4band_standard_assumption"
+                detected.mapping_source = "dataset_schema_standard_rgbnir"
+                return detected
+
+        # 3. Fallback standard assumption ONLY when explicitly permitted
+        if self.allow_fallback_assumptions:
+            if band_count == 3:
+                detected.red_idx = 1
+                detected.green_idx = 2
+                detected.blue_idx = 3
+                detected.mapping_source = "configured_fallback_rgb_standard_assumption"
+            elif band_count == 4:
+                detected.red_idx = 1
+                detected.green_idx = 2
+                detected.blue_idx = 3
+                detected.nir_idx = 4
+                detected.mapping_source = "configured_fallback_rgb_nir_standard_assumption"
             elif band_count >= 5:
-                # Multispectral typical ordering: B, G, R, NIR, SWIR
-                if detected.blue_idx is None:
-                    detected.blue_idx = 1
-                if detected.green_idx is None:
-                    detected.green_idx = 2
-                if detected.red_idx is None:
-                    detected.red_idx = 3
-                if detected.nir_idx is None:
-                    detected.nir_idx = 4
-                if detected.swir1_idx is None and band_count >= 5:
-                    detected.swir1_idx = 5
-                detected.mapping_source = "multispectral_standard_stack_assumption"
+                detected.blue_idx = 1
+                detected.green_idx = 2
+                detected.red_idx = 3
+                detected.nir_idx = 4
+                detected.swir1_idx = 5
+                detected.mapping_source = "configured_fallback_multispectral_stack_assumption"
+        else:
+            detected.mapping_source = "unresolved_missing_metadata"
 
         return detected
 
@@ -439,6 +483,11 @@ class OpticalStructuredResponseComposer:
             summary_parts.append(
                 f"NDVI averages {ndvi.mean} across {ndvi.valid_pixels} valid pixels (active vegetation covers approximately {round(ndvi.positive_fraction * 100, 1)}% of the scene)."
             )
+        else:
+            limitations.append("NDVI cannot be computed because valid NIR and Red band mappings were not provided.")
+            q_lower = query.lower()
+            if any(k in q_lower for k in ("ndvi", "vegetation", "crop", "forest", "plants")):
+                summary_parts.append("NDVI cannot be computed because valid NIR and Red band mappings were not provided.")
 
         if ndwi and ndwi.valid_pixels > 0:
             measurements["ndwi"] = {
@@ -450,6 +499,11 @@ class OpticalStructuredResponseComposer:
             evidence.append(
                 f"NDWI mean: {ndwi.mean} (water candidate fraction: {round(ndwi.positive_fraction * 100, 1)}%)."
             )
+        else:
+            limitations.append("NDWI cannot be computed because valid Green and NIR band mappings were not provided.")
+            q_lower = query.lower()
+            if any(k in q_lower for k in ("ndwi", "water index", "moisture")):
+                summary_parts.append("NDWI cannot be computed because valid Green and NIR band mappings were not provided.")
 
         if mndwi and mndwi.valid_pixels > 0:
             measurements["mndwi"] = {

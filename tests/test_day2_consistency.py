@@ -119,7 +119,7 @@ def test_geochat_preflight_does_not_claim_real_inference():
     assert preflight["repository"] in ("ABSENT", "PRESENT", "UNKNOWN")
     assert preflight["CUDA"] == "UNAVAILABLE"
     assert preflight["GPU_VRAM"] == "NOT_AVAILABLE"
-    assert preflight["environment_preflight"] in ("PASSED", "FAILED", "NOT_EXECUTED")
+    assert preflight["environment_preflight"] in ("COMPLETED", "PASSED", "FAILED", "NOT_EXECUTED")
     assert preflight["real_model_inference"] == "NOT_EXECUTED"
     assert preflight["final_capability"] == "UNAVAILABLE"
 

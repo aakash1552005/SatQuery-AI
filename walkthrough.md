@@ -249,40 +249,44 @@ tests/test_scientific_contracts.py::test_sar_db_linear_roundtrip PASSED  [100%]
 
 ---
 
-## 6. Day 3 Architecture & Execution Details (`day-3-stable`)
+## 6. Day 3 Architecture & Execution Details (`day-3-final-stable`)
 
 ### 6.1 Deterministic SAR Analysis Engine
 In [`src/analysis/sar_tools.py`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/SatQuery%20AI/src/analysis/sar_tools.py):
 - **Physical Multiplicative Model & Lee Speckle Filter**:
   Speckle noise is multiplicative in intensity/amplitude, meaning linear operations on logarithmic decibels violate radar physics. We implemented the strict pipeline:
   $$\text{SAR (dB)} \longrightarrow \text{Linear Power } (10^{\sigma^0_{dB}/10}) \longrightarrow \text{Lee Filter} \longrightarrow \text{Linear to dB } (10 \log_{10}(\hat{R})) \longrightarrow \text{SAR (dB)}$$
-  Original nodata/NaN masks are strictly maintained and restored.
+  Original nodata masks are preserved, using boundary reflection padding and NaN-normalized spatial averaging to avoid border distortion.
 - **Polarization Ratios**:
   - Linear power ratio: $10^{(VV_{dB} - VH_{dB})/10}$
   - Decibel difference: $(VV_{dB} - VH_{dB})$ dB
+  - Never divides decibels ($VV_{dB} / VH_{dB}$).
 - **Scene-Adaptive Specular Water Detection**:
   - Computes histogram on valid backscatter within $[-35.0, 0.0]$ dB.
-  - Computes Otsu's optimal between-class variance threshold.
-  - Bounds threshold into physically plausible range $[-25.0, -12.0]$ dB for VV SAR water detection.
+  - Computes Otsu's optimal between-class variance threshold (`raw_threshold_db`).
+  - Evaluates configurable engineering sanity bounds policy (default $[-25.0, -12.0]$ dB) and records explicit provenance (`raw_threshold_db`, `accepted_threshold_db`, `threshold_adjusted`, and `threshold_policy`).
+  - Transparently acknowledges this is an engineering heuristic, not a universal physical constant across sensors, polarizations, or incidence angles.
 - **Factual Response Composition**:
   - `SARStructuredResponseComposer` outputs exact measured dB statistics, polarization ratios, and candidate water surface coverage % without pseudo-optical hallucinations.
 
 ### 6.2 Deterministic Optical Spectral Analysis Engine
 In [`src/analysis/optical_tools.py`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/SatQuery%20AI/src/analysis/optical_tools.py):
-- **Explicit Band Mapping**: Identifies Red, Green, Blue, NIR, and SWIR1 channels via descriptions and band indices.
+- **Explicit Band Mapping Hierarchy**:
+  - Resolves spectral channels via explicit metadata tags $\to$ dataset schema $\to$ fallback standard assumptions (only when explicitly permitted).
+  - Missing-band refusal: if required bands are absent, returns an honest refusal stating that the index cannot be computed without guessing.
 - **Spectral Index Engine**:
   - NDVI: $(NIR - RED) / (NIR + RED + \epsilon)$
   - NDWI (McFeeters): $(GREEN - NIR) / (GREEN + NIR + \epsilon)$
   - MNDWI (Xu): $(GREEN - SWIR1) / (GREEN + SWIR1 + \epsilon)$
   - Uses zero-denominator numerical guards from [`src/analysis/numerical_math.py`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/SatQuery%20AI/src/analysis/numerical_math.py).
 - **Rule-Based Land-Cover Classifier Baseline**:
-  - Applies transparent heuristic decision tree:
+  - `RuleBasedLandCoverClassifier` applies transparent heuristic decision tree over NDVI and NDWI:
     - $NDWI > 0.0 \longrightarrow$ `WATER`
     - $NDVI \ge 0.5 \longrightarrow$ `DENSE_VEGETATION`
     - $0.2 \le NDVI < 0.5 \longrightarrow$ `MODERATE_VEGETATION`
     - $NDVI < 0.2 \text{ and } \text{brightness} < 0.15 \longrightarrow$ `BUILT_UP`
     - Otherwise $\longrightarrow$ `BARE_SOIL`
-  - Transparently declares rule-based nature; never claims deep learning AI inference.
+  - Transparently declares rule-based heuristic nature; never claims probability estimation or deep learning AI inference.
 
 ### 6.3 End-to-End Query Execution Connection
 In [`app/backend/main.py`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/SatQuery%20AI/app/backend/main.py):
@@ -296,31 +300,34 @@ In [`data/manifests/dataset_registry.yaml`](file:///c:/Users/AAKASH.S.S/OneDrive
 - Establishes machine-readable catalog and strict separation rules:
   - `synthetic_engineering`: engineering validation only (`training: false`, `evaluation: false`).
   - `bigearthnet_txt`: multimodal adaptation corpus (`training: true`, `evaluation: false`).
-  - `vrsbench`: evaluation benchmark (`training: false`, `evaluation: true`). Zero data leakage guaranteed.
+  - `vrsbench`: public evaluation benchmark (`training: false`, `evaluation: true`).
+- Leakage governance: `role_policy: enforced`, while recording `split_validation: PENDING` and `duplicate_audit: PENDING` until actual dataset acquisition.
 
 ### 6.5 Truthful Dynamic GeoChat Preflight Audit
 In [`src/router/capability_registry.py`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/SatQuery%20AI/src/router/capability_registry.py):
 - Evaluates real host environment dynamically:
-  - Host: Windows 10, Python 3.11.9, CPU-only (Profile D), 15.35 GB RAM, 0 CUDA GPUs.
+  - Host: Windows 10, Python 3.11.9, CPU-only (Profile D), 15.27 GB RAM, 0 CUDA GPUs.
+  - `CUDA`: `UNAVAILABLE`.
   - `GPU_VRAM`: `NOT_AVAILABLE`.
-  - `preflight_status`: `UNAVAILABLE`.
+  - `environment_preflight`: `COMPLETED`.
+  - `environment_result`: `UNAVAILABLE`.
   - `real_model_inference`: `NOT_EXECUTED`.
   - Active fallback: `deterministic_optical_spectral_analysis`.
 
 ---
 
-## 7. Full Automated Test Verification (47 Passing)
+## 7. Full Automated Test Verification (60 Passing across 7 Modules)
 
 Running `py -3.11 -m pytest tests/ -v`:
 ```text
 tests/test_day1.py (6 passed)
 tests/test_day2.py (8 passed)
 tests/test_day2_consistency.py (6 passed)
-tests/test_day3_integration.py (6 passed)
-tests/test_day3_optical.py (7 passed)
-tests/test_day3_sar.py (9 passed)
+tests/test_day3_integration.py (11 passed)
+tests/test_day3_optical.py (10 passed)
+tests/test_day3_sar.py (14 passed)
 tests/test_scientific_contracts.py (5 passed)
-======================== 47 passed, 1 warning in 4.81s ========================
+======================== 60 passed, 1 warning in 5.19s ========================
 ```
 
 ---
@@ -330,5 +337,6 @@ tests/test_scientific_contracts.py (5 passed)
 - `day-2-stable` (`d9cb2ca`): Query parsing, sensor-aware agentic routing, SAR separation, trace engine.
 - `day-2-corrected-stable` (`dfe10ac`): Implementation-integrity audit, honest execution state tracking, multi-dimensional capability registry, scientific numerical test suite.
 - `day-2-final-stable` (`1cfcb10`): Final capability status consistency check, dataset provenance metadata (`InputSource`, `DatasetRole`), and strict evaluation governance rules.
-- `day-3-stable`: Deterministic SAR engine, deterministic optical spectral engine, end-to-end query execution, dataset registry, truthful GeoChat preflight audit.
+- `day-3-stable` (`c39fbba`): Baseline deterministic SAR engine, deterministic optical spectral engine, end-to-end query execution, dataset registry, truthful GeoChat preflight audit.
+- `day-3-final-stable`: Final scientific and dataset integrity audited checkpoint with 60 automated tests across 7 test modules.
 

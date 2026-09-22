@@ -309,8 +309,8 @@ class AgenticRouter:
         tools = [
             "RasterInspector",
             "SpectralIndexEngine (NDVI/NDWI)",
-            "LandCoverClassProbabilityEstimator",
-            "ResponseComposer",
+            "RuleBasedLandCoverClassifier",
+            "OpticalStructuredResponseComposer",
         ]
         return RoutingDecision(
             query=query,

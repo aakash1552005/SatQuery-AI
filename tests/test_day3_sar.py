@@ -226,3 +226,88 @@ def test_sar_engine_analyze_raster():
     assert "PolarizationRatioEstimator" in tools
     assert "SARWaterDetector" in tools
     assert "SARStructuredResponseComposer" in tools
+
+
+def test_lee_filter_border_handling():
+    """Verify Lee filter handles array boundaries and border NaNs cleanly using reflection."""
+    lee = LeeSpeckleFilter(window_size=5, enl=4.0)
+    arr = np.full((12, 12), -15.0)
+    # Set corner and edge NaNs
+    arr[0, 0] = np.nan
+    arr[0, 5] = np.nan
+    arr[11, 11] = np.nan
+
+    res = lee.filter(arr, input_is_db=True, output_as_db=True)
+    out = res.filtered_array
+
+    # Boundary NaNs must be preserved
+    assert np.isnan(out[0, 0])
+    assert np.isnan(out[0, 5])
+    assert np.isnan(out[11, 11])
+
+    # Valid border pixels must remain finite and filtered
+    assert np.isfinite(out[0, 1])
+    assert np.isfinite(out[11, 0])
+    assert np.isfinite(out[5, 0])
+    assert math.isclose(float(out[0, 1]), -15.0, abs_tol=0.2)
+
+
+def test_water_threshold_provenance():
+    """Verify SARWaterDetector records raw, accepted, adjusted, and policy provenance."""
+    detector = SARWaterDetector(sanity_min_db=-25.0, sanity_max_db=-12.0)
+    arr = np.full((40, 40), -10.0)
+    arr[:15, :] = -22.0
+
+    res = detector.detect(arr, polarization="VV", apply_filter=False)
+    assert res.raw_threshold_db is not None
+    assert res.accepted_threshold_db is not None
+    assert isinstance(res.threshold_adjusted, bool)
+    assert res.threshold_policy["type"] == "configurable_sanity_bounds"
+    assert res.threshold_policy["min_db"] == -25.0
+    assert res.threshold_policy["max_db"] == -12.0
+
+
+def test_water_threshold_not_claimed_universal():
+    """Verify that water detection limitations explicitly refute universal threshold claims."""
+    detector = SARWaterDetector()
+    arr = np.full((30, 30), -12.0)
+    res = detector.detect(arr, polarization="VV", apply_filter=False)
+
+    limitations_text = " ".join(res.limitations)
+    assert "NOT a universal physical law" in limitations_text or "NOT a universal physical threshold" in limitations_text
+    assert "calibrated water-detection accuracy" in limitations_text
+
+
+def test_vv_vh_ratio_domain():
+    """
+    Verify linear ratio vs dB difference, and prove that directly dividing dB values
+    (VV_dB / VH_dB) is mathematically and physically rejected.
+    """
+    vv_db = -10.0
+    vh_db = -20.0
+
+    # True physical power ratio: 10^((-10 - (-20))/10) = 10^(1.0) = 10.0
+    linear_ratio = compute_sar_polarization_ratio_linear(vv_db, vh_db)
+    assert math.isclose(float(linear_ratio), 10.0, rel_tol=1e-4)
+
+    # Decibel difference: -10 - (-20) = 10 dB
+    db_diff = compute_sar_polarization_difference_db(vv_db, vh_db)
+    assert math.isclose(float(db_diff), 10.0, abs_tol=1e-4)
+
+    # Dividing dB values directly (-10 / -20 = 0.5) is physically meaningless
+    invalid_division = vv_db / vh_db
+    assert not math.isclose(invalid_division, float(linear_ratio))
+
+
+def test_sar_statistics_domain_labels():
+    """Verify SARBackscatterAnalysis explicitly documents domain (dB vs linear)."""
+    analyzer = SARBackscatterAnalysis()
+    arr = np.array([[-12.0, -14.0], [-10.0, -16.0]])
+
+    stats_db = analyzer.analyze(arr, polarization="VV", input_domain="dB")
+    assert stats_db.input_domain == "dB"
+    assert "decibel (dB)" in stats_db.domain_notes
+
+    stats_lin = analyzer.analyze(arr, polarization="VV", input_domain="linear_power")
+    assert stats_lin.input_domain == "linear_power"
+    assert "linear power" in stats_lin.domain_notes

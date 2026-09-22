@@ -141,11 +141,11 @@ def test_rule_based_land_cover():
 
 
 def test_optical_missing_band_refusal():
-    """Verify that an optical 3-band raster without NIR computes visible heuristics without crashing."""
+    """Verify that an optical 3-band raster without NIR returns explicit refusal message when NDVI is queried."""
     engine = DeterministicOpticalEngine()
     opt_path = SAMPLES_DIR / "optical" / "synthetic_optical_rgb.tif"
 
-    res, tools = engine.analyze_raster(opt_path, query="What is the land cover?")
+    res, tools = engine.analyze_raster(opt_path, query="What is the NDVI of this vegetation?")
 
     assert res.status == "EXECUTED"
     assert res.mechanism == "deterministic_optical_spectral_analysis"
@@ -153,6 +153,9 @@ def test_optical_missing_band_refusal():
     assert "RasterInspector" in tools
     assert "BandMappingValidator" in tools
     assert "RuleBasedLandCoverClassifier" in tools
+    # Explicit message asserting NDVI could not be computed
+    assert "NDVI cannot be computed because valid NIR and Red band mappings were not provided" in res.answer
+    assert any("NDVI cannot be computed" in lim for lim in res.limitations)
 
 
 def test_optical_engine_analyze_raster():
@@ -170,3 +173,40 @@ def test_optical_engine_analyze_raster():
     assert "SpectralIndexEngine (NDWI)" in tools
     assert "RuleBasedLandCoverClassifier" in tools
     assert "OpticalStructuredResponseComposer" in tools
+
+
+def test_explicit_band_metadata_mapping():
+    """Verify explicit metadata mapping priority over fallback indices."""
+    mapper = OpticalBandMapper(allow_fallback_assumptions=False)
+    bnames = ["B04_Red", "B03_Green", "B02_Blue", "B08_NIR"]
+    bmap = mapper.map_bands(4, bnames)
+    assert bmap.red_idx == 1
+    assert bmap.green_idx == 2
+    assert bmap.blue_idx == 3
+    assert bmap.nir_idx == 4
+    assert "explicit_metadata" in bmap.mapping_source
+
+
+def test_ambiguous_band_refusal():
+    """Verify that generic band names without explicit metadata or schema are left unresolved when fallback is disabled."""
+    mapper = OpticalBandMapper(allow_fallback_assumptions=False)
+    bnames = ["layer_1", "layer_2", "layer_3", "layer_4"]
+    bmap = mapper.map_bands(4, bnames)
+    assert bmap.red_idx is None
+    assert bmap.green_idx is None
+    assert bmap.blue_idx is None
+    assert bmap.nir_idx is None
+    assert bmap.mapping_source == "unresolved_missing_metadata"
+
+
+def test_rule_based_classifier_is_not_probability_model():
+    """Verify that rule-based classification outputs deterministic rule logs, not probabilistic outputs."""
+    classifier = RuleBasedLandCoverClassifier()
+    res = classifier.classify(ndvi=np.array([[0.6]]), ndwi=np.array([[-0.2]]))
+    assert res.dominant_class == "DENSE_VEGETATION"
+    assert isinstance(res.rules_applied, list)
+    assert len(res.rules_applied) > 0
+    # Confirm it does not invent confidence scores or probability distributions
+    assert not hasattr(res, "probabilities")
+    assert not hasattr(res, "confidence_score")
+
