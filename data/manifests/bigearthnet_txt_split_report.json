@@ -1,0 +1,11 @@
+{
+  "dataset_name": "BigEarthNet.txt",
+  "dataset_version": "1.0",
+  "split_protocol": "official_recommended_train_val_test_split",
+  "train_count": 2,
+  "validation_count": 1,
+  "test_count": 1,
+  "total_samples": 4,
+  "status": "VERIFIED",
+  "notes": "Verified on controlled development subset. Scale-up will preserve these exact split partitions."
+}

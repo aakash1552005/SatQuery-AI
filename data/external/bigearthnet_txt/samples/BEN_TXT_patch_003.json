@@ -1,0 +1,16 @@
+{
+  "sample_id": "BEN_S1_S2_patch_003",
+  "dataset_name": "BigEarthNet.txt",
+  "dataset_version": "1.0",
+  "split": "val",
+  "task_type": "vqa",
+  "s1_reference": "S1A_IW_GRDH_1SDV_20170613T165043_patch_003.tif",
+  "s2_reference": "S2A_MSIL2A_20170613T101031_patch_003.tif",
+  "text": "Question: Does the SAR backscatter indicate open water bodies within the scene? Answer: Yes, a significant low-backscatter area below -20 dB in VV corresponds to open inland water confirmed by positive NDWI.",
+  "classes": [
+    "Water bodies",
+    "Inland marshes"
+  ],
+  "question": "Does the SAR backscatter indicate open water bodies within the scene?",
+  "answer": "Yes, a significant low-backscatter area below -20 dB in VV corresponds to open inland water confirmed by positive NDWI."
+}

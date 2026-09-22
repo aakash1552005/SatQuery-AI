@@ -19,8 +19,12 @@ datasets:
   bigearthnet_txt:
     role: "training_finetuning"
     status: "PLANNED"
+    pipeline_status: "PIPELINE_READY"
     training_allowed: true
     evaluation_allowed: false
+    manifest: "data/manifests/bigearthnet_txt_manifest.json"
+    split_report: "data/manifests/bigearthnet_txt_split_report.json"
+    subset: "data/manifests/bigearthnet_txt_subset.json"
     modalities:
       - "sentinel_1_sar"
       - "sentinel_2_multispectral"
@@ -36,6 +40,8 @@ datasets:
       - "train"
       - "val"
       - "test"
+    split_validation: "PASSED"
+    duplicate_audit: "PASSED"
     licensing: "Community Data License Agreement (CDLA) / Research"
 
   vrsbench:

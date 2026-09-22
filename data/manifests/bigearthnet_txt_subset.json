@@ -1,0 +1,12 @@
+{
+  "subset_name": "bigearthnet_txt_dev_tier1",
+  "purpose": "Day 4 engineering validation, dataloader verification, and LoRA adaptation preflight",
+  "sample_count": 4,
+  "sample_ids": [
+    "BEN_S1_S2_patch_001",
+    "BEN_S1_S2_patch_002",
+    "BEN_S1_S2_patch_003",
+    "BEN_S1_S2_patch_004"
+  ],
+  "created_at": "2026-09-22"
+}

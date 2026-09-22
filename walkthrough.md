@@ -327,7 +327,9 @@ tests/test_day3_integration.py (11 passed)
 tests/test_day3_optical.py (10 passed)
 tests/test_day3_sar.py (14 passed)
 tests/test_scientific_contracts.py (5 passed)
-======================== 60 passed, 1 warning in 5.19s ========================
+tests/test_day4_dataset.py (9 passed)
+tests/test_day4_adaptation.py (8 passed)
+======================== 77 passed, 1 warning in 8.51s ========================
 ```
 
 ---
@@ -339,10 +341,18 @@ tests/test_scientific_contracts.py (5 passed)
 - `day-2-final-stable` (`1cfcb10`): Final capability status consistency check, dataset provenance metadata (`InputSource`, `DatasetRole`), and strict evaluation governance rules.
 - `day-3-stable` (`c39fbba`): Baseline deterministic SAR engine, deterministic optical spectral engine, end-to-end query execution, dataset registry, truthful GeoChat preflight audit.
 - `day-3-final-stable`: Final scientific and dataset integrity audited checkpoint with 60 automated tests across 7 test modules.
+- `day-4-stable`: BigEarthNet.txt multimodal dataset pipeline, strict S1/S2/Text alignment, duplicate & leakage audit, RS-VLM / LoRA adaptation architecture, and truthful hardware training preflight with 77 automated tests across 9 test modules.
 
 ---
 
-## 9. Day 3 Status & Day 4 Gate
-The Day 3 milestone is verified and frozen within the documented engineering and scientific assumptions. Real-world scientific validation on labeled remote-sensing datasets remains pending.
-Day 4 (multimodal dataset pipeline for BigEarthNet.txt and LoRA RS adaptation) is ready to begin upon user command.
+## 9. Day 4 Status & Day 5 Readiness Gate
+The Day 4 milestone is verified and frozen:
+1. **BigEarthNet.txt Dataset Subsystem**: Structured under `data/external/bigearthnet_txt/` with official provenance (arXiv:2603.29630), machine-readable manifests (`data/manifests/bigearthnet_txt_manifest.json`), split report, and controlled development subset (`bigearthnet_txt_dev_tier1`).
+2. **Multimodal Alignment & Governance**: Validated spatial/temporal S1/S2/Text alignment with strict duplicate and leakage audit (`audit_dataset_duplicates_and_leakage`). VRSBench remains locked as evaluation-only.
+3. **PEFT/LoRA RS Adaptation Pipeline**: Fully specified configuration (`configs/training/bigearthnet_txt_lora.yaml`), PyTorch `DataLoader` with multimodal collation, and physics-preserving preprocessing.
+4. **Truthful Compute Preflight**: Local Profile D host (AMD64 12-core, CPU-only, ~15 GB RAM, 0 CUDA GPUs) truthfully reports `training_status: NOT_EXECUTED`, `pipeline_status: PIPELINE_READY`, `compute_target: remote_gpu`. No fake training or fake checkpoints.
+5. **Regression Verification**: 77/77 tests passing across 9 modules.
+
+Day 5 (multitemporal analysis, AROSICS coregistration, optical-SAR fusion) is ready to begin upon user command.
+
 

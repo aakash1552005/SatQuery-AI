@@ -1,0 +1,47 @@
+# SatQuery AI -- BigEarthNet.txt LoRA Fine-Tuning Configuration
+# SIH Problem Statement 26167
+# Primary Training / Fine-Tuning Dataset: BigEarthNet.txt (arXiv:2603.29630)
+
+dataset: "BigEarthNet.txt"
+dataset_role: "training_finetuning"
+manifest_path: "data/manifests/bigearthnet_txt_manifest.json"
+split_report_path: "data/manifests/bigearthnet_txt_split_report.json"
+
+model_name_or_path: "MBZUAI/geochat-7b"
+output_dir: "models/checkpoints/bigearthnet_txt_lora"
+
+# LoRA / PEFT Hyperparameters
+r: 16
+lora_alpha: 32
+lora_dropout: 0.05
+target_modules:
+  - "q_proj"
+  - "v_proj"
+  - "k_proj"
+  - "o_proj"
+task_type: "CAUSAL_LM"
+bias: "none"
+modules_to_save:
+  - "mm_projector"
+
+# Optimization Parameters
+learning_rate: 0.0002
+weight_decay: 0.01
+warmup_ratio: 0.03
+batch_size: 2
+gradient_accumulation_steps: 4
+num_epochs: 3
+max_grad_norm: 1.0
+bf16: true
+fp16: false
+
+# Execution Logging
+logging_steps: 10
+save_steps: 250
+seed: 42
+
+# Compute Target
+# Profile D is CPU-only; this configuration targets remote NVIDIA GPU execution
+compute_target: "remote_gpu"
+min_gpu_vram_gb: 16.0
+recommended_gpu: "NVIDIA RTX 4090 / A100 / H100 (Profile A/B)"

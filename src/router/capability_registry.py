@@ -222,6 +222,30 @@ class CapabilityRegistry:
             primary_engine="CROMA Pretrained Checkpoint",
             requires_gpu=True,
         ))
+        self.register(CapabilityRecord(
+            name="rs_adaptation",
+            description="RS-VLM LoRA adaptation pipeline for BigEarthNet.txt multimodal corpus",
+            status=CapabilityStatus.READY,
+            routing_readiness="N/A",
+            execution_readiness="PIPELINE_READY (Configured for remote NVIDIA GPU; CPU host training not feasible)",
+            model_availability="PIPELINE_READY",
+            compute_readiness="GPU_REQUIRED",
+            automated_test_coverage="PIPELINE_TESTED_DAY_4",
+            primary_engine="MBZUAI GeoChat-7B + PEFT/LoRA Adapter",
+            license_note="CDLA-Permissive-1.0 (BigEarthNet.txt) / Apache-2.0 (GeoChat)",
+            requires_gpu=True,
+            structured_status={
+                "dataset": "BigEarthNet.txt",
+                "dataset_role": "training_finetuning",
+                "dataset_ready": True,
+                "pipeline_ready": True,
+                "pipeline_status": "PIPELINE_READY",
+                "training_status": "NOT_EXECUTED",
+                "evaluation_status": "NOT_EVALUATED",
+                "compute_target": "remote_gpu",
+                "reason": "Current host Profile D is CPU-only (0 CUDA GPUs, 15.27 GB RAM); real LoRA fine-tuning requires CUDA GPU with >=16GB VRAM.",
+            },
+        ))
         # Execute initial environment preflight check on current host
         self.run_geochat_preflight()
 

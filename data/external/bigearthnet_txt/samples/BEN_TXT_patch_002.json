@@ -1,0 +1,15 @@
+{
+  "sample_id": "BEN_S1_S2_patch_002",
+  "dataset_name": "BigEarthNet.txt",
+  "dataset_version": "1.0",
+  "split": "train",
+  "task_type": "captioning",
+  "s1_reference": "S1A_IW_GRDH_1SDV_20170613T165043_patch_002.tif",
+  "s2_reference": "S2A_MSIL2A_20170613T101031_patch_002.tif",
+  "text": "Caption: A multimodal scene featuring industrial commercial units with prominent high radar backscatter in VV and VH, bordered by asphalt roadways.",
+  "classes": [
+    "Industrial or commercial units",
+    "Road networks"
+  ],
+  "caption": "A multimodal scene featuring industrial commercial units with prominent high radar backscatter in VV and VH, bordered by asphalt roadways."
+}

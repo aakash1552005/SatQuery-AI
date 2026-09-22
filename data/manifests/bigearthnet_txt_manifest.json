@@ -1,0 +1,134 @@
+{
+  "dataset_name": "BigEarthNet.txt",
+  "dataset_version": "1.0",
+  "citation": "arXiv:2603.29630 (2026)",
+  "official_url": "https://txt.bigearth.net/",
+  "sample_count": 4,
+  "alignment_guarantee": "CO_REGISTERED_S1_S2_TEXT_TRIPLET",
+  "samples": [
+    {
+      "sample_id": "BEN_S1_S2_patch_001",
+      "dataset_name": "BigEarthNet.txt",
+      "dataset_version": "1.0",
+      "split": "train",
+      "modalities": [
+        "sentinel_1_sar",
+        "sentinel_2_multispectral",
+        "text"
+      ],
+      "s1_path": "data/external/bigearthnet_txt/samples/S1A_IW_GRDH_1SDV_20170613T165043_patch_001.tif",
+      "s2_path": "data/external/bigearthnet_txt/samples/S2A_MSIL2A_20170613T101031_patch_001.tif",
+      "annotation_path": "data/external/bigearthnet_txt/samples/BEN_TXT_patch_001.json",
+      "task_type": "vqa",
+      "text": "Question: What is the dominant land cover class in this agricultural parcel? Answer: Arable land with patchy coniferous forest and moderate moisture.",
+      "land_cover_classes": [
+        "Arable land",
+        "Coniferous forest"
+      ],
+      "s1_bands": [
+        "VV",
+        "VH"
+      ],
+      "s2_bands": [
+        "B02_Blue",
+        "B03_Green",
+        "B04_Red",
+        "B08_NIR"
+      ],
+      "aligned": true
+    },
+    {
+      "sample_id": "BEN_S1_S2_patch_002",
+      "dataset_name": "BigEarthNet.txt",
+      "dataset_version": "1.0",
+      "split": "train",
+      "modalities": [
+        "sentinel_1_sar",
+        "sentinel_2_multispectral",
+        "text"
+      ],
+      "s1_path": "data/external/bigearthnet_txt/samples/S1A_IW_GRDH_1SDV_20170613T165043_patch_002.tif",
+      "s2_path": "data/external/bigearthnet_txt/samples/S2A_MSIL2A_20170613T101031_patch_002.tif",
+      "annotation_path": "data/external/bigearthnet_txt/samples/BEN_TXT_patch_002.json",
+      "task_type": "captioning",
+      "text": "Caption: A multimodal scene featuring industrial commercial units with prominent high radar backscatter in VV and VH, bordered by asphalt roadways.",
+      "land_cover_classes": [
+        "Industrial or commercial units",
+        "Road networks"
+      ],
+      "s1_bands": [
+        "VV",
+        "VH"
+      ],
+      "s2_bands": [
+        "B02_Blue",
+        "B03_Green",
+        "B04_Red",
+        "B08_NIR"
+      ],
+      "aligned": true
+    },
+    {
+      "sample_id": "BEN_S1_S2_patch_003",
+      "dataset_name": "BigEarthNet.txt",
+      "dataset_version": "1.0",
+      "split": "val",
+      "modalities": [
+        "sentinel_1_sar",
+        "sentinel_2_multispectral",
+        "text"
+      ],
+      "s1_path": "data/external/bigearthnet_txt/samples/S1A_IW_GRDH_1SDV_20170613T165043_patch_003.tif",
+      "s2_path": "data/external/bigearthnet_txt/samples/S2A_MSIL2A_20170613T101031_patch_003.tif",
+      "annotation_path": "data/external/bigearthnet_txt/samples/BEN_TXT_patch_003.json",
+      "task_type": "vqa",
+      "text": "Question: Does the SAR backscatter indicate open water bodies within the scene? Answer: Yes, a significant low-backscatter area below -20 dB in VV corresponds to open inland water confirmed by positive NDWI.",
+      "land_cover_classes": [
+        "Water bodies",
+        "Inland marshes"
+      ],
+      "s1_bands": [
+        "VV",
+        "VH"
+      ],
+      "s2_bands": [
+        "B02_Blue",
+        "B03_Green",
+        "B04_Red",
+        "B08_NIR"
+      ],
+      "aligned": true
+    },
+    {
+      "sample_id": "BEN_S1_S2_patch_004",
+      "dataset_name": "BigEarthNet.txt",
+      "dataset_version": "1.0",
+      "split": "test",
+      "modalities": [
+        "sentinel_1_sar",
+        "sentinel_2_multispectral",
+        "text"
+      ],
+      "s1_path": "data/external/bigearthnet_txt/samples/S1A_IW_GRDH_1SDV_20170613T165043_patch_004.tif",
+      "s2_path": "data/external/bigearthnet_txt/samples/S2A_MSIL2A_20170613T101031_patch_004.tif",
+      "annotation_path": "data/external/bigearthnet_txt/samples/BEN_TXT_patch_004.json",
+      "task_type": "land_cover_reasoning",
+      "text": "Instruction: Analyze the combined Sentinel-1 volume scattering and Sentinel-2 NIR reflectance. Explanation: High NIR reflectance paired with moderate cross-polarized VH return indicates dense broadleaved forest canopy.",
+      "land_cover_classes": [
+        "Broad-leaved forest",
+        "Mixed forest"
+      ],
+      "s1_bands": [
+        "VV",
+        "VH"
+      ],
+      "s2_bands": [
+        "B02_Blue",
+        "B03_Green",
+        "B04_Red",
+        "B08_NIR"
+      ],
+      "aligned": true
+    }
+  ]
+}

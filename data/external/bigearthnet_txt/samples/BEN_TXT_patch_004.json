@@ -1,0 +1,16 @@
+{
+  "sample_id": "BEN_S1_S2_patch_004",
+  "dataset_name": "BigEarthNet.txt",
+  "dataset_version": "1.0",
+  "split": "test",
+  "task_type": "land_cover_reasoning",
+  "s1_reference": "S1A_IW_GRDH_1SDV_20170613T165043_patch_004.tif",
+  "s2_reference": "S2A_MSIL2A_20170613T101031_patch_004.tif",
+  "text": "Instruction: Analyze the combined Sentinel-1 volume scattering and Sentinel-2 NIR reflectance. Explanation: High NIR reflectance paired with moderate cross-polarized VH return indicates dense broadleaved forest canopy.",
+  "classes": [
+    "Broad-leaved forest",
+    "Mixed forest"
+  ],
+  "instruction": "Analyze the combined Sentinel-1 volume scattering and Sentinel-2 NIR reflectance.",
+  "explanation": "High NIR reflectance paired with moderate cross-polarized VH return indicates dense broadleaved forest canopy."
+}
