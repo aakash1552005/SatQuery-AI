@@ -198,33 +198,53 @@ Day 3 will perform the actual GeoChat preflight. The current repository status i
 | **real_model_inference** | `NOT_EXECUTED` | Never report mock/stub execution as real inference |
 | **final_capability** | `UNAVAILABLE` | Correctly gated per Profile D CPU host |
 
+### 2.8 Dataset Provenance Tracking & Governance Rules
+In [`src/contracts/raster_contracts.py`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/SatQuery%20AI/src/contracts/raster_contracts.py):
+- **InputSource**:
+  - `USER_UPLOAD`: Standard operational uploads.
+  - `SYNTHETIC_ENGINEERING`: Unit & integration validation rasters.
+  - `BIGEARTHNET_TXT`: Model adaptation & training corpus.
+  - `VRSBENCH`: Vision-language benchmark evaluation dataset.
+  - `UNKNOWN`: Unclassified rasters.
+- **DatasetRole**:
+  - `INFERENCE`, `TRAINING`, `VALIDATION`, `BENCHMARK_EVALUATION`, `UNASSIGNED`.
+- **Governance Enforcers**:
+  1. *Training datasets must never automatically become evaluation datasets.*
+  2. *VRSBench evaluation data must never be used for fine-tuning or training.*
+
 ---
 
 ## 5. Automated Test Verification
 
-Running `pytest tests/ -v`:
+Running `py -3.11 -m pytest tests/ -v`:
 ```text
-tests/test_day1.py::test_health_and_status PASSED                        [  5%]
-tests/test_day1.py::test_raster_inspector_optical PASSED                 [ 10%]
-tests/test_day1.py::test_raster_inspector_multispectral PASSED           [ 15%]
-tests/test_day1.py::test_raster_inspector_sar PASSED                     [ 21%]
-tests/test_day1.py::test_compatibility_temporal_pair PASSED              [ 26%]
-tests/test_day1.py::test_upload_and_compatibility_api PASSED             [ 31%]
-tests/test_day2.py::test_query_parser_classification PASSED              [ 36%]
-tests/test_day2.py::test_capability_registry PASSED                      [ 42%]
-tests/test_day2.py::test_sar_pathway_separation PASSED                   [ 47%]
-tests/test_day2.py::test_missing_input_refusal_demo6 PASSED              [ 52%]
-tests/test_day2.py::test_multimodal_fusion_routing PASSED                [ 57%]
-tests/test_day2.py::test_execution_trace_engine PASSED                   [ 63%]
-tests/test_day2.py::test_api_capabilities_endpoint PASSED                [ 68%]
-tests/test_day2.py::test_api_query_flow PASSED                           [ 73%]
-tests/test_scientific_contracts.py::test_ndvi_known_values PASSED        [ 78%]
-tests/test_scientific_contracts.py::test_ndvi_zero_denominator_guard PASSED [ 84%]
-tests/test_scientific_contracts.py::test_ndwi_and_mndwi_known_values PASSED [ 89%]
-tests/test_scientific_contracts.py::test_sar_linear_ratio_from_db PASSED [ 94%]
+tests/test_day1.py::test_health_and_status PASSED                        [  4%]
+tests/test_day1.py::test_raster_inspector_optical PASSED                 [  8%]
+tests/test_day1.py::test_raster_inspector_multispectral PASSED           [ 12%]
+tests/test_day1.py::test_raster_inspector_sar PASSED                     [ 16%]
+tests/test_day1.py::test_compatibility_temporal_pair PASSED              [ 20%]
+tests/test_day1.py::test_upload_and_compatibility_api PASSED             [ 24%]
+tests/test_day2.py::test_query_parser_classification PASSED              [ 28%]
+tests/test_day2.py::test_capability_registry PASSED                      [ 32%]
+tests/test_day2.py::test_sar_pathway_separation PASSED                   [ 36%]
+tests/test_day2.py::test_missing_input_refusal_demo6 PASSED              [ 40%]
+tests/test_day2.py::test_multimodal_fusion_routing PASSED                [ 44%]
+tests/test_day2.py::test_execution_trace_engine PASSED                   [ 48%]
+tests/test_day2.py::test_api_capabilities_endpoint PASSED                [ 52%]
+tests/test_day2.py::test_api_query_flow PASSED                           [ 56%]
+tests/test_day2_consistency.py::test_optical_mechanism_matches_actual_execution PASSED [ 60%]
+tests/test_day2_consistency.py::test_sar_not_implemented_status PASSED   [ 64%]
+tests/test_day2_consistency.py::test_sar_scheduled_vs_executed PASSED    [ 68%]
+tests/test_day2_consistency.py::test_geochat_preflight_does_not_claim_real_inference PASSED [ 72%]
+tests/test_day2_consistency.py::test_capability_registry_matches_actual_execution_state PASSED [ 76%]
+tests/test_day2_consistency.py::test_dataset_provenance_and_governance_rules PASSED [ 80%]
+tests/test_scientific_contracts.py::test_ndvi_known_values PASSED        [ 84%]
+tests/test_scientific_contracts.py::test_ndvi_zero_denominator_guard PASSED [ 88%]
+tests/test_scientific_contracts.py::test_ndwi_and_mndwi_known_values PASSED [ 92%]
+tests/test_scientific_contracts.py::test_sar_linear_ratio_from_db PASSED [ 96%]
 tests/test_scientific_contracts.py::test_sar_db_linear_roundtrip PASSED  [100%]
 
-======================== 19 passed, 1 warning in 0.62s ========================
+======================== 25 passed, 1 warning in 0.75s ========================
 ```
 
 ---
@@ -233,4 +253,4 @@ tests/test_scientific_contracts.py::test_sar_db_linear_roundtrip PASSED  [100%]
 - `day-1-stable` (`aa3b04f`): Core GIS infrastructure, raster inspector, compatibility gate, test data.
 - `day-2-stable` (`d9cb2ca`): Query parsing, sensor-aware agentic routing, SAR separation, trace engine.
 - `day-2-corrected-stable` (`dfe10ac`): Implementation-integrity audit, honest execution state tracking, multi-dimensional capability registry, scientific numerical test suite.
-- `day-2-final-stable`: Final capability status consistency check, optical query path audit, GeoChat structured preflight record, and unified fallback wording.
+- `day-2-final-stable` (`1cfcb10`): Final capability status consistency check, dataset provenance metadata (`InputSource`, `DatasetRole`), and strict evaluation governance rules.
