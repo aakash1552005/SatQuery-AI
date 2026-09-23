@@ -1,12 +1,19 @@
 """
 Multimodal Remote Sensing Preprocessor for BigEarthNet.txt.
-Handles SAR physical calibration, optical reflectance normalization, text instruction formatting,
-and batch collation with preserved provenance.
+Handles:
+- SAR physical calibration: dB -> linear power, Lee speckle filter, linear polarization ratios
+- Optical reflectance: native 16-bit surface reflectance preservation, per-band statistics, nodata guards
+- Text instruction formatting across binary, mcq, bounding box, and captioning tasks
+- Multimodal batch collation preserving S1/S2 physical provenance and data types
 """
 
 from typing import Optional, Any
 import numpy as np
-from src.analysis.sar_tools import LeeSpeckleFilter, sar_db_to_linear
+from src.analysis.sar_tools import LeeSpeckleFilter, sar_db_to_linear, sar_linear_to_db
+from src.analysis.numerical_math import (
+    compute_sar_polarization_ratio_linear,
+    compute_sar_polarization_difference_db,
+)
 
 try:
     import torch
@@ -17,7 +24,7 @@ except ImportError:
 class MultimodalRSPreprocessor:
     """
     Unified preprocessor for Sentinel-1 SAR, Sentinel-2 Multispectral, and RS-VLM Text Prompts.
-    Maintains physical validity and provenance across modalities.
+    Preserves 16-bit radiometric fidelity and enforces physical validity across modalities.
     """
 
     def __init__(
@@ -32,6 +39,50 @@ class MultimodalRSPreprocessor:
         self.optical_scale_factor = optical_scale_factor
         self.target_image_size = target_image_size
         self.lee_filter = LeeSpeckleFilter(window_size=sar_filter_window, enl=4.0)
+
+    def compute_sar_stats(self, sar_raw: np.ndarray) -> dict[str, dict[str, float]]:
+        """Compute per-channel statistics in both decibels and linear power."""
+        arr = np.asarray(sar_raw, dtype=np.float64)
+        ch_names = ["VV", "VH"] if arr.shape[0] >= 2 else [f"band_{i}" for i in range(arr.shape[0])]
+        stats = {}
+
+        for c, name in enumerate(ch_names):
+            band = arr[c]
+            valid = band[np.isfinite(band)]
+            if len(valid) == 0:
+                stats[name] = {"mean_db": 0.0, "std_db": 0.0, "mean_linear": 0.0, "valid_count": 0}
+            else:
+                mean_db = float(np.mean(valid))
+                std_db = float(np.std(valid))
+                lin = sar_db_to_linear(valid)
+                stats[name] = {
+                    "mean_db": round(mean_db, 3),
+                    "std_db": round(std_db, 3),
+                    "mean_linear": float(np.mean(lin)),
+                    "valid_count": int(len(valid)),
+                }
+        return stats
+
+    def compute_optical_stats(self, optical_raw: np.ndarray) -> dict[str, dict[str, float]]:
+        """Compute per-band statistics for 16-bit surface reflectance."""
+        arr = np.asarray(optical_raw, dtype=np.float64)
+        band_names = ["B02_Blue", "B03_Green", "B04_Red", "B08_NIR"] if arr.shape[0] >= 4 else [f"band_{i}" for i in range(arr.shape[0])]
+        stats = {}
+
+        for c, name in enumerate(band_names):
+            band = arr[c]
+            valid = band[np.isfinite(band)]
+            if len(valid) == 0:
+                stats[name] = {"min": 0.0, "max": 0.0, "mean": 0.0, "std": 0.0, "valid_count": 0}
+            else:
+                stats[name] = {
+                    "min": float(np.min(valid)),
+                    "max": float(np.max(valid)),
+                    "mean": float(np.mean(valid)),
+                    "std": float(np.std(valid)),
+                    "valid_count": int(len(valid)),
+                }
+        return stats
 
     def preprocess_sar(self, sar_raw: np.ndarray) -> np.ndarray:
         """
@@ -59,43 +110,85 @@ class MultimodalRSPreprocessor:
 
         return np.stack(filtered_bands, axis=0)
 
-    def preprocess_optical(self, optical_raw: np.ndarray) -> np.ndarray:
+    def preprocess_optical(
+        self,
+        optical_raw: np.ndarray,
+        nodata: Optional[float] = None,
+        clip_percentiles: Optional[tuple[float, float]] = None,
+    ) -> np.ndarray:
         """
-        Preprocess 4-band Sentinel-2 Optical (B02, B03, B04, B08) in surface reflectance [0, 10000].
-        1. Scales reflectance: x / 10000.0.
-        2. Clips to physically plausible surface reflectance [0.0, 1.0].
+        Preprocess 4-band Sentinel-2 Optical (B02, B03, B04, B08) in surface reflectance.
+        Preserves 16-bit radiometric fidelity without arbitrary 8-bit quantization.
+        1. Masks nodata values if specified.
+        2. Applies optional percentile clipping if configured.
+        3. Scales surface reflectance [0, 10000] into standard [0.0, 1.0] float32.
         Returns float32 array of shape (4, H, W).
         """
         arr = optical_raw.astype(np.float32)
+
+        if nodata is not None:
+            mask = (arr == nodata)
+            arr[mask] = 0.0
+
+        if clip_percentiles:
+            low_p, high_p = clip_percentiles
+            for c in range(arr.shape[0]):
+                valid_pixels = arr[c][arr[c] > 0]
+                if len(valid_pixels) > 0:
+                    v_low, v_high = np.percentile(valid_pixels, (low_p, high_p))
+                    arr[c] = np.clip(arr[c], v_low, v_high)
+
+        # Scale reflectance: native Sentinel-2 L2A integers / 10000.0 -> [0.0, 1.0]
         scaled = np.clip(arr / self.optical_scale_factor, 0.0, 1.0)
         return scaled
+
+    def compute_sar_polarization_features(self, vv_db: np.ndarray, vh_db: np.ndarray) -> dict[str, np.ndarray]:
+        """
+        Compute physically valid SAR polarization features.
+        - Linear power ratio: 10^((VV_dB - VH_dB)/10)
+        - Decibel difference: VV_dB - VH_dB
+        Strictly guards against invalid direct dB division.
+        """
+        ratio_linear = compute_sar_polarization_ratio_linear(vv_db, vh_db)
+        diff_db = compute_sar_polarization_difference_db(vv_db, vh_db)
+        return {
+            "linear_ratio": ratio_linear,
+            "difference_db": diff_db,
+        }
 
     def format_instruction_prompt(self, sample_record: dict) -> str:
         """
         Format task-aware instruction prompt for RS-VLM / GeoChat alignment.
         Supports:
-        - vqa: "User: <image_s1><image_s2> Question: {q} Assistant: {a}"
+        - binary: "User: <image_s1><image_s2> {question} Answer with 'yes' or 'no'. Assistant: {answer}"
+        - mcq: "User: <image_s1><image_s2> {question} Assistant: {answer}"
+        - bounding box: "User: <image_s1><image_s2> Detect and localize {target}. Assistant: {answer}"
         - captioning: "User: <image_s1><image_s2> Provide a comprehensive remote sensing description of this scene. Assistant: {caption}"
-        - land_cover_reasoning: "User: <image_s1><image_s2> {instruction} Assistant: {explanation}"
+        - general vqa / land_cover_reasoning
         """
         task = sample_record.get("task_type", "vqa").lower()
+        q = sample_record.get("question") or sample_record.get("text", "")
+        a = sample_record.get("answer", "")
 
-        if task == "vqa" and "question" in sample_record:
-            q = sample_record["question"]
-            a = sample_record.get("answer", "")
+        if task == "binary":
+            return f"User: <image_s1><image_s2> {q}\nAnswer with 'yes' or 'no'.\nAssistant: {a}"
+        elif task == "mcq":
+            return f"User: <image_s1><image_s2> {q}\nAssistant: {a}"
+        elif task in ("bounding box", "grounding"):
+            return f"User: <image_s1><image_s2> Detect and localize the specified land cover features: {q}\nAssistant: {a}"
+        elif task == "captioning":
+            caption = sample_record.get("caption") or a or q
+            return f"User: <image_s1><image_s2> Provide a comprehensive remote sensing description of this scene.\nAssistant: {caption}"
+        elif task == "land_cover_reasoning":
+            inst = sample_record.get("instruction", q)
+            exp = sample_record.get("explanation", a)
+            return f"User: <image_s1><image_s2> {inst}\nAssistant: {exp}"
+        elif task == "vqa":
             return f"User: <image_s1><image_s2> Question: {q}\nAssistant: {a}"
 
-        elif task == "captioning" and "caption" in sample_record:
-            cap = sample_record["caption"]
-            return f"User: <image_s1><image_s2> Provide a comprehensive remote sensing description of this scene.\nAssistant: {cap}"
-
-        elif task == "land_cover_reasoning" and "instruction" in sample_record:
-            inst = sample_record["instruction"]
-            exp = sample_record.get("explanation", "")
-            return f"User: <image_s1><image_s2> {inst}\nAssistant: {exp}"
-
-        # Fallback to general text
-        text = sample_record.get("text", "")
+        # Fallback to general text or question
+        if q:
+            return f"User: <image_s1><image_s2> Question: {q}\nAssistant: {a or text}"
         return f"User: <image_s1><image_s2> Analyze this multimodal remote sensing pair.\nAssistant: {text}"
 
     def collate_fn(self, batch: list[dict[str, Any]]) -> dict[str, Any]:
