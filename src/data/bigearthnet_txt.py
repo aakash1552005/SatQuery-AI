@@ -366,27 +366,48 @@ class BigEarthNetTxtDataset(Dataset):
         split: Optional[str] = None,
         preprocessor: Optional[Any] = None,
         root_dir: Optional[Path] = None,
+        require_images: bool = True,
     ):
         self.manifest_path = Path(manifest_path)
         self.root_dir = root_dir or Path.cwd()
         self.split = split
         self.preprocessor = preprocessor
+        self.require_images = require_images
 
         with open(self.manifest_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         raw_samples = data.get("samples", [])
-        if self.split:
-            self.samples = [s for s in raw_samples if s.get("split", "").lower() == self.split.lower()]
-        else:
-            self.samples = raw_samples
+        filtered = []
+        for s in raw_samples:
+            if self.split:
+                s_split = s.get("split") or s.get("official_split", "")
+                if s_split.lower() != self.split.lower():
+                    continue
+
+            # In training mode, reject samples that do not have physical imagery
+            if self.require_images:
+                if "image_available" in s and not s["image_available"]:
+                    continue
+                s1_p = Path(s.get("s1_path", ""))
+                if not s1_p.is_absolute():
+                    s1_p = self.root_dir / s1_p
+                s2_p = Path(s.get("s2_path", ""))
+                if not s2_p.is_absolute():
+                    s2_p = self.root_dir / s2_p
+                if not (s1_p.exists() and s2_p.exists()):
+                    continue
+
+            filtered.append(s)
+
+        self.samples = filtered
 
     def __len__(self) -> int:
         return len(self.samples)
 
     def __getitem__(self, idx: int) -> dict[str, Any]:
         item = self.samples[idx]
-        sample_id = item["sample_id"]
+        sample_id = item.get("sample_id") or item.get("patch_id", f"sample_{idx}")
 
         # 1. Load S1 SAR
         s1_file = Path(item["s1_path"])

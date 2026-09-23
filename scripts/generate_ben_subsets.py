@@ -15,7 +15,13 @@ import pyarrow.parquet as pq
 import pandas as pd
 import numpy as np
 
+import sys
 ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from src.data.storage_manager import get_data_root
+
 PARQUET_PATH = ROOT / "data" / "external" / "bigearthnet_txt" / "metadata" / "BigEarthNet.txt.parquet"
 MANIFESTS_DIR = ROOT / "data" / "manifests"
 
@@ -55,12 +61,36 @@ def sample_split(
             # Extract bbox tokens if present
             bbox = raw_output
 
+        s1_rel_path = f"data/external/bigearthnet_txt/images/s1/{s1_name}.tif"
+        s2_rel_path = f"data/external/bigearthnet_txt/images/s2/{s2_patch_id}.tif"
+
+        # Check physical image existence on disk via get_data_root()
+        data_root = get_data_root()
+        s1_abs = data_root / "external" / "bigearthnet_txt" / "images" / "s1" / f"{s1_name}.tif"
+        s2_abs = data_root / "external" / "bigearthnet_txt" / "images" / "s2" / f"{s2_patch_id}.tif"
+        s1_exists = s1_abs.exists()
+        s2_exists = s2_abs.exists()
+        image_available = (s1_exists and s2_exists)
+
+        if image_available:
+            verification_status = "REAL_LOCAL_IMAGE"
+        elif s1_exists or s2_exists:
+            verification_status = "MISSING_IMAGE"
+        else:
+            verification_status = "METADATA_ONLY"
+
         rec = {
             "record_id": int(row["ID"]),
             "patch_id": s2_patch_id,
             "s1_name": s1_name,
-            "s1_path": f"data/external/bigearthnet_txt/images/s1/{s1_name}.tif",
-            "s2_path": f"data/external/bigearthnet_txt/images/s2/{s2_patch_id}.tif",
+            "s1_path": s1_rel_path,
+            "s2_path": s2_rel_path,
+            "s1_exists": s1_exists,
+            "s2_exists": s2_exists,
+            "metadata_available": True,
+            "image_available": image_available,
+            "training_ready": image_available,
+            "image_verification_status": verification_status,
             "official_split": str(row["split"]),
             "task_type": task_type,
             "category": str(row["category"]) if pd.notna(row["category"]) else "general",

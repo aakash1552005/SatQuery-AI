@@ -1,0 +1,42 @@
+{
+  "registry_version": "1.0",
+  "description": "Reproducible training execution registry for SatQuery AI. Every recorded run represents a real execution.",
+  "runs": [
+    {
+      "run_id": "run_day4_local_preflight_001",
+      "timestamp": "2026-09-23T08:56:00Z",
+      "seed": 42,
+      "dataset": "BigEarthNet.txt",
+      "dataset_version": "1.0 (BIFOLD release arXiv:2603.29630)",
+      "train_manifest": "data/manifests/ben_train_subset.json",
+      "val_manifest": "data/manifests/ben_val_subset.json",
+      "test_manifest": "data/manifests/ben_test_subset.json",
+      "model": "MBZUAI/geochat-7b",
+      "adapter": "SatQuery-RS-VLM-LoRA",
+      "hardware": "Profile D CPU host (AMD64 12 cores, 15.27 GB RAM, 0 CUDA GPUs, 0.00 GB VRAM)",
+      "config": "configs/training/bigearthnet_txt_lora.yaml",
+      "checkpoint": null,
+      "status": "TRAINING_BLOCKED_LOCAL",
+      "reasons": [
+        "Local host has 0 CUDA GPUs and insufficient RAM for 7B parameter optimization.",
+        "Local disk C: storage safety policy prevents extracting full 350+ GB raw imagery archives.",
+        "Remote GPU execution package generated in artifacts/day4_remote_training_package/."
+      ],
+      "metrics": {
+        "accuracy": "N/A - NOT EXECUTED",
+        "balanced_accuracy": "N/A - NOT EXECUTED",
+        "precision": "N/A - NOT EXECUTED",
+        "recall": "N/A - NOT EXECUTED",
+        "macro_f1": "N/A - NOT EXECUTED",
+        "weighted_f1": "N/A - NOT EXECUTED",
+        "grounding_iou": "N/A - NOT EXECUTED",
+        "caption_bleu4": "N/A - NOT EXECUTED",
+        "vqa_score": "N/A - NOT EXECUTED"
+      },
+      "reproducibility": {
+        "launch_command": "py -3.11 scripts/run_day4_full.py --preflight",
+        "remote_package_path": "artifacts/day4_remote_training_package/"
+      }
+    }
+  ]
+}

@@ -172,6 +172,13 @@ Because model training has not been executed on this CPU host, actual model pred
 
 ## Reproducibility Information
 - **Self-Contained Orchestrator**: `py -3.11 scripts/run_day4_full.py --all`
+- **Training Image Verification**:
+  ```bash
+  py -3.11 scripts/verify_training_images.py --manifest data/manifests/ben_train_subset.json
+  py -3.11 scripts/verify_training_images.py --audit-all
+  ```
+- **Manifest Reality Audit**: `docs/day4_manifest_reality_audit.md`
+- **Training Runs Registry**: `artifacts/training/runs.json`
 - **Remote Training Package**: `artifacts/day4_remote_training_package/`
 - **Launch Command on GPU Host**:
   ```bash
@@ -179,3 +186,10 @@ Because model training has not been executed on this CPU host, actual model pred
   bash artifacts/day4_remote_training_package/launch_remote_training.sh
   ```
 - **Execution Log**: `artifacts/training/preflight_status.json`
+
+## Warning Governance (Section 22)
+- **WARNING_SOURCE**: `starlette.testclient` (invoked by `fastapi.testclient.TestClient`)
+- **WHY_SUPPRESSED**: FastAPI 0.110 TestClient imports Starlette's TestClient which emits an advisory regarding httpx transport in upcoming Starlette major versions.
+- **DEPENDENCY_VERSION**: `fastapi==0.110.0`, `starlette>=0.37.0`, `httpx>=0.27.0`
+- **WHY_IT_IS_SAFE**: Upstream test harness deprecation advisory. Does not affect runtime FastAPI behavior, model predictions, or test correctness.
+

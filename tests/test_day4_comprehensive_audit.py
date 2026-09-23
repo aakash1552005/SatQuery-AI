@@ -169,3 +169,76 @@ def test_model_honesty_and_remote_package_creation():
     assert (pkg_dir / "bigearthnet_txt_lora.yaml").exists()
     assert (pkg_dir / "requirements.txt").exists()
     assert (pkg_dir / "launch_remote_training.sh").exists()
+
+
+def test_manifest_reality_audit_fields():
+    """Verify that manifests explicitly distinguish metadata_available, image_available, and training_ready."""
+    from scripts.verify_training_images import audit_manifest
+
+    train_path = ROOT / "data" / "manifests" / "ben_train_subset.json"
+    audit = audit_manifest(train_path)
+
+    assert audit["total_samples"] == 1000
+    assert audit["counts"]["REAL_LOCAL_IMAGE"] == 0
+    assert audit["counts"]["METADATA_ONLY"] == 1000
+    assert audit["all_real"] is False
+
+    with open(train_path, "r", encoding="utf-8") as f:
+        samples = json.load(f)["samples"]
+
+    for s in samples[:20]:
+        assert s["metadata_available"] is True
+        assert s["image_available"] is False
+        assert s["training_ready"] is False
+        assert s["image_verification_status"] == "METADATA_ONLY"
+
+
+def test_dev_manifest_physical_image_reality():
+    """Verify development manifest contains 100% REAL_LOCAL_IMAGE with valid GeoTIFFs."""
+    from scripts.verify_training_images import audit_manifest
+
+    dev_manifest = ROOT / "data" / "manifests" / "bigearthnet_txt_manifest.json"
+    audit = audit_manifest(dev_manifest)
+
+    assert audit["total_samples"] == 4
+    assert audit["counts"]["REAL_LOCAL_IMAGE"] == 4
+    assert audit["counts"]["METADATA_ONLY"] == 0
+    assert audit["all_real"] is True
+
+
+def test_model_inventory_section6_keys():
+    """Verify all models in docs/model_inventory.json possess Section 6 mandatory keys."""
+    inv_path = ROOT / "docs" / "model_inventory.json"
+    with open(inv_path, "r", encoding="utf-8") as f:
+        inv = json.load(f)
+
+    required_keys = [
+        "weights_present",
+        "model_load_test",
+        "processor_load_test",
+        "inference_test",
+        "checkpoint_present",
+        "adapter_present",
+    ]
+
+    for model in inv["models"]:
+        for k in required_keys:
+            assert k in model, f"Model '{model.get('model_name')}' missing required Section 6 key: '{k}'"
+
+
+def test_training_runs_registry():
+    """Verify artifacts/training/runs.json exists, is valid, and records truthful status."""
+    runs_path = ROOT / "artifacts" / "training" / "runs.json"
+    assert runs_path.exists(), "runs.json registry must exist"
+
+    with open(runs_path, "r", encoding="utf-8") as f:
+        registry = json.load(f)
+
+    assert "runs" in registry
+    assert len(registry["runs"]) > 0
+
+    first_run = registry["runs"][0]
+    assert first_run["status"] == "TRAINING_BLOCKED_LOCAL"
+    assert first_run["checkpoint"] is None
+    assert "N/A" in first_run["metrics"]["accuracy"]
+
