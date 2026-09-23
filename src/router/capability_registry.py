@@ -243,7 +243,7 @@ class CapabilityRegistry:
                 "training_status": "NOT_EXECUTED",
                 "evaluation_status": "NOT_EVALUATED",
                 "compute_target": "remote_gpu",
-                "reason": "Current host Profile D is CPU-only (0 CUDA GPUs, 15.27 GB RAM); real LoRA fine-tuning requires CUDA GPU with >=16GB VRAM.",
+                "reason": "Current host Profile D is CPU-only (0 CUDA GPUs, 15.27 GB RAM); real LoRA fine-tuning requires CUDA accelerator. VRAM requirement is configuration-dependent.",
             },
         ))
         # Execute initial environment preflight check on current host

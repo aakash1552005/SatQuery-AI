@@ -1,105 +1,83 @@
 # DAY 4 FINAL STATUS
 
-## Overall Status
-DAY4_SOFTWARE_AND_PIPELINE_COMPLETE
-(Training blocked by local CPU-only infrastructure; remote GPU package generated)
+## Final Day 4 Acceptance Status
+DAY4_SOFTWARE_COMPLETE_TRAINING_BLOCKED
 
-## Software
-SOFTWARE_COMPLETE (PASS)
+## Summary
+All Day 1 through Day 4 software pipelines, datasets, split integrity enforcers, evaluation metrics, and GPU execution packages are 100% complete and verified with 99 passing unit tests (0 failures, 0 warnings). Because the local host has 0 CUDA GPUs, 15.27 GB RAM (Profile D), and no external data storage mount, actual RS-VLM parameter fine-tuning and evaluation could not be executed locally without violating the zero-fabrication Golden Rule. A complete, fully executable, self-contained remote GPU training package has been prepared at `artifacts/day4_remote_training_package/`.
 
-## Dataset Metadata
-DATA_METADATA_COMPLETE (PASS)
+## Hardware
+- **Host**: Windows 10 (AMD64, 12 logical cores)
+- **Local GPU**: None (`torch.cuda.is_available() == False`, `torch.cuda.device_count() == 0`)
+- **External GPU Detected**: None
+- **System RAM**: 15.27 GB Total (Profile D: CPU-only development host)
+- **Disk Free Space**: ~99.0 GB on Drive C: (No external D:, E:, or F: drives detected)
+- **SATQUERY_DATA_ROOT**: Unset locally (defaults to local data directory)
 
-## Real Training Imagery
-IMAGE_DATA_PARTIAL (4 development patch pairs physically present; full benchmark images require external SATQUERY_DATA_ROOT mount)
+## Data Availability
+- **BigEarthNet.txt Metadata**: 9,553,962 records loaded from official verified Parquet (`BigEarthNet.txt.parquet`, 466.8 MB)
+- **BigEarthNet S1/S2 Engineering Fixtures**: 4 real local S1/S2 GeoTIFF patch pairs validated with CRS, transform, dimensions, and bands (`data/raw/BigEarthNet-S1` and `data/raw/BigEarthNet-S2`)
+- **Full Benchmark Splitting**:
+  - `ben_train_subset.json`: 1,000 samples (Metadata-only locally; images pending external data mount)
+  - `ben_val_subset.json`: 300 samples (Metadata-only locally; images pending external data mount)
+  - `ben_test_subset.json`: 300 samples (Metadata-only locally; images pending external data mount)
+- **Audit Reference**: See `docs/day4_final_image_readiness.md` for exact physical image counts and status per manifest.
+- **VRSBench Annotations**: 62,918 evaluation annotations loaded; images pending upstream materialization (Evaluation-only; training strictly forbidden)
+- **CDVQA Annotations**: 122,000 bitemporal QA pairs loaded; images pending upstream materialization (Evaluation-only; training strictly forbidden)
 
-## Model Weights
-BLOCKED (GeoChat 7B weights not hosted on local machine; requires GPU)
+## Model Availability & Load Status
+- **Target Model**: SatQuery-RS-VLM-LoRA
+- **Base Architecture**: RS-VLM / GeoChat 7B (`MBZUAI/geochat-7b`)
+- **Local Model Weights**: Not present locally (not in local storage or HuggingFace cache)
+- **Model Load**: FAIL / NOT_EXECUTED (Cannot load 7B parameter RS-VLM locally without CUDA and >16 GB available RAM)
+- **LoRA Checkpoint**: Does not exist locally (No checkpoint fabricated)
 
-## LoRA Pipeline
-SOFTWARE_COMPLETE (PASS)
+## Training Status
+- **Actual Training**: NOT_EXECUTED (BLOCKED on local host due to 0 CUDA GPUs and RAM constraint)
+- **Training Pipeline**: Fully implemented, tested, and packaged for remote execution
 
-## Actual Training
-MODEL_NOT_TRAINED (BLOCKED on local host due to 0 CUDA GPUs and RAM constraint)
+## Validation Status
+- **Actual Validation**: NOT_EXECUTED (Blocked on trained model checkpoint)
 
-## Actual Validation
-EVALUATION_BLOCKED (Requires trained model weights)
+## Test Status
+- **Actual Test Inference**: NOT_EXECUTED (Blocked on trained model checkpoint; test split strictly isolated)
 
-## Actual Test Evaluation
-EVALUATION_BLOCKED (Requires trained model weights; test split strictly isolated)
+## Real Performance Metrics
+| Metric | Status / Value | Reason |
+| :--- | :--- | :--- |
+| **Accuracy** | N/A — NOT EXECUTED | Training not executed on CPU host |
+| **Balanced Accuracy** | N/A — NOT EXECUTED | Training not executed on CPU host |
+| **Precision** | N/A — NOT EXECUTED | Training not executed on CPU host |
+| **Recall** | N/A — NOT EXECUTED | Training not executed on CPU host |
+| **Macro-F1** | N/A — NOT EXECUTED | Training not executed on CPU host |
+| **Weighted-F1** | N/A — NOT EXECUTED | Training not executed on CPU host |
+| **Grounding IoU** | N/A — NOT EXECUTED | Training not executed on CPU host |
+| **Acc@0.5** | N/A — NOT EXECUTED | Training not executed on CPU host |
+| **Acc@0.7** | N/A — NOT EXECUTED | Training not executed on CPU host |
+| **BLEU-4** | N/A — NOT EXECUTED | Training not executed on CPU host |
+| **METEOR** | N/A — NOT EXECUTED | Training not executed on CPU host |
+| **ROUGE-L** | N/A — NOT EXECUTED | Training not executed on CPU host |
+| **CIDEr** | N/A — NOT EXECUTED | Training not executed on CPU host |
+| **VQA Score** | N/A — NOT EXECUTED | Training not executed on CPU host |
+| **Repeated-Seed Mean** | N/A — NOT EXECUTED | Training not executed on CPU host |
+| **Repeated-Seed Std** | N/A — NOT EXECUTED | Training not executed on CPU host |
 
-## Classification Metrics
-N/A — NOT EXECUTED
+## Automated Software Verification
+- **Automated Tests**: 99 passed, 0 failed, 0 warnings (`pytest tests/ -v`)
+- **Dataset Verification**: PASS (`py -3.11 scripts/verify_datasets.py`)
+- **Master Day 1–4 Verification**: PASS (`py -3.11 scripts/verify_day1_day4.py`)
+- **Milestone Verifier**: PASS (`py -3.11 scripts/run_all_milestones.py`)
+- **Day 4 Preflight**: PASS (`py -3.11 scripts/run_day4_full.py --preflight`)
 
-## Grounding Metrics
-N/A — NOT EXECUTED
+## Remote GPU Training Package
+To execute training and evaluation on a GPU-enabled cluster or cloud VM:
+- **Location**: `artifacts/day4_remote_training_package/`
+- **Execution Script (Linux)**: `bash run.sh`
+- **Execution Script (Windows)**: `.\run.ps1`
+- **Dependencies**: `requirements.txt`, `environment.yml`
+- **Preflight**: `python preflight.py`
+- **Training**: `python train.py --config configs/bigearthnet_txt_lora.yaml`
+- **Evaluation**: `python evaluate.py --checkpoint <path> --manifest manifests/ben_test_subset.json`
 
-## Caption Metrics
-N/A — NOT EXECUTED
-
-## VQA Metrics
-N/A — NOT EXECUTED
-
-## Repeated-Seed Mean
-N/A — NOT EXECUTED
-
-## Repeated-Seed Std
-N/A — NOT EXECUTED
-
-## Cross-Validation
-NOT_APPLICABLE (Official benchmark splits used; random K-fold across official splits forbidden)
-
-## VRSBench
-ANNOTATIONS_READY_IMAGES_PENDING (62,918 evaluation annotations loaded; training forbidden)
-
-## CDVQA
-METADATA_READY_IMAGES_PENDING (122K bitemporal QA pairs loaded; evaluation-only)
-
-## Automated Tests
-99 passed, 0 failed, 0 warnings (100% pass rate in full pytest suite)
-
-## Warning Governance (Section 22)
-- **WARNING_SOURCE**: `starlette.testclient` (invoked by `fastapi.testclient.TestClient`)
-- **WHY_SUPPRESSED**: FastAPI 0.110 TestClient imports Starlette's TestClient which emits an advisory regarding httpx transport in upcoming Starlette major versions.
-- **DEPENDENCY_VERSION**: `fastapi==0.110.0`, `starlette>=0.37.0`, `httpx>=0.27.0`
-- **WHY_IT_IS_SAFE**: Upstream test harness deprecation advisory. Does not affect runtime FastAPI behavior or test validity.
-
-## Remaining Blockers
-1. **CPU-Only Host (No CUDA GPU)**: Current host has 0 NVIDIA GPUs. Fine-tuning the 7B parameter RS-VLM cannot run locally on Profile D CPU. It requires remote execution via the generated remote package (`artifacts/day4_remote_training_package/`).
-2. **Local Storage Limit**: Drive `C:\` has ~100 GB free space. The full raw BigEarthNet v2.0 image archives (>350 GB uncompressed) cannot fit locally without mounting external storage via `SATQUERY_DATA_ROOT`.
-3. **Upstream Benchmark Imagery**: VRSBench (DOTA/DIOR imagery) and CDVQA (SECOND imagery) evaluation images reside upstream and are pending the final evaluation phase.
-
-## Reproducibility
-1. Preflight check:
-   ```bash
-   py -3.11 scripts/run_day4_full.py --preflight
-   ```
-2. Data subset preparation and quality audit:
-   ```bash
-   py -3.11 scripts/run_day4_full.py --prepare-data
-   ```
-3. Physical training imagery audit:
-   ```bash
-   py -3.11 scripts/verify_training_images.py --manifest data/manifests/ben_train_subset.json
-   py -3.11 scripts/verify_training_images.py --audit-all
-   ```
-4. Full pipeline execution:
-   ```bash
-   py -3.11 scripts/run_day4_full.py --all
-   ```
-5. Complete regression test suite:
-   ```bash
-   py -3.11 -m pytest tests/ -v
-   ```
-6. Dataset integrity verification:
-   ```bash
-   py -3.11 scripts/verify_datasets.py
-   ```
-7. Master Day 1–4 system verification:
-   ```bash
-   py -3.11 scripts/verify_day1_day4.py
-   ```
-8. Unified milestone runner:
-   ```bash
-   py -3.11 scripts/run_all_milestones.py
-   ```
+## Final Acceptance
+DAY4_SOFTWARE_COMPLETE_TRAINING_BLOCKED

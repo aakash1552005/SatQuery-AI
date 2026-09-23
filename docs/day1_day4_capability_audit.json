@@ -162,7 +162,7 @@
       "model_dependency": "MBZUAI/geochat-7b (External Pretrained)",
       "final_status": "UNAVAILABLE",
       "evidence": "tests/test_day2_consistency.py::test_geochat_preflight_does_not_claim_real_inference passes; detects CPU-only host and routes to deterministic fallback.",
-      "limitations": "Cannot run 7B model locally on CPU; requires remote CUDA GPU with >=16GB VRAM."
+      "limitations": "Cannot run 7B model locally on CPU. VRAM requirement is configuration-dependent. The exact requirement must be measured for the selected model, quantization, image resolution, context length, batch size, gradient accumulation, and checkpointing configuration."
     },
     {
       "name": "BigEarthNet.txt Multimodal Dataset Subsystem",

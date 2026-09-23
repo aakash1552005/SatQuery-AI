@@ -36,7 +36,7 @@
       "metrics_available": false,
       "evaluation_status": "UNAVAILABLE_ON_LOCAL_CPU",
       "provenance": "External foundation model reference (MBZUAI); execution requires remote GPU",
-      "limitations": "Requires 16GB+ VRAM GPU; cannot execute locally on Profile D CPU host."
+      "limitations": "VRAM requirement is configuration-dependent. The exact requirement must be measured for the selected model, quantization, image resolution, context length, batch size, gradient accumulation, and checkpointing configuration. Cannot execute locally on Profile D CPU-only host."
     },
     {
       "model_name": "SatQuery-RS-VLM-LoRA",

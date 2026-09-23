@@ -121,10 +121,10 @@ def check_training_feasibility(config: Optional[RSLoraConfig] = None) -> Trainin
         if not cuda_available:
             reasons.append("Current host Profile D is CPU-only (0 CUDA GPUs).")
             reasons.append("Fine-tuning 7B parameter RS-VLM models with multi-modal inputs requires CUDA acceleration.")
-            recommended_action = "Dispatch training to remote NVIDIA GPU (Profile A/B with >=16GB VRAM) using bigearthnet_txt_lora.yaml."
+            recommended_action = "Dispatch training to remote NVIDIA GPU using bigearthnet_txt_lora.yaml. VRAM requirement is configuration-dependent."
         else:
-            reasons.append(f"Detected GPU ({gpu_name}) has {gpu_vram_gb} GB VRAM, which is below the 16 GB threshold for RS-VLM adaptation.")
-            recommended_action = "Enable QLoRA 4-bit quantization or migrate to remote GPU with >=16 GB VRAM."
+            reasons.append(f"Detected GPU ({gpu_name}) has {gpu_vram_gb} GB VRAM. VRAM requirement is configuration-dependent.")
+            recommended_action = "Enable QLoRA 4-bit quantization or adjust batch size and gradient accumulation."
     else:
         training_feasible = True
         status = "TRAINING_READY"
