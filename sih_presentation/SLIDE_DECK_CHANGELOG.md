@@ -55,7 +55,7 @@
 ### Slide 6: Strategic Roadmap, Research Foundations & National Impact (Major Overhaul)
 - **Eliminated Dead-End Links**: Removed the 5 static boxes with non-functional "LINK" text.
 - **Implemented Strategic Roadmap (NOW $\rightarrow$ NEXT $\rightarrow$ THEN $\rightarrow$ FUTURE)**:
-  - **NOW**: SIH working prototype with 99 passing unit tests and deterministic engines.
+  - **NOW**: SIH working prototype with 118 passing automated tests across 14 test suites and deterministic engines.
   - **NEXT (3–6 Months)**: Native ISRO Bhuvan STAC API ingestion and pilot deployment with Assam/Odisha SDMAs.
   - **THEN (1 Year)**: NASA-ISRO SAR (NISAR) L+S band support and NDRF mobile command deployment.
   - **FUTURE**: Pan-India National Automated Disaster Intelligence Engine (NADIE).

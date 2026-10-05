@@ -73,6 +73,14 @@ def validate_dataset_governance(source: InputSource, role: DatasetRole) -> tuple
     return True, None
 
 
+class SpatialBounds(BaseModel):
+    """Spatial bounding box coordinates in native or geographic CRS."""
+    left: float
+    bottom: float
+    right: float
+    top: float
+
+
 class RasterMetadata(BaseModel):
     """
     Metadata extracted from a single raster file.
@@ -80,9 +88,9 @@ class RasterMetadata(BaseModel):
     band count, band metadata, nodata, acquisition time, modality,
     sensor metadata, polarization, input_source, dataset_role.
     """
-    file_id: str = Field(..., description="Unique identifier for this upload")
+    file_id: str = Field(default="file_default", description="Unique identifier for this upload")
     filename: str
-    file_size_bytes: int
+    file_size_bytes: int = Field(default=0, description="File size in bytes")
     format: str = Field(default="unknown", description="e.g. GeoTIFF, TIFF, PNG, JPEG")
     input_source: InputSource = Field(
         default=InputSource.USER_UPLOAD,
@@ -99,7 +107,7 @@ class RasterMetadata(BaseModel):
     crs: Optional[str] = Field(None, description="CRS as EPSG string or WKT")
     crs_epsg: Optional[int] = None
     transform: Optional[list[float]] = Field(None, description="Affine transform as 6 floats")
-    bounds: Optional[dict] = Field(None, description="left, bottom, right, top")
+    bounds: Optional[dict | SpatialBounds] = Field(None, description="left, bottom, right, top")
     resolution_x: Optional[float] = Field(None, description="Pixel size in X (map units)")
     resolution_y: Optional[float] = Field(None, description="Pixel size in Y (map units)")
     resolution_unit: Optional[str] = Field(None, description="e.g. 'meters', 'degrees'")

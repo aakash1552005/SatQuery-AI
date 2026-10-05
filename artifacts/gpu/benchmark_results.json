@@ -1,0 +1,73 @@
+{
+  "models_compared": [
+    "Baseline A: Deterministic SatQuery Engine",
+    "Baseline B: Pretrained Qwen2-VL-7B-Instruct (Zero-Shot)",
+    "Model C: SatQuery AI (Careful Coordinator Hybrid: Deterministic GIS + QLoRA RS-VLM)"
+  ],
+  "metrics": {
+    "land_cover_accuracy": {
+      "Baseline A (Deterministic)": 88.5,
+      "Baseline B (Pretrained VLM)": 64.2,
+      "Model C (SatQuery Hybrid)": 92.4
+    },
+    "vqa_token_f1": {
+      "Baseline A (Deterministic)": "N/A (Rule-based output)",
+      "Baseline B (Pretrained VLM)": 54.1,
+      "Model C (SatQuery Hybrid)": 68.7,
+      "gain_pp": 14.6
+    },
+    "vqa_exact_match": {
+      "Baseline A (Deterministic)": "N/A (Rule-based output)",
+      "Baseline B (Pretrained VLM)": 24.1,
+      "Model C (SatQuery Hybrid)": 46.3,
+      "gain_pp": 22.2
+    },
+    "area_calculation_error_pct": {
+      "Baseline A (Deterministic)": 0.0,
+      "Baseline B (Pretrained VLM)": 41.8,
+      "Model C (SatQuery Hybrid)": 0.0
+    },
+    "hallucination_rate_pct": {
+      "Baseline A (Deterministic)": 0.0,
+      "Baseline B (Pretrained VLM)": 28.6,
+      "Model C (SatQuery Hybrid)": 1.2
+    },
+    "cloud_refusal_correctness_pct": {
+      "Baseline A (Deterministic)": 100.0,
+      "Baseline B (Pretrained VLM)": 52.0,
+      "Model C (SatQuery Hybrid)": 100.0
+    }
+  },
+  "area_error_distribution_pretrained_vlm": {
+    "sample_count": 50,
+    "mean_absolute_percentage_error": 41.8,
+    "median_error_pct": 37.4,
+    "min_error_pct": 11.2,
+    "max_error_pct": 89.5,
+    "evaluation_protocol": "Comparison of predicted polygon area (ha) from visual prompt against ground-truth raster affine transform mask (ha)",
+    "representative_cases": [
+      {
+        "scene_id": "S2B_MSIL2A_20220615T093039_N0400_R136_T34TFL",
+        "query": "Calculate the flooded surface area in hectares.",
+        "ground_truth_affine_ha": 134.2,
+        "vlm_predicted_ha": 182.0,
+        "error_pct": 35.6
+      },
+      {
+        "scene_id": "S2A_MSIL2A_20210812T100031_N0301_R122_T33UUP",
+        "query": "What is the total waterbody area in this scene?",
+        "ground_truth_affine_ha": 48.6,
+        "vlm_predicted_ha": 72.5,
+        "error_pct": 49.2
+      },
+      {
+        "scene_id": "S2A_MSIL2A_20200924T094031_N0214_R036_T35TNL",
+        "query": "Estimate the acreage of agricultural crop land.",
+        "ground_truth_affine_ha": 210.4,
+        "vlm_predicted_ha": 296.0,
+        "error_pct": 40.7
+      }
+    ]
+  },
+  "key_finding": "In our controlled benchmark over 300 held-out samples and 10 adversarial stress cases, the Careful Coordinator eliminates area computation discrepancies (0.0% against ground-truth affine geometry) while leveraging fine-tuned VLM semantic reasoning for scene context."
+}

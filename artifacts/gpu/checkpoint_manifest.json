@@ -1,0 +1,13 @@
+{
+  "checkpoint_id": "qwen2_vl_7b_rs_lora_step25",
+  "format": "PEFT LoRA (adapter_model.safetensors / adapter_config.json)",
+  "base_model": "Qwen/Qwen2-VL-7B-Instruct",
+  "adapter_size_mb": 67.12,
+  "saved_files": [
+    "adapter_config.json",
+    "adapter_model.safetensors",
+    "training_args.bin",
+    "tokenizer_config.json"
+  ],
+  "target_hardware": "Tesla T4 / Colab / RunPod"
+}

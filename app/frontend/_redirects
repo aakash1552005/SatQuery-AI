@@ -1,0 +1,5 @@
+# Cloudflare Pages Redirects / Proxy Rules
+# When deploying frontend on Cloudflare Pages and backend via Cloudflare Tunnel or Custom Domain:
+# Replace https://api.satquery.ai with your production API endpoint / Cloudflare Tunnel URL
+
+/api/*  https://api.satquery.ai/api/:splat  200

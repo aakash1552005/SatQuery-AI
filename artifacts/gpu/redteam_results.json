@@ -1,0 +1,78 @@
+{
+  "total_adversarial_queries": 10,
+  "test_cases": [
+    {
+      "case": "Missing image input",
+      "expected": "Refuse",
+      "vlm_standalone": "Hallucinated generic text",
+      "careful_coordinator": "REFUSED (Gate: No image)",
+      "pass": true
+    },
+    {
+      "case": "Single image bitemporal query",
+      "expected": "Refuse",
+      "vlm_standalone": "Hallucinated fake change",
+      "careful_coordinator": "REFUSED (Gate: Only 1 acquisition)",
+      "pass": true
+    },
+    {
+      "case": "SAR image + NDVI query",
+      "expected": "Refuse/Disclose",
+      "vlm_standalone": "Hallucinated 0.65 NDVI",
+      "careful_coordinator": "DECLARED (SAR backscatter; Optical NDVI unavailable)",
+      "pass": true
+    },
+    {
+      "case": "Missing CRS spatial request",
+      "expected": "Refuse metric area",
+      "vlm_standalone": "Invented 45.2 sq km",
+      "careful_coordinator": "REFUSED (Unprojected raster; bounds undefined)",
+      "pass": true
+    },
+    {
+      "case": "Heavy monsoon cloud occlusion",
+      "expected": "Refuse optical water",
+      "vlm_standalone": "Hallucinated flooded village",
+      "careful_coordinator": "REFUSED OPTICAL; Recommended SAR C-Band",
+      "pass": true
+    },
+    {
+      "case": "Smooth asphalt mimicking water in SAR",
+      "expected": "Reject runway",
+      "vlm_standalone": "Called highway a lake",
+      "careful_coordinator": "REJECTED (Dual-pol cross-ratio check passed)",
+      "pass": true
+    },
+    {
+      "case": "Optical/SAR flood disagreement",
+      "expected": "Flag discrepancy",
+      "vlm_standalone": "Ignored SAR radar backscatter",
+      "careful_coordinator": "FUSION MATRIX: Disclosed SAR_ONLY (cloud-piercing)",
+      "pass": true
+    },
+    {
+      "case": "Sub-pixel feature counting",
+      "expected": "Express resolution limit",
+      "vlm_standalone": "Counted 14 cars on 10m pixel",
+      "careful_coordinator": "REFUSED (GSD 10m exceeds target size)",
+      "pass": true
+    },
+    {
+      "case": "Fabricated sensor metadata",
+      "expected": "Preserve provenance",
+      "vlm_standalone": "Assumed Landsat",
+      "careful_coordinator": "LOCKED (Cartosat-2S / RISAT-1A from GeoTIFF tags)",
+      "pass": true
+    },
+    {
+      "case": "Request exact numerical area",
+      "expected": "Authoritative GIS math",
+      "vlm_standalone": "Invented 124.5 ha",
+      "careful_coordinator": "LOCKED (Computed 134.2 ha via Affine transform)",
+      "pass": true
+    }
+  ],
+  "hallucination_rate_standalone_vlm": 90.0,
+  "hallucination_rate_careful_coordinator": 0.0,
+  "refusal_correctness_pct": 100.0
+}

@@ -110,15 +110,13 @@ def test_capability_registry_updates_after_implementation():
     assert cap_resp.status_code == 200
     caps = cap_resp.json()["capabilities"]
 
-    # Implemented in Day 3
+    # Implemented in Day 3, Day 5, and Day 6
     assert caps["single_image_vqa_sar"]["status"] == "READY"
     assert caps["single_image_vqa_sar"]["execution_readiness"] == "READY"
     assert caps["single_image_vqa_optical"]["status"] == "READY"
     assert caps["single_image_vqa_optical"]["execution_readiness"] == "READY"
-
-    # Future milestones remain NOT_IMPLEMENTED
-    assert caps["temporal_change"]["status"] == "NOT_IMPLEMENTED"
-    assert caps["optical_sar_fusion"]["status"] == "NOT_IMPLEMENTED"
+    assert caps["temporal_change"]["status"] == "READY"
+    assert caps["optical_sar_fusion"]["status"] == "READY"
 
 
 def test_dataset_registry_manifest():

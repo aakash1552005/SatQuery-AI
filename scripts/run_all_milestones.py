@@ -203,14 +203,24 @@ def run_all():
     assert q_opt["result"]["mechanism"] == "deterministic_optical_spectral_analysis"
     step_pass(f"/api/query (Optical): status=routed, result.status={q_opt['result']['status']}, mechanism={q_opt['result']['mechanism']}")
 
+    # Query Optical-SAR Fusion (Day 5)
+    q_fuse = client.post("/api/query", json={
+        "query": "Perform optical-sar fusion to delineate floodwater under monsoon clouds",
+        "file_ids": [up_opt["file_id"], up_sar["file_id"]]
+    }).json()
+    assert q_fuse["decision"]["task_type"] == "optical_sar_analysis"
+    assert q_fuse["result"]["status"] == "EXECUTED"
+    assert q_fuse["result"]["mechanism"] == "deterministic_optical_sar_cross_modal_fusion"
+    step_pass(f"/api/query (Optical-SAR Fusion): status=routed, result.status={q_fuse['result']['status']}, mechanism={q_fuse['result']['mechanism']}")
+
     # Check Capabilities Endpoint
     caps = client.get("/api/capabilities").json()["capabilities"]
     assert caps["single_image_vqa_sar"]["status"] == "READY"
     assert caps["single_image_vqa_optical"]["status"] == "READY"
-    assert caps["temporal_change"]["status"] == "NOT_IMPLEMENTED"
-    assert caps["optical_sar_fusion"]["status"] == "NOT_IMPLEMENTED"
+    assert caps["temporal_change"]["status"] == "READY"
+    assert caps["optical_sar_fusion"]["status"] == "READY"
     assert caps["rs_adaptation"]["structured_status"]["pipeline_status"] == "PIPELINE_READY"
-    step_pass("/api/capabilities: Accurate multi-dimensional readiness (Day 1-4 implemented, Day 5-6 pending)")
+    step_pass("/api/capabilities: Accurate multi-dimensional readiness (Day 1-5 implemented and READY)")
 
     # ---------------------------------------------------------
     # 6. DAY 4 MULTIMODAL DATASET & LORA ADAPTATION PIPELINE

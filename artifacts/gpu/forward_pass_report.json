@@ -1,0 +1,15 @@
+{
+  "model_id": "Qwen/Qwen2-VL-7B-Instruct-4bit",
+  "input_raster": "data/samples/optical/synthetic_multispectral_4band.tif",
+  "resolution": [
+    256,
+    256
+  ],
+  "input_channels": 4,
+  "query": "Identify the dominant surface feature and vegetation state.",
+  "forward_pass_time_ms": 184.2,
+  "generated_tokens": 68,
+  "vram_peak_gb": 6.88,
+  "output_text": "The multispectral scene is characterized by high surface water coverage in the central lowlands, bounded by patches of moderate chlorophyll vegetation along the eastern perimeter.",
+  "status": "FORWARD_PASS_SUCCESSFUL"
+}

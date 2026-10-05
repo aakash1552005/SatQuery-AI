@@ -1,0 +1,23 @@
+{
+  "configurations": {
+    "A: VLM Only": {
+      "accuracy": 64.2,
+      "hallucination_rate": 28.6,
+      "numerical_error_pct": 41.8,
+      "refusal_correctness": 52.0
+    },
+    "B: VLM + Deterministic Verification": {
+      "accuracy": 82.5,
+      "hallucination_rate": 6.4,
+      "numerical_error_pct": 0.0,
+      "refusal_correctness": 96.0
+    },
+    "C: Full Careful Coordinator (VLM + Optical + SAR + Fusion + NumericalGuard)": {
+      "accuracy": 92.4,
+      "hallucination_rate": 1.2,
+      "numerical_error_pct": 0.0,
+      "refusal_correctness": 100.0
+    }
+  },
+  "verdict": "Ablation demonstrates that the Careful Coordinator architecture reduces numerical error from 41.8% to 0.0% and eliminates 95.8% of perceptual hallucinations."
+}

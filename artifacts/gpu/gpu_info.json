@@ -1,0 +1,13 @@
+{
+  "target_device": "NVIDIA Tesla T4",
+  "compute_capability": "7.5",
+  "total_vram_gb": 15.36,
+  "memory_clock_mhz": 5001,
+  "driver_version": "580.82.07",
+  "cuda_version": "12.4",
+  "precision_modes": [
+    "4-bit NF4",
+    "float16",
+    "bfloat16"
+  ]
+}

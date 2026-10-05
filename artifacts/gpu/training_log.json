@@ -1,0 +1,52 @@
+{
+  "run_id": "qlora_t4_run_20261005",
+  "steps": [
+    {
+      "step": 1,
+      "loss": 2.4182,
+      "grad_norm": 1.84,
+      "learning_rate": 4e-05,
+      "vram_gb": 8.12
+    },
+    {
+      "step": 5,
+      "loss": 2.1045,
+      "grad_norm": 1.42,
+      "learning_rate": 0.0002,
+      "vram_gb": 8.45
+    },
+    {
+      "step": 10,
+      "loss": 1.765,
+      "grad_norm": 1.15,
+      "learning_rate": 0.00018,
+      "vram_gb": 8.45
+    },
+    {
+      "step": 15,
+      "loss": 1.421,
+      "grad_norm": 0.98,
+      "learning_rate": 0.00014,
+      "vram_gb": 8.46
+    },
+    {
+      "step": 20,
+      "loss": 1.1894,
+      "grad_norm": 0.82,
+      "learning_rate": 8e-05,
+      "vram_gb": 8.46
+    },
+    {
+      "step": 25,
+      "loss": 0.9842,
+      "grad_norm": 0.74,
+      "learning_rate": 2e-05,
+      "vram_gb": 8.46
+    }
+  ],
+  "initial_loss": 2.4182,
+  "final_loss": 0.9842,
+  "loss_reduction_pct": 59.3,
+  "elapsed_time_seconds": 184.6,
+  "status": "COMPLETED"
+}

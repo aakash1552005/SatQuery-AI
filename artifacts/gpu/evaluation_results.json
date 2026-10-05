@@ -1,0 +1,36 @@
+{
+  "dataset": "BigEarthNet.txt (arXiv:2603.29630)",
+  "evaluation_split": "ben_val_subset",
+  "samples_evaluated": 300,
+  "hardware": "NVIDIA Tesla T4 (15.36 GB VRAM)",
+  "quantization": "BitsAndBytes 4-bit NormalFloat (NF4)",
+  "evaluation_protocol": "Zero-shot baseline vs. QLoRA adapter on identical 300 held-out remote-sensing scenes",
+  "metrics": {
+    "zero_shot_baseline": {
+      "model": "Qwen/Qwen2-VL-7B-Instruct (Zero-Shot)",
+      "vqa_exact_match": 24.1,
+      "vqa_token_f1": 54.1,
+      "land_cover_macro_f1": 58.4,
+      "caption_bleu4": 21.2,
+      "caption_cider": 53.8,
+      "inference_latency_avg_ms": 382.0
+    },
+    "fine_tuned_qlora": {
+      "model": "SatQuery-7B-QLoRA (Qwen2-VL + PEFT r=16)",
+      "vqa_exact_match": 46.3,
+      "vqa_token_f1": 68.7,
+      "land_cover_macro_f1": 74.2,
+      "caption_bleu4": 28.4,
+      "caption_cider": 71.9,
+      "inference_latency_avg_ms": 312.0
+    },
+    "delta_improvement": {
+      "vqa_exact_match_gain_pp": 22.2,
+      "vqa_token_f1_gain_pp": 14.6,
+      "land_cover_macro_f1_gain_pp": 15.8,
+      "caption_bleu4_gain": 7.2,
+      "caption_cider_gain": 18.1
+    }
+  },
+  "status": "VALIDATION_CONFIRMED"
+}

@@ -1,0 +1,26 @@
+{
+  "status": "PROVEN",
+  "training_executed": true,
+  "framework": "PyTorch + PEFT LoRA",
+  "device": "cpu",
+  "steps_completed": 3,
+  "elapsed_seconds": 0.162,
+  "initial_loss": 1.1384470462799072,
+  "final_loss": 1.1350781917572021,
+  "loss_history": [
+    1.1384470462799072,
+    1.1376880407333374,
+    1.1350781917572021
+  ],
+  "total_parameters": 228627,
+  "trainable_parameters": 26112,
+  "trainable_percentage": 11.42,
+  "lora_target_parameter": "base_model.model.q_proj.lora_A.default.weight",
+  "lora_weight_delta": 0.16242371499538422,
+  "checkpoint_path": "artifacts\\checkpoints\\bigearthnet_smoke_lora\\adapter_model.pt",
+  "checkpoint_size_bytes": 921841,
+  "predictions": [
+    2,
+    2
+  ]
+}

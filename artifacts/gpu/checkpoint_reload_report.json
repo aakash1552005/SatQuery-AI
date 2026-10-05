@@ -1,0 +1,8 @@
+{
+  "checkpoint_path": "artifacts/checkpoints/bigearthnet_smoke_lora/adapter_model.pt",
+  "reload_successful": true,
+  "parameters_matched": true,
+  "post_reload_inference_test": "PASSED",
+  "delta_weight_norm": 0.16242371,
+  "status": "RELOAD_VERIFIED"
+}

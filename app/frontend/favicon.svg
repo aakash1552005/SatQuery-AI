@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Outer boundary shield/frame -->
+  <rect width="64" height="64" rx="12" fill="#0b0f19"/>
+  <rect x="2" y="2" width="60" height="60" rx="10" stroke="#1e293b" stroke-width="2"/>
+  
+  <!-- Coordinate grid reticle lines -->
+  <line x1="32" y1="8" x2="32" y2="56" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="2 2"/>
+  <line x1="8" y1="32" x2="56" y2="32" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="2 2"/>
+  
+  <!-- Radar range rings -->
+  <circle cx="32" cy="32" r="20" stroke="#334155" stroke-width="1.5"/>
+  <circle cx="32" cy="32" r="10" stroke="#0ea5e9" stroke-width="1.5" opacity="0.6"/>
+
+  <!-- Satellite / Sensor payload geometry -->
+  <!-- Solar panels -->
+  <rect x="10" y="29" width="10" height="6" rx="1" fill="#0284c7" stroke="#38bdf8" stroke-width="1"/>
+  <rect x="44" y="29" width="10" height="6" rx="1" fill="#0284c7" stroke="#38bdf8" stroke-width="1"/>
+  <line x1="20" y1="32" x2="26" y2="32" stroke="#38bdf8" stroke-width="1.5"/>
+  <line x1="38" y1="32" x2="44" y2="32" stroke="#38bdf8" stroke-width="1.5"/>
+
+  <!-- Bus body -->
+  <rect x="26" y="26" width="12" height="12" rx="2" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+  <circle cx="32" cy="32" r="2.5" fill="#38bdf8"/>
+
+  <!-- Aperture beam / Radar scan cone -->
+  <path d="M28 38 L20 52 L44 52 Z" fill="#38bdf8" opacity="0.15"/>
+  <path d="M28 38 L20 52 M36 38 L44 52" stroke="#38bdf8" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+
+  <!-- Active telemetry blip -->
+  <circle cx="44" cy="20" r="2" fill="#10b981"/>
+</svg>

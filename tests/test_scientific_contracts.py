@@ -74,3 +74,35 @@ def test_sar_db_linear_roundtrip():
     linear = sar_db_to_linear(original_db)
     recovered_db = sar_linear_to_db(linear)
     assert pytest.approx(recovered_db, abs=1e-5) == original_db
+
+
+def test_terrain_and_runway_arbiter():
+    """
+    Verify Section 5.5 Terrain and Runway Arbiter:
+    Filters out mountain radar shadows (slope > 3.0 deg) and airport runways (NDBI > 0.15).
+    """
+    from src.analysis.sar_tools import TerrainAndRunwayArbiter
+
+    arbiter = TerrainAndRunwayArbiter(max_slope_deg=3.0, max_ndbi=0.15)
+
+    # 4 candidate pixels:
+    # Pixel 0: Valid flat water (slope=1.0 deg, NDBI=0.0) -> RETAINED
+    # Pixel 1: Mountain shadow artifact (slope=8.0 deg, NDBI=-0.1) -> SUPPRESSED
+    # Pixel 2: Airport runway artifact (slope=0.5 deg, NDBI=0.35) -> SUPPRESSED
+    # Pixel 3: Non-water pixel -> REMAINS FALSE
+    candidate_mask = np.array([True, True, True, False])
+    slopes = np.array([1.0, 8.0, 0.5, 2.0])
+    ndbi = np.array([0.0, -0.1, 0.35, -0.2])
+
+    filtered_mask, stats = arbiter.filter_water_mask(candidate_mask, slope_degrees=slopes, pre_event_ndbi=ndbi)
+
+    assert filtered_mask[0] is True or filtered_mask[0] == 1  # Valid water kept
+    assert filtered_mask[1] is False or filtered_mask[1] == 0  # Slope excess removed
+    assert filtered_mask[2] is False or filtered_mask[2] == 0  # Runway NDBI removed
+    assert filtered_mask[3] is False or filtered_mask[3] == 0  # Background unchanged
+
+    assert stats["initial_water_pixels"] == 3
+    assert stats["slope_suppressed_pixels"] == 1
+    assert stats["ndbi_runway_suppressed_pixels"] == 1
+    assert stats["final_water_pixels"] == 1
+

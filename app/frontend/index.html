@@ -3,851 +3,1182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="SatQuery AI - Interactive Vision-Language Assistant for Multimodal Remote Sensing Image Analysis">
-    <title>SatQuery AI - Remote Sensing Intelligence</title>
+    <meta name="description" content="SatQuery AI: Multimodal Remote Sensing Query and Analysis Terminal for Earth Observation. ISRO / SAC PS 26167.">
+    <title>SatQuery AI: Earth Observation Query Terminal</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         /* ============================================================
-           SATQUERY AI — DESIGN SYSTEM (DAY 2)
-           Dark-mode, data-driven satellite intelligence aesthetic
+           SATQUERY AI: MISSION-CRITICAL GEOSPATIAL WORKSTATION
+           Technical UI/UX Design System for Earth Observation Terminal
            ============================================================ */
 
         :root {
-            /* Core palette */
-            --bg-primary: #0a0e17;
-            --bg-secondary: #111827;
-            --bg-tertiary: #1a2236;
-            --bg-card: #151d2e;
-            --bg-card-hover: #1c2742;
+            /* Palette: Deep Obsidian, Slate, Titanium, Precision Accents */
+            --bg-base: #080c14;
+            --bg-surface: #0e1524;
+            --bg-card: #121a2d;
+            --bg-card-hover: #16223a;
+            --bg-elevated: #1a2742;
 
-            /* Accent — satellite blue-cyan */
-            --accent-primary: #00d4ff;
-            --accent-secondary: #0091ff;
-            --accent-gradient: linear-gradient(135deg, #00d4ff, #0091ff);
-            --accent-glow: rgba(0, 212, 255, 0.15);
+            /* Strict technical borders */
+            --border-subtle: #1e2b45;
+            --border-strong: #2e3e60;
+            --border-accent: #0284c7;
 
-            /* Status colors */
-            --status-ready: #22c55e;
-            --status-warn: #f59e0b;
-            --status-error: #ef4444;
-            --status-blocked: #6366f1;
-            --status-unavailable: #6b7280;
+            /* Aerospace Accents (strictly controlled, no purple gradients) */
+            --accent-cyan: #0284c7;
+            --accent-cyan-light: #38bdf8;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-crimson: #ef4444;
 
-            /* Text */
-            --text-primary: #f1f5f9;
+            /* Text hierarchy */
+            --text-heading: #f8fafc;
+            --text-primary: #e2e8f0;
             --text-secondary: #94a3b8;
             --text-muted: #64748b;
 
-            /* Borders */
-            --border-subtle: rgba(255, 255, 255, 0.08);
-            --border-accent: rgba(0, 212, 255, 0.25);
+            /* Status indications */
+            --status-ready: #10b981;
+            --status-warn: #f59e0b;
+            --status-error: #ef4444;
+            --status-info: #0ea5e9;
 
             /* Typography */
-            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-            --font-mono: 'JetBrains Mono', 'Cascadia Code', monospace;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
 
-            /* Spacing */
-            --radius-sm: 6px;
-            --radius-md: 10px;
-            --radius-lg: 16px;
-            --radius-xl: 24px;
+            /* Geometric technical radii (strictly no bulbous pill shapes) */
+            --radius-xs: 2px;
+            --radius-sm: 3px;
+            --radius-md: 4px;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: var(--font-sans);
-            background: var(--bg-primary);
+            background-color: var(--bg-base);
             color: var(--text-primary);
             min-height: 100vh;
-            overflow-x: hidden;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Background grid */
+        /* Technical subtle grid overlay */
         body::before {
             content: '';
             position: fixed;
             inset: 0;
             background-image:
-                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
-            background-size: 64px 64px;
+                linear-gradient(rgba(30, 43, 69, 0.25) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(30, 43, 69, 0.25) 1px, transparent 1px);
+            background-size: 40px 40px;
             pointer-events: none;
             z-index: 0;
         }
 
-        /* Header */
-        .header {
+        /* Top Navigation Header */
+        .terminal-header {
             position: relative;
             z-index: 10;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 16px 32px;
+            padding: 12px 24px;
+            background: #090e1a;
             border-bottom: 1px solid var(--border-subtle);
-            backdrop-filter: blur(12px);
-            background: rgba(10, 14, 23, 0.85);
         }
 
-        .header-brand {
+        .header-brand-group {
             display: flex;
             align-items: center;
             gap: 14px;
         }
 
-        .header-logo {
-            width: 40px;
-            height: 40px;
-            background: var(--accent-gradient);
-            border-radius: var(--radius-md);
+        .header-logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-sm);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 800;
-            font-size: 18px;
-            color: #0a0e17;
-            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+            color: var(--accent-cyan-light);
+            flex-shrink: 0;
+        }
+
+        .header-title-wrap {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .header-title {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 700;
-            letter-spacing: -0.5px;
+            letter-spacing: -0.2px;
+            color: var(--text-heading);
+            font-family: var(--font-sans);
         }
 
-        .header-title span {
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .header-title .title-mark {
+            color: var(--accent-cyan-light);
         }
 
-        .header-badge {
+        .header-spec-tag {
+            font-family: var(--font-mono);
             font-size: 11px;
             font-weight: 600;
-            padding: 4px 10px;
-            background: rgba(0, 212, 255, 0.1);
-            color: var(--accent-primary);
-            border: 1px solid var(--border-accent);
-            border-radius: var(--radius-sm);
-            text-transform: uppercase;
+            padding: 2px 6px;
+            background: rgba(2, 132, 199, 0.12);
+            color: var(--accent-cyan-light);
+            border: 1px solid rgba(2, 132, 199, 0.35);
+            border-radius: var(--radius-xs);
             letter-spacing: 0.5px;
         }
 
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 16px;
+        .header-subtitle {
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 0.3px;
+            font-weight: 400;
         }
 
-        .capabilities-btn {
-            background: rgba(255, 255, 255, 0.05);
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-surface);
             border: 1px solid var(--border-subtle);
             color: var(--text-secondary);
-            padding: 7px 14px;
+            padding: 6px 12px;
             border-radius: var(--radius-sm);
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .capabilities-btn:hover {
-            background: rgba(0, 212, 255, 0.1);
-            color: var(--accent-primary);
-            border-color: var(--border-accent);
-        }
-
-        .runtime-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 14px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
             font-size: 12px;
             font-weight: 500;
-            color: var(--text-secondary);
+            font-family: var(--font-sans);
+            cursor: pointer;
+            transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--border-strong);
+            color: var(--text-heading);
+            background: var(--bg-card);
+        }
+
+        .telemetry-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 10px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            font-size: 11px;
             font-family: var(--font-mono);
+            color: var(--text-secondary);
         }
 
-        .runtime-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
+        .telemetry-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 1px;
             background: var(--status-ready);
-            box-shadow: 0 0 8px currentColor;
         }
 
-        /* Layout */
-        .main {
+        /* Main Workspace Container */
+        .workspace-main {
             position: relative;
             z-index: 1;
-            max-width: 1400px;
+            max-width: 1440px;
             margin: 0 auto;
-            padding: 24px;
+            padding: 20px 24px;
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 20px;
         }
 
-        .grid-2col {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-
-        /* Card Styles */
-        .card {
+        /* Technical Panel Cards */
+        .panel {
             background: var(--bg-card);
             border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 24px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(8px);
+            border-radius: var(--radius-md);
+            padding: 18px 20px;
         }
 
-        .card-header {
+        .panel-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 18px;
-            padding-bottom: 12px;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
             border-bottom: 1px solid var(--border-subtle);
         }
 
-        .card-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Upload Zone */
-        .upload-zone {
-            border: 2px dashed rgba(0, 212, 255, 0.25);
-            border-radius: var(--radius-lg);
-            padding: 32px 24px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            background: rgba(21, 29, 46, 0.6);
-        }
-
-        .upload-zone:hover, .upload-zone.dragover {
-            border-color: var(--accent-primary);
-            background: rgba(0, 212, 255, 0.05);
-            box-shadow: 0 0 30px var(--accent-glow);
-        }
-
-        .upload-zone-icon {
-            font-size: 36px;
-            margin-bottom: 12px;
-        }
-
-        .upload-zone h2 {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-
-        .upload-zone p {
+        .panel-title {
             font-size: 13px;
-            color: var(--text-secondary);
-            margin-bottom: 14px;
-        }
-
-        .formats {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .format-tag {
-            font-family: var(--font-mono);
-            font-size: 11px;
-            padding: 3px 8px;
-            background: var(--bg-tertiary);
-            border-radius: var(--radius-sm);
-            color: var(--text-muted);
-        }
-
-        .upload-input { display: none; }
-
-        /* Files List */
-        .files-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-height: 280px;
-            overflow-y: auto;
-        }
-
-        .file-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 16px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .file-item:hover {
-            border-color: var(--border-accent);
-            background: var(--bg-card-hover);
-        }
-
-        .file-item.selected {
-            border-color: var(--accent-primary);
-            background: rgba(0, 212, 255, 0.08);
-        }
-
-        .file-item-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .file-checkbox {
-            cursor: pointer;
-            accent-color: var(--accent-primary);
-        }
-
-        .file-item-name {
-            font-size: 13px;
-            font-weight: 500;
-            font-family: var(--font-mono);
-        }
-
-        .file-item-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .file-item-tag {
-            font-size: 11px;
-            padding: 2px 8px;
-            border-radius: var(--radius-sm);
-            font-family: var(--font-mono);
-            background: var(--bg-tertiary);
-            color: var(--text-secondary);
-        }
-
-        .sensor-optical { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
-        .sensor-multispectral { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
-        .sensor-sar { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
-
-        .status-pill {
-            font-size: 11px;
             font-weight: 600;
-            padding: 3px 8px;
-            border-radius: 9999px;
             text-transform: uppercase;
-        }
-        .status-pill.ready { background: rgba(34, 197, 94, 0.15); color: var(--status-ready); }
-        .status-pill.error { background: rgba(239, 68, 68, 0.15); color: var(--status-error); }
-        .status-pill.warn { background: rgba(245, 158, 11, 0.15); color: var(--status-warn); }
-
-        /* Metadata Grid */
-        .metadata-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
+            letter-spacing: 0.6px;
+            color: var(--text-heading);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .meta-item {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            padding: 10px 14px;
+        .panel-title svg {
+            color: var(--accent-cyan-light);
         }
 
-        .meta-label {
+        .status-badge {
+            font-family: var(--font-mono);
             font-size: 11px;
+            font-weight: 500;
+            padding: 2px 7px;
+            border-radius: var(--radius-xs);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            color: var(--text-muted);
-            margin-bottom: 4px;
+            border: 1px solid transparent;
         }
 
-        .meta-value {
-            font-family: var(--font-mono);
-            font-size: 13px;
-            font-weight: 500;
-            word-break: break-all;
+        .status-badge.neutral {
+            background: rgba(148, 163, 184, 0.08);
+            border-color: rgba(148, 163, 184, 0.2);
+            color: var(--text-secondary);
         }
 
-        /* Query Section */
-        .query-card {
-            border: 1px solid var(--border-accent);
-            background: linear-gradient(180deg, rgba(21, 29, 46, 0.95), rgba(17, 24, 39, 0.95));
-            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+        .status-badge.ready {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: #34d399;
         }
 
-        .query-box-container {
+        .status-badge.warn {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.3);
+            color: #fbbf24;
+        }
+
+        .status-badge.error {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
+
+        /* Query Input Bar */
+        .query-bar {
             display: flex;
-            gap: 12px;
-            margin-bottom: 14px;
+            gap: 10px;
+            margin-bottom: 12px;
         }
 
         .query-input {
             flex: 1;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            padding: 14px 18px;
-            color: var(--text-primary);
-            font-size: 14px;
-            font-family: var(--font-sans);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            color: var(--text-heading);
+            font-size: 13px;
+            font-family: var(--font-mono);
             outline: none;
-            transition: all 0.2s;
+            transition: border-color 0.15s, background-color 0.15s;
         }
 
         .query-input:focus {
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 15px var(--accent-glow);
+            border-color: var(--accent-cyan-light);
+            background: #0f1828;
         }
 
-        .query-btn {
-            background: var(--accent-gradient);
-            color: #0a0e17;
-            font-weight: 700;
-            font-size: 14px;
-            padding: 0 28px;
-            border: none;
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
+        .query-input::placeholder {
+            color: var(--text-muted);
+            font-family: var(--font-sans);
+            font-size: 13px;
+        }
+
+        .btn-action-primary {
+            display: inline-flex;
             align-items: center;
             gap: 8px;
+            background: var(--accent-cyan);
+            color: #ffffff;
+            font-family: var(--font-sans);
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 0.3px;
+            padding: 0 18px;
+            border: 1px solid #0369a1;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background-color 0.15s, border-color 0.15s;
+            white-space: nowrap;
         }
 
-        .query-btn:hover {
-            box-shadow: 0 0 25px rgba(0, 212, 255, 0.5);
-            transform: translateY(-1px);
+        .btn-action-primary:hover {
+            background: #0284c7;
+            border-color: var(--accent-cyan-light);
         }
 
-        .query-btn:disabled {
+        .btn-action-primary:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
+            background: var(--bg-surface);
+            border-color: var(--border-subtle);
+            color: var(--text-muted);
         }
 
-        /* Demo Prompts Chips */
-        .demo-prompts {
+        /* Preset Workflow Buttons (Strict technical chips) */
+        .presets-bar {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
             align-items: center;
+            gap: 6px;
         }
 
-        .demo-label {
-            font-size: 12px;
-            color: var(--text-muted);
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .demo-chip {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-subtle);
-            color: var(--text-secondary);
-            font-size: 12px;
-            padding: 6px 12px;
-            border-radius: 9999px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .demo-chip:hover {
-            border-color: var(--accent-primary);
-            color: var(--accent-primary);
-            background: rgba(0, 212, 255, 0.08);
-        }
-
-        /* Routing & Trace Output */
-        .routing-output {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
-            gap: 20px;
-            margin-top: 16px;
-        }
-
-        .pathway-banner {
-            padding: 16px;
-            background: var(--bg-secondary);
-            border-radius: var(--radius-md);
-            border-left: 4px solid var(--accent-primary);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .pathway-banner.sar {
-            border-left-color: #f59e0b;
-            background: rgba(245, 158, 11, 0.05);
-        }
-
-        .pathway-banner.refusal {
-            border-left-color: #ef4444;
-            background: rgba(239, 68, 68, 0.05);
-        }
-
-        .pathway-title {
+        .presets-label {
+            font-family: var(--font-mono);
             font-size: 11px;
-            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: var(--text-muted);
+            margin-right: 4px;
         }
 
-        .pathway-name {
-            font-size: 15px;
+        .preset-chip {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: 5px 9px;
+            border-radius: var(--radius-xs);
+            cursor: pointer;
+            transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+        }
+
+        .preset-chip:hover {
+            border-color: var(--border-strong);
+            color: var(--text-heading);
+            background: var(--bg-elevated);
+        }
+
+        /* Upload Ingestion Dropzone */
+        .ingest-zone {
+            border: 1px dashed var(--border-strong);
+            border-radius: var(--radius-md);
+            padding: 24px 20px;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(14, 21, 36, 0.5);
+            transition: border-color 0.15s, background-color 0.15s;
+        }
+
+        .ingest-zone:hover, .ingest-zone.dragover {
+            border-color: var(--accent-cyan-light);
+            background: rgba(2, 132, 199, 0.04);
+        }
+
+        .ingest-icon {
+            width: 32px;
+            height: 32px;
+            margin: 0 auto 10px;
+            color: var(--accent-cyan-light);
+        }
+
+        .ingest-heading {
+            font-size: 14px;
             font-weight: 600;
-            color: var(--text-primary);
+            color: var(--text-heading);
+            margin-bottom: 4px;
         }
 
-        .pathway-reason {
-            font-size: 13px;
-            color: var(--status-error);
-            line-height: 1.4;
+        .ingest-subtext {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
         }
 
-        .tools-list {
+        .format-tags {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .format-spec {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            padding: 2px 6px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xs);
+            color: var(--text-muted);
+        }
+
+        .upload-hidden-input {
+            display: none;
+        }
+
+        /* Ingestion Loading Indicator */
+        .ingest-loading {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-family: var(--font-mono);
+            color: var(--text-secondary);
+        }
+
+        .ingest-loading.active {
+            display: flex;
+        }
+
+        .spinner-line {
+            width: 14px;
+            height: 14px;
+            border: 2px solid var(--border-subtle);
+            border-top-color: var(--accent-cyan-light);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 2-Column Workstation Layout */
+        .workstation-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* Raster Imagery List */
+        .imagery-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .imagery-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 12px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: border-color 0.15s, background-color 0.15s;
+        }
+
+        .imagery-row:hover {
+            border-color: var(--border-strong);
+            background: var(--bg-card-hover);
+        }
+
+        .imagery-row.selected {
+            border-color: var(--accent-cyan-light);
+            background: rgba(2, 132, 199, 0.08);
+        }
+
+        .imagery-cell-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .imagery-checkbox {
+            cursor: pointer;
+            accent-color: var(--accent-cyan-light);
+        }
+
+        .imagery-filename {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-heading);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .imagery-cell-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .tag-modality {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: var(--radius-xs);
+            letter-spacing: 0.5px;
+            border: 1px solid transparent;
+        }
+
+        .tag-modality.optical {
+            background: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .tag-modality.multispectral {
+            background: rgba(56, 189, 248, 0.1);
+            color: #38bdf8;
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+
+        .tag-modality.sar {
+            background: rgba(245, 158, 11, 0.1);
+            color: #fbbf24;
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        /* Metadata Grid */
+        .metadata-table {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .meta-cell {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+        }
+
+        .meta-property {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .meta-datum {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-heading);
+            word-break: break-all;
+        }
+
+        /* Routing Decision & Trace Layout */
+        .routing-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 16px;
+            margin-top: 14px;
+        }
+
+        .pathway-box {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-left: 3px solid var(--accent-cyan);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .pathway-box.sar {
+            border-left-color: var(--accent-amber);
+        }
+
+        .pathway-box.refusal {
+            border-left-color: var(--accent-crimson);
+            background: rgba(239, 68, 68, 0.03);
+        }
+
+        .pathway-section-tag {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted);
+        }
+
+        .pathway-heading {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-heading);
+        }
+
+        .pathway-detail-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .pathway-refusal-alert {
+            font-size: 12px;
+            color: var(--accent-crimson);
+            font-family: var(--font-mono);
+            padding: 6px 10px;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            border-radius: var(--radius-xs);
+        }
+
+        .tools-flow {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
-            margin-top: 8px;
+            margin-top: 6px;
         }
 
-        .tool-pill {
+        .tool-node {
             font-family: var(--font-mono);
             font-size: 11px;
-            padding: 4px 8px;
-            background: var(--bg-tertiary);
+            padding: 3px 8px;
+            background: var(--bg-card);
             border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-sm);
-            color: var(--accent-primary);
+            border-radius: var(--radius-xs);
+            color: var(--text-secondary);
         }
-        .tool-pill.status-ready {
-            border-color: rgba(34, 197, 94, 0.4);
-            color: #4ade80;
-            background: rgba(34, 197, 94, 0.1);
+
+        .tool-node.executed {
+            border-color: rgba(16, 185, 129, 0.35);
+            color: #34d399;
+            background: rgba(16, 185, 129, 0.06);
         }
-        .tool-pill.status-warn {
-            border-color: rgba(245, 158, 11, 0.4);
+
+        .tool-node.planned {
+            border-color: var(--border-strong);
+            color: var(--text-secondary);
+        }
+
+        .tool-node.omitted {
+            border-color: rgba(245, 158, 11, 0.35);
             color: #fbbf24;
-            background: rgba(245, 158, 11, 0.1);
-        }
-        .tool-pill.status-subtle {
-            border-color: rgba(255, 255, 255, 0.1);
-            color: var(--text-muted);
-            background: var(--bg-tertiary);
-        }
-        .mechanism-card {
-            margin-top: 12px;
-            padding: 10px 14px;
-            background: rgba(0, 0, 0, 0.35);
-            border-radius: var(--radius-sm);
-            border-left: 3px solid var(--accent-primary);
-            font-size: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+            background: rgba(245, 158, 11, 0.06);
         }
 
-        /* Execution Trace Panel */
-        .trace-panel {
-            background: #0d1320;
+        /* Execution Trace Terminal Box */
+        .trace-terminal {
+            background: #090e1a;
             border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            padding: 16px;
+            border-radius: var(--radius-sm);
+            padding: 14px;
             font-family: var(--font-mono);
-            font-size: 12px;
+            font-size: 11px;
         }
 
-        .trace-header {
+        .trace-terminal-header {
             display: flex;
             justify-content: space-between;
             color: var(--text-muted);
             border-bottom: 1px solid var(--border-subtle);
             padding-bottom: 8px;
-            margin-bottom: 12px;
-            font-size: 11px;
+            margin-bottom: 10px;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 10px;
         }
 
-        .trace-steps {
+        .trace-item-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .trace-step {
+        .trace-item {
             display: flex;
             align-items: flex-start;
-            gap: 10px;
+            gap: 8px;
             line-height: 1.4;
         }
 
-        .trace-icon {
+        .trace-item-glyph {
             font-weight: 700;
-        }
-        .trace-icon.ok { color: var(--status-ready); }
-        .trace-icon.fail { color: var(--status-error); }
-
-        .trace-content {
-            flex: 1;
+            flex-shrink: 0;
         }
 
-        .trace-step-name {
-            color: var(--text-primary);
+        .trace-item-glyph.ok {
+            color: var(--status-ready);
+        }
+
+        .trace-item-glyph.fail {
+            color: var(--status-error);
+        }
+
+        .trace-item-name {
+            color: var(--text-heading);
             font-weight: 600;
         }
 
-        .trace-step-details {
+        .trace-item-body {
             color: var(--text-secondary);
             font-size: 11px;
-            margin-top: 2px;
         }
 
-        /* Modal */
-        .modal-backdrop {
+        /* Analysis Result & Physical Evidence Box */
+        .result-container {
+            margin-top: 14px;
+            padding: 14px 16px;
+            background: #090f1d;
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .result-topline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 8px;
+        }
+
+        .result-label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--accent-cyan-light);
+            font-weight: 600;
+        }
+
+        .result-body-text {
+            font-size: 13px;
+            color: var(--text-heading);
+            line-height: 1.6;
+        }
+
+        .result-telemetry-foot {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-subtle);
+            padding-top: 6px;
+        }
+
+        .matrix-legend-box {
+            padding: 10px 12px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .matrix-legend-title {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent-cyan-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .matrix-legend-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            font-size: 11px;
+            font-family: var(--font-mono);
+        }
+
+        .matrix-key {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .matrix-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 1px;
+        }
+
+        .evidence-listing {
+            padding: 10px 12px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+        }
+
+        .evidence-heading {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent-cyan-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .evidence-ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .export-actions-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding-top: 6px;
+        }
+
+        .btn-export {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-strong);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: var(--radius-xs);
+            cursor: pointer;
+            transition: border-color 0.15s, background-color 0.15s, color 0.15s;
+        }
+
+        .btn-export:hover {
+            border-color: var(--accent-cyan-light);
+            background: var(--bg-elevated);
+            color: var(--text-heading);
+        }
+
+        .btn-export.primary {
+            background: rgba(2, 132, 199, 0.15);
+            border-color: rgba(2, 132, 199, 0.4);
+            color: var(--accent-cyan-light);
+        }
+
+        .btn-export.primary:hover {
+            background: rgba(2, 132, 199, 0.25);
+            border-color: var(--accent-cyan-light);
+        }
+
+        /* Modal Dialog */
+        .modal-shade {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(8px);
+            background: rgba(4, 7, 13, 0.85);
+            backdrop-filter: blur(4px);
             z-index: 100;
             display: none;
             align-items: center;
             justify-content: center;
         }
 
-        .modal-backdrop.active { display: flex; }
-
-        .modal-content {
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            width: 90%;
-            max-width: 800px;
-            max-height: 85vh;
-            overflow-y: auto;
-            padding: 24px;
+        .modal-shade.active {
+            display: flex;
         }
 
-        .modal-header {
+        .modal-window {
+            background: var(--bg-card);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-md);
+            width: 90%;
+            max-width: 840px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 20px 24px;
+        }
+
+        .modal-top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--border-subtle);
-            padding-bottom: 16px;
-            margin-bottom: 20px;
+            padding-bottom: 12px;
+            margin-bottom: 14px;
         }
 
-        .modal-close {
+        .modal-top-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-heading);
+        }
+
+        .modal-dismiss-btn {
             background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 20px;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 13px;
+            padding: 3px 8px;
+            border-radius: var(--radius-xs);
             cursor: pointer;
         }
 
-        .modal-close:hover { color: var(--text-primary); }
+        .modal-dismiss-btn:hover {
+            color: var(--text-heading);
+            border-color: var(--border-strong);
+        }
 
-        .cap-row {
+        .cap-entry {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding: 12px 14px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            align-items: flex-start;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-subtle);
+            gap: 16px;
         }
 
-        .cap-title {
-            font-weight: 600;
+        .cap-entry-name {
             font-size: 13px;
+            font-weight: 600;
+            color: var(--text-heading);
         }
 
-        .cap-desc {
+        .cap-entry-desc {
             font-size: 12px;
             color: var(--text-secondary);
             margin-top: 2px;
         }
 
-        /* Loading */
-        .loading {
-            display: none;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-secondary);
-            font-size: 14px;
+        .cap-entry-meta {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
         }
 
-        .loading.active { display: flex; }
-
-        .spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid var(--border-subtle);
-            border-top-color: var(--accent-primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        @media (max-width: 900px) {
-            .grid-2col { grid-template-columns: 1fr; }
-            .routing-output { grid-template-columns: 1fr; }
-            .metadata-grid { grid-template-columns: 1fr 1fr; }
+        @media (max-width: 960px) {
+            .workstation-columns { grid-template-columns: 1fr; }
+            .routing-grid { grid-template-columns: 1fr; }
+            .metadata-table { grid-template-columns: 1fr 1fr; }
+            .terminal-header { padding: 12px 16px; }
+            .workspace-main { padding: 16px; }
         }
     </style>
 </head>
 <body>
 
-<!-- Header -->
-<header class="header">
-    <div class="header-brand">
-        <div class="header-logo">SQ</div>
-        <h1 class="header-title">Sat<span>Query</span> AI</h1>
-        <span class="header-badge">PS 26167</span>
+<!-- Operational Navigation Header -->
+<header class="terminal-header">
+    <div class="header-brand-group">
+        <div class="header-logo-icon" aria-hidden="true">
+            <!-- Satellite / Reticle aperture icon -->
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/>
+                <line x1="12" y1="3" x2="12" y2="7"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+                <line x1="3" y1="12" x2="7" y2="12"/>
+                <line x1="17" y1="12" x2="21" y2="12"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
+        </div>
+        <div class="header-title-wrap">
+            <div class="header-title-row">
+                <h1 class="header-title">Sat<span class="title-mark">Query</span> AI</h1>
+                <span class="header-spec-tag">PS 26167</span>
+            </div>
+            <span class="header-subtitle">ISRO / SAC: Multimodal Remote Sensing Query and Analysis Terminal</span>
+        </div>
     </div>
-    <div class="header-right">
-        <button class="capabilities-btn" onclick="showCapabilitiesModal()">Engine Capabilities</button>
-        <div class="runtime-badge">
-            <div class="runtime-dot" id="runtimeDot"></div>
-            <span id="runtimeMode">Connecting...</span>
+    <div class="header-controls">
+        <button class="btn-secondary" onclick="showCapabilitiesModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+            Engine Capabilities
+        </button>
+        <div class="telemetry-indicator" title="Live System Telemetry Status">
+            <div class="telemetry-dot" id="runtimeDot"></div>
+            <span id="runtimeMode">CHECKING TELEMETRY...</span>
         </div>
     </div>
 </header>
 
-<!-- Main Content -->
-<main class="main">
+<!-- Main Workspace -->
+<main class="workspace-main">
 
-    <!-- Interactive Query Section (Day 2 Milestone) -->
-    <section class="card query-card">
-        <div class="card-header">
-            <span class="card-title">
-                <span>&#128373;</span> Natural Language Query & Sensor-Aware Router
+    <!-- Query Execution & Sensor-Aware Router -->
+    <section class="panel">
+        <div class="panel-header">
+            <span class="panel-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                Remote Sensing Query & Sensor-Aware Router
             </span>
-            <span class="header-badge" id="selectedCountBadge">0 images selected</span>
+            <span class="status-badge neutral" id="selectedCountBadge">0 IMAGES SELECTED</span>
         </div>
 
-        <div class="query-box-container">
+        <div class="query-bar">
             <input type="text" id="queryInput" class="query-input"
-                   placeholder="Ask a question about the imagery (e.g. 'What land cover is visible?', 'Where is the largest water body?', 'What changed over time?')...">
-            <button class="query-btn" id="queryBtn" onclick="submitQuery()">
-                <span>Ask SatQuery AI</span>
+                   placeholder="Enter remote-sensing query (e.g., 'What land cover is visible?', 'Where is the largest water body?', 'Detect flood extent via SAR')...">
+            <button class="btn-action-primary" id="queryBtn" onclick="submitQuery()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                <span>RUN PIPELINE</span>
             </button>
         </div>
 
-        <div class="demo-prompts">
-            <span class="demo-label">SIH Demo Workflows:</span>
-            <button class="demo-chip" onclick="fillQuery('What type of land cover dominates this scene?')">Optical VQA (Routing Demo)</button>
-            <button class="demo-chip" onclick="fillQuery('Where is the largest water body? Highlight with bounding box.')">Grounding (Routing Demo)</button>
-            <button class="demo-chip" onclick="fillQuery('What changed between the two observations over time?')">Bi-Temporal Change (Routing Demo)</button>
-            <button class="demo-chip" onclick="fillQuery('Fuse optical and SAR observations to map surface water.')">Optical-SAR Fusion (Routing Demo)</button>
-            <button class="demo-chip" onclick="fillQuery('Analyze the radar backscatter and surface roughness in this SAR image.')">SAR Backscatter (Routing Demo)</button>
-            <button class="demo-chip" onclick="fillQuery('What changed in this area?')">Refusal Test (1 Image)</button>
+        <div class="presets-bar">
+            <span class="presets-label">Workflows:</span>
+            <button class="preset-chip" onclick="fillQuery('What type of land cover dominates this scene?')">Optical VQA</button>
+            <button class="preset-chip" onclick="fillQuery('Where is the largest water body? Highlight with bounding box.')">Grounding Reticle</button>
+            <button class="preset-chip" onclick="fillQuery('What changed between the two observations over time?')">Bi-Temporal Change</button>
+            <button class="preset-chip" onclick="fillQuery('Fuse optical and SAR observations to map surface water.')">Optical-SAR Fusion</button>
+            <button class="preset-chip" onclick="fillQuery('Analyze the radar backscatter and surface roughness in this SAR image.')">SAR Backscatter</button>
+            <button class="preset-chip" onclick="fillQuery('What changed in this area?')">Gating Refusal (1 Image)</button>
         </div>
 
-        <!-- Dynamic Routing Decision & Execution Trace -->
-        <div id="routingContainer" style="display:none; margin-top: 24px;">
-            <div class="routing-output">
-                <!-- Pathway Banner -->
-                <div class="pathway-banner" id="pathwayBanner">
-                    <div class="pathway-title">Selected Execution Pathway</div>
-                    <div class="pathway-name" id="pathwayLabel">--</div>
-                    <div id="pathwayDetails" style="font-size:13px; color:var(--text-secondary); margin-top:4px;"></div>
-                    <div id="refusalReason" class="pathway-reason" style="display:none;"></div>
-                    <div style="margin-top:12px;">
-                        <div class="pathway-title">Scheduled Tool Sequence:</div>
-                        <div class="tools-list" id="toolSequence"></div>
+        <!-- Dynamic Routing Decision & Execution Trace Output -->
+        <div id="routingContainer" style="display:none; margin-top: 16px;">
+            <div class="routing-grid">
+                <!-- Pathway Card -->
+                <div class="pathway-box" id="pathwayBanner">
+                    <div class="pathway-section-tag">Selected Execution Pathway</div>
+                    <div class="pathway-heading" id="pathwayLabel">--</div>
+                    <div id="pathwayDetails" class="pathway-detail-text"></div>
+                    <div id="refusalReason" class="pathway-refusal-alert" style="display:none;"></div>
+                    <div style="margin-top:8px;">
+                        <div class="pathway-section-tag">Scheduled Tool Sequence:</div>
+                        <div class="tools-flow" id="toolSequence"></div>
                     </div>
                 </div>
 
                 <!-- Execution Trace Panel -->
-                <div class="trace-panel">
-                    <div class="trace-header">
+                <div class="trace-terminal">
+                    <div class="trace-terminal-header">
                         <span>Factual Execution Trace (Section 24)</span>
                         <span id="traceId">ID: --</span>
                     </div>
-                    <div class="trace-steps" id="traceSteps"></div>
+                    <div class="trace-item-list" id="traceSteps"></div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Upload Zone -->
-    <section class="upload-zone" id="uploadZone">
-        <div class="upload-zone-icon">&#128752;</div>
-        <h2>Upload Satellite Imagery</h2>
-        <p>Drop GeoTIFF, TIFF, or multispectral rasters to inspect metadata and route queries</p>
-        <div class="formats">
-            <span class="format-tag">.tif</span>
-            <span class="format-tag">.tiff</span>
-            <span class="format-tag">.geotiff</span>
-            <span class="format-tag">.png</span>
-            <span class="format-tag">.jpg</span>
+    <!-- Raster Ingestion Dropzone -->
+    <section class="ingest-zone" id="uploadZone">
+        <svg class="ingest-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <h2 class="ingest-heading">Ingest Satellite Raster Data</h2>
+        <p class="ingest-subtext">Drop GeoTIFF, multispectral, or SAR rasters to inspect physical metadata and evaluate compatibility gates</p>
+        <div class="format-tags">
+            <span class="format-spec">.TIF</span>
+            <span class="format-spec">.TIFF</span>
+            <span class="format-spec">.GEOTIFF</span>
+            <span class="format-spec">.PNG</span>
+            <span class="format-spec">.JPG</span>
         </div>
-        <input type="file" class="upload-input" id="uploadInput"
+        <input type="file" class="upload-hidden-input" id="uploadInput"
                accept=".tif,.tiff,.geotiff,.png,.jpg,.jpeg" multiple>
     </section>
 
-    <div class="loading" id="uploadLoading">
-        <div class="spinner"></div>
-        <span>Processing and inspecting raster metadata...</span>
+    <div class="ingest-loading" id="uploadLoading">
+        <div class="spinner-line"></div>
+        <span>Ingesting raster stream and inspecting header metadata...</span>
     </div>
 
-    <!-- Uploaded Files & Metadata in 2 Columns -->
-    <div class="grid-2col">
-        <!-- Uploaded Files -->
-        <section class="card" id="filesCard" style="display:none;">
-            <div class="card-header">
-                <span class="card-title">Available Imagery</span>
-                <span class="status-pill ready" id="filesCount">0 files</span>
+    <!-- Raster Catalog & Metadata Inspector -->
+    <div class="workstation-columns">
+        <!-- Loaded Imagery -->
+        <section class="panel" id="filesCard" style="display:none;">
+            <div class="panel-header">
+                <span class="panel-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                        <polyline points="2 17 12 22 22 17"/>
+                        <polyline points="2 12 12 17 22 12"/>
+                    </svg>
+                    Loaded Rasters
+                </span>
+                <span class="status-badge ready" id="filesCount">0 files</span>
             </div>
-            <div class="files-list" id="filesList"></div>
+            <div class="imagery-list" id="filesList"></div>
         </section>
 
         <!-- Metadata Viewer -->
-        <section class="card" id="metadataCard" style="display:none;">
-            <div class="card-header">
-                <span class="card-title" id="metadataTitle">Raster Metadata</span>
-                <span class="status-pill" id="metadataStatus"></span>
+        <section class="panel" id="metadataCard" style="display:none;">
+            <div class="panel-header">
+                <span class="panel-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                    <span id="metadataTitle">Raster Metadata</span>
+                </span>
+                <span class="status-badge" id="metadataStatus"></span>
             </div>
-            <div class="metadata-grid" id="metadataGrid"></div>
+            <div class="metadata-table" id="metadataGrid"></div>
         </section>
     </div>
 
-    <!-- Pair Compatibility Card -->
-    <section class="card" id="compatCard" style="display:none;">
-        <div class="card-header">
-            <span class="card-title">Pair Compatibility & Data Readiness Gate</span>
+    <!-- Pair Compatibility & Spatial Gate -->
+    <section class="panel" id="compatCard" style="display:none;">
+        <div class="panel-header">
+            <span class="panel-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                Pair Compatibility & Spatial Readiness Gate
+            </span>
         </div>
         <div id="compatResult"></div>
     </section>
 
 </main>
 
-<!-- Capabilities Modal -->
-<div class="modal-backdrop" id="capabilitiesModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>SatQuery AI -- Live Capability Registry</h3>
-            <button class="modal-close" onclick="closeCapabilitiesModal()">&times;</button>
+<!-- Live Capability Registry Modal -->
+<div class="modal-shade" id="capabilitiesModal">
+    <div class="modal-window">
+        <div class="modal-top-bar">
+            <div class="modal-top-title">Live Capability & Model Registry</div>
+            <button class="modal-dismiss-btn" onclick="closeCapabilitiesModal()">&times; CLOSE</button>
         </div>
-        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">
-            In accordance with the Honesty Rule (Section 0), every capability truthfully reports its operational status, engine mechanism, and license posture.
+        <p style="font-size:12px; color:var(--text-secondary); margin-bottom:14px; font-family:var(--font-mono);">
+            Per Honesty Rule (Section 0): All engines truthfully report operational status, underlying mechanism, and licensing compliance.
         </p>
         <div id="capabilitiesList"></div>
     </div>
@@ -855,14 +1186,14 @@
 
 <script>
 // ============================================================
-// SatQuery AI -- Frontend Engine Logic (Day 1 + Day 2)
+// SatQuery AI: Workstation Frontend Engine Logic
 // ============================================================
 
 const API = '';
 const uploadedFiles = {};
 const selectedFileIds = new Set();
 
-// ---- Runtime Status ----
+// ---- Telemetry & Runtime Status ----
 async function checkStatus() {
     try {
         const res = await fetch(`${API}/api/status`);
@@ -874,13 +1205,14 @@ async function checkStatus() {
             ? 'var(--status-ready)'
             : data.runtime_mode === 'HYBRID'
                 ? 'var(--status-warn)'
-                : 'var(--status-blocked)';
+                : 'var(--status-info)';
     } catch (e) {
-        document.getElementById('runtimeMode').textContent = 'Disconnected';
+        document.getElementById('runtimeMode').textContent = 'OFFLINE / DISCONNECTED';
+        document.getElementById('runtimeDot').style.background = 'var(--status-error)';
     }
 }
 
-// ---- Upload Handling ----
+// ---- Raster Upload Ingestion ----
 const uploadZone = document.getElementById('uploadZone');
 const uploadInput = document.getElementById('uploadInput');
 const loadingEl = document.getElementById('uploadLoading');
@@ -919,22 +1251,22 @@ async function uploadFile(file) {
         const res = await fetch(`${API}/api/upload`, { method: 'POST', body: formData });
         const data = await res.json();
         uploadedFiles[data.file_id] = data;
-        selectedFileIds.add(data.file_id); // Auto-select for query
+        selectedFileIds.add(data.file_id);
         updateSelectedCount();
         if (data.status === 'accepted') {
             showMetadata(data.metadata);
         }
     } catch (e) {
-        console.error('Upload failed:', e);
+        console.error('Raster upload failed:', e);
     }
 }
 
 function updateSelectedCount() {
     const badge = document.getElementById('selectedCountBadge');
-    badge.textContent = `${selectedFileIds.size} image(s) selected`;
+    badge.textContent = `${selectedFileIds.size} IMAGES SELECTED`;
 }
 
-// ---- Files List ----
+// ---- Imagery List Rendering ----
 function renderFilesList() {
     const card = document.getElementById('filesCard');
     const list = document.getElementById('filesList');
@@ -947,7 +1279,7 @@ function renderFilesList() {
     }
 
     card.style.display = 'block';
-    count.textContent = `${ids.length} file${ids.length > 1 ? 's' : ''}`;
+    count.textContent = `${ids.length} FILE${ids.length > 1 ? 'S' : ''}`;
     list.innerHTML = '';
 
     ids.forEach(id => {
@@ -955,22 +1287,22 @@ function renderFilesList() {
         const meta = f.metadata;
         const isChecked = selectedFileIds.has(id);
         const item = document.createElement('div');
-        item.className = `file-item ${isChecked ? 'selected' : ''}`;
+        item.className = `imagery-row ${isChecked ? 'selected' : ''}`;
 
-        const sensorClass = meta.modality === 'sar' ? 'sensor-sar'
-            : meta.modality === 'multispectral' ? 'sensor-multispectral'
-            : 'sensor-optical';
+        const sensorClass = meta.modality === 'sar' ? 'sar'
+            : meta.modality === 'multispectral' ? 'multispectral'
+            : 'optical';
 
         item.innerHTML = `
-            <div class="file-item-left">
-                <input type="checkbox" class="file-checkbox" ${isChecked ? 'checked' : ''}
+            <div class="imagery-cell-left">
+                <input type="checkbox" class="imagery-checkbox" ${isChecked ? 'checked' : ''}
                        onclick="toggleFileSelection(event, '${id}')">
-                <span class="file-item-name" onclick="showMetadata(uploadedFiles['${id}'].metadata)">${meta.filename}</span>
+                <span class="imagery-filename" onclick="showMetadata(uploadedFiles['${id}'].metadata)">${meta.filename}</span>
             </div>
-            <div class="file-item-info">
-                <span class="file-item-tag ${sensorClass}">${meta.modality.toUpperCase()}</span>
-                <span class="file-item-tag">${meta.width}x${meta.height}</span>
-                <span class="status-pill ${f.status === 'accepted' ? 'ready' : 'error'}">${f.status}</span>
+            <div class="imagery-cell-right">
+                <span class="tag-modality ${sensorClass}">${meta.modality.toUpperCase()}</span>
+                <span class="status-badge neutral">${meta.width}x${meta.height}</span>
+                <span class="status-badge ${f.status === 'accepted' ? 'ready' : 'error'}">${f.status}</span>
             </div>
         `;
         list.appendChild(item);
@@ -1000,15 +1332,15 @@ function showMetadata(meta) {
 
     if (meta.is_valid) {
         status.textContent = 'VALID';
-        status.className = 'status-pill ready';
+        status.className = 'status-badge ready';
     } else {
         status.textContent = 'REJECTED';
-        status.className = 'status-pill error';
+        status.className = 'status-badge error';
     }
 
-    const sensorClass = meta.modality === 'sar' ? 'sensor-sar'
-        : meta.modality === 'multispectral' ? 'sensor-multispectral'
-        : 'sensor-optical';
+    const sensorClass = meta.modality === 'sar' ? 'tag-modality sar'
+        : meta.modality === 'multispectral' ? 'tag-modality multispectral'
+        : 'tag-modality optical';
 
     const items = [
         ['Format', meta.format],
@@ -1023,14 +1355,14 @@ function showMetadata(meta) {
     ];
 
     grid.innerHTML = items.map(([label, value, cls]) => `
-        <div class="meta-item">
-            <div class="meta-label">${label}</div>
-            <div class="meta-value ${cls || ''}">${value}</div>
+        <div class="meta-cell">
+            <div class="meta-property">${label}</div>
+            <div class="meta-datum ${cls || ''}">${value}</div>
         </div>
     `).join('');
 }
 
-// ---- Compatibility Check ----
+// ---- Compatibility Gate Check ----
 async function autoCheckCompatibility() {
     const ids = Array.from(selectedFileIds);
     if (ids.length < 2) return;
@@ -1060,21 +1392,21 @@ function showCompatibility(result) {
         : result.status === 'incompatible' ? 'error' : 'warn';
 
     div.innerHTML = `
-        <div style="padding: 14px; background: var(--bg-secondary); border-radius: var(--radius-md); border-left: 4px solid var(--status-${cls});">
-            <div style="font-weight: 600; margin-bottom: 6px;">
-                Pair Status: <span class="status-pill ${cls}">${result.status.toUpperCase()}</span>
+        <div style="padding: 12px 14px; background: var(--bg-surface); border-radius: var(--radius-sm); border-left: 3px solid var(--status-${cls});">
+            <div style="font-weight: 600; font-size:13px; margin-bottom: 4px; display:flex; align-items:center; gap:8px;">
+                Pair Status: <span class="status-badge ${cls}">${result.status.toUpperCase()}</span>
             </div>
-            <div style="font-size: 13px; color: var(--text-secondary);">
+            <div style="font-size: 12px; color: var(--text-secondary); font-family: var(--font-mono);">
                 Pair Type: <b>${result.pair_type}</b> |
                 CRS Match: <b>${result.crs_match ? 'Aligned' : 'Mismatch'}</b> |
                 Spatial Overlap: <b>${result.bounds_overlap !== null ? (result.bounds_overlap * 100).toFixed(1) + '%' : 'N/A'}</b>
             </div>
-            ${result.issues.length ? `<div style="margin-top:8px; color:var(--status-error); font-size:12px;">Issues: ${result.issues.join('; ')}</div>` : ''}
+            ${result.issues.length ? `<div style="margin-top:6px; color:var(--status-error); font-size:12px; font-family:var(--font-mono);">Issues: ${result.issues.join('; ')}</div>` : ''}
         </div>
     `;
 }
 
-// ---- Query & Routing ----
+// ---- Query Execution ----
 function fillQuery(text) {
     const input = document.getElementById('queryInput');
     input.value = text;
@@ -1088,7 +1420,7 @@ async function submitQuery() {
 
     const btn = document.getElementById('queryBtn');
     btn.disabled = true;
-    btn.innerHTML = `<span>Routing...</span>`;
+    btn.innerHTML = `<span>PROCESSING...</span>`;
 
     const fileIds = Array.from(selectedFileIds);
 
@@ -1099,12 +1431,22 @@ async function submitQuery() {
             body: JSON.stringify({ query, file_ids: fileIds }),
         });
         const data = await res.json();
+        if (!res.ok) {
+            alert(`Query Notice (${res.status}): ${data.detail || 'Unable to process query.'}`);
+            return;
+        }
         renderRoutingResult(data);
     } catch (e) {
         console.error('Query failed:', e);
+        alert(`Connection Error: SatQuery AI backend must be active on http://127.0.0.1:8000.\nDetails: ${e.message}`);
     } finally {
         btn.disabled = false;
-        btn.innerHTML = `<span>Ask SatQuery AI</span>`;
+        btn.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            <span>RUN PIPELINE</span>
+        `;
     }
 }
 
@@ -1125,76 +1467,143 @@ function renderRoutingResult(resp) {
     label.textContent = d.pathway_label;
     traceId.textContent = `TRACE ID: ${t.trace_id}`;
 
-    // Pathway banner styling
-    banner.className = 'pathway-banner';
+    banner.className = 'pathway-box';
     if (!d.is_executable) {
         banner.classList.add('refusal');
         refusal.style.display = 'block';
         refusal.textContent = d.refusal_reason || 'Execution halted per gate constraints';
-        details.textContent = `Task: ${d.task_type.toUpperCase()} | Required: ${d.required_inputs_count} image(s), Provided: ${d.provided_inputs_count}`;
+        details.textContent = `Task: ${d.task_type.toUpperCase()} | Required Inputs: ${d.required_inputs_count} image(s), Provided: ${d.provided_inputs_count}`;
     } else {
         refusal.style.display = 'none';
-        if (d.task_type.includes('sar')) {
+        if (d.task_type === 'optical_sar_analysis') {
             banner.classList.add('sar');
-            details.innerHTML = `<div><b>SAR ANALYSIS &mdash; Deterministic Radar Feature Pathway</b></div><div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">No SAR-native VLM available on this host. Answer generated from measured radar features.</div><div style="font-size:12px; margin-top:4px;">Task Intent: ${d.task_type.toUpperCase()} | Target Modalities: ${d.input_modalities.join(', ')}</div>`;
+            details.innerHTML = `<div><b>OPTICAL-SAR CROSS-MODAL FUSION: Cloud-Piercing Radar + Spectral Verification</b></div><div style="font-size:12px; color:var(--accent-cyan-light); margin-top:2px;">Piercing cloud occlusion by intersecting Optical NDWI with SAR Linear Lee Filtered Backscatter on a common grid.</div><div style="font-size:11px; font-family:var(--font-mono); margin-top:4px;">Task Intent: ${d.task_type.toUpperCase()} | Inputs: ${d.input_modalities.join(' + ')}</div>`;
+        } else if (d.task_type === 'temporal_change') {
+            details.innerHTML = `<div><b>BI-TEMPORAL CHANGE DETECTION: L1 Physical Difference & Co-Registration Gate</b></div><div style="font-size:12px; color:var(--status-ready); margin-top:2px;">Deterministic physical change quantification (Delta-NDVI / Delta-NDWI) with strict L1 physical vs L2 semantic honesty.</div><div style="font-size:11px; font-family:var(--font-mono); margin-top:4px;">Task Intent: ${d.task_type.toUpperCase()} | Inputs: ${d.input_modalities.join(' vs ')}</div>`;
+        } else if (d.task_type.includes('sar')) {
+            banner.classList.add('sar');
+            details.innerHTML = `<div><b>SAR ANALYSIS: Deterministic Radar Feature Pathway</b></div><div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">No SAR-native VLM available on this host. Answer generated from measured radar features.</div><div style="font-size:11px; font-family:var(--font-mono); margin-top:4px;">Task Intent: ${d.task_type.toUpperCase()} | Target Modalities: ${d.input_modalities.join(', ')}</div>`;
         } else if (d.task_type.includes('optical')) {
-            details.innerHTML = `<div><b>OPTICAL ANALYSIS &mdash; Deterministic Spectral Index Pathway</b></div><div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Deterministic spectral analysis baseline (NDVI, NDWI, Land Cover). Host CPU profile active (GPU_VRAM: NOT_AVAILABLE).</div><div style="font-size:12px; margin-top:4px;">Task Intent: ${d.task_type.toUpperCase()} | Target Modalities: ${d.input_modalities.join(', ')}</div>`;
+            details.innerHTML = `<div><b>OPTICAL ANALYSIS: Deterministic Spectral Index Pathway</b></div><div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Deterministic spectral analysis baseline (NDVI, NDWI, Land Cover). Host CPU profile active.</div><div style="font-size:11px; font-family:var(--font-mono); margin-top:4px;">Task Intent: ${d.task_type.toUpperCase()} | Target Modalities: ${d.input_modalities.join(', ')}</div>`;
         } else {
             details.textContent = `Task Intent: ${d.task_type.toUpperCase()} | Target Modalities: ${d.input_modalities.join(', ')}`;
         }
     }
 
-    // Tool Sequence & Execution Status (Honest distinction between EXECUTED vs NOT_IMPLEMENTED)
     const toolExecs = d.tool_executions || d.tools_executed;
     if (toolExecs && toolExecs.length) {
         tools.innerHTML = toolExecs.map(te => {
-            const cls = te.status === 'EXECUTED' ? 'status-ready' : (te.status === 'NOT_IMPLEMENTED' ? 'status-warn' : 'status-subtle');
-            return `<span class="tool-pill ${cls}" title="${te.details || te.notes || te.status}">${te.tool_name}: ${te.status}</span>`;
+            const cls = te.status === 'EXECUTED' ? 'executed' : (te.status === 'NOT_IMPLEMENTED' ? 'omitted' : 'planned');
+            return `<span class="tool-node ${cls}" title="${te.details || te.notes || te.status}">${te.tool_name}: ${te.status}</span>`;
         }).join('');
     } else if (d.tool_sequence && d.tool_sequence.length) {
-        tools.innerHTML = d.tool_sequence.map(tool => `<span class="tool-pill status-subtle">${tool}: SCHEDULED</span>`).join('');
+        tools.innerHTML = d.tool_sequence.map(tool => `<span class="tool-node planned">${tool}: SCHEDULED</span>`).join('');
     } else {
-        tools.innerHTML = `<span style="color:var(--text-muted); font-size:12px;">No tools scheduled (Refusal pathway)</span>`;
+        tools.innerHTML = `<span style="color:var(--text-muted); font-size:11px; font-family:var(--font-mono);">No tools scheduled (Refusal pathway)</span>`;
     }
 
-    // Honest Mechanism & Answer Display
+    // Clean Container for Result Box
     const existingCard = document.getElementById('resultMechanismCard');
     if (existingCard) existingCard.remove();
 
     if (resp.result) {
         const resDiv = document.createElement('div');
         resDiv.id = 'resultMechanismCard';
-        resDiv.className = 'mechanism-card';
+        resDiv.className = 'result-container';
         const mech = resp.result.mechanism || 'None';
         const vlm = resp.result.model || 'Not Used';
         const isOk = resp.result.status === 'COMPLETED' || resp.result.status === 'EXECUTED';
+        const isFusion = mech === 'deterministic_optical_sar_cross_modal_fusion';
+        const isChange = mech === 'deterministic_bitemporal_change_engine';
+
+        const fusionLegendHtml = isFusion ? `
+            <div class="matrix-legend-box">
+                <div class="matrix-legend-title">Spatial Agreement Matrix: Cross-Modal Verification</div>
+                <div class="matrix-legend-items">
+                    <span class="matrix-key"><span class="matrix-dot" style="background:#0ea5e9;"></span> <b>Both Agree:</b> Verified Water</span>
+                    <span class="matrix-key"><span class="matrix-dot" style="background:#f59e0b;"></span> <b>SAR-Only:</b> Cloud-Piercing Water</span>
+                    <span class="matrix-key"><span class="matrix-dot" style="background:#a855f7;"></span> <b>Optical-Only:</b> Turbid/Wind Waves</span>
+                    <span class="matrix-key"><span class="matrix-dot" style="background:#475569;"></span> <b>Neither:</b> Dry Terrain</span>
+                </div>
+            </div>
+        ` : '';
+
+        const changeLegendHtml = isChange ? `
+            <div class="matrix-legend-box">
+                <div class="matrix-legend-title">Bi-Temporal Physical Dynamics Legend: L1 Change</div>
+                <div class="matrix-legend-items">
+                    <span class="matrix-key"><span class="matrix-dot" style="background:#10b981;"></span> <b>Expansion:</b> Delta &gt; +0.15</span>
+                    <span class="matrix-key"><span class="matrix-dot" style="background:#ef4444;"></span> <b>Reduction:</b> Delta &lt; -0.15</span>
+                    <span class="matrix-key"><span class="matrix-dot" style="background:#475569;"></span> <b>Stable:</b> |Delta| &le; 0.15</span>
+                </div>
+            </div>
+        ` : '';
+
+        let evidenceHtml = '';
+        if (resp.result.evidence && resp.result.evidence.length) {
+            evidenceHtml = `
+                <div class="evidence-listing">
+                    <div class="evidence-heading">Scientific Evidence & Physical Measurements</div>
+                    <ul class="evidence-ul">
+                        ${resp.result.evidence.map(e => `<li><b>${e.evidence_type || 'Metric'}:</b> ${e.description || JSON.stringify(e.data || e)}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
         resDiv.innerHTML = `
-            <div><b>Mechanism:</b> <code>${mech}</code> | <b>VLM:</b> <code>${vlm}</code></div>
-            <div><b>Status:</b> <span class="status-pill ${isOk ? 'ready' : 'warn'}">${resp.result.status}</span></div>
-            ${resp.result.answer ? `<div style="margin-top:6px; font-style:italic; color:var(--text-primary);">${resp.result.answer}</div>` : ''}
-            ${resp.result.limitations && resp.result.limitations.length ? `<div style="color:var(--status-warn); font-size:11px; margin-top:4px;">Limitations: ${resp.result.limitations.join('; ')}</div>` : ''}
+            <div class="result-topline">
+                <span class="result-label">Analysis Result & Execution Answer</span>
+                <span class="status-badge ${isOk ? 'ready' : 'warn'}">${resp.result.status}</span>
+            </div>
+            ${resp.result.answer ? `
+            <div class="result-body-text">
+                ${resp.result.answer}
+            </div>` : '<div style="font-size:12px; color:var(--text-muted); font-family:var(--font-mono);">No textual answer generated.</div>'}
+            <div class="result-telemetry-foot">
+                <b>Execution Engine:</b> <code>${mech}</code> &nbsp;|&nbsp; <b>Model:</b> <code>${vlm}</code>
+            </div>
+            ${fusionLegendHtml}
+            ${changeLegendHtml}
+            ${evidenceHtml}
+            ${resp.result.limitations && resp.result.limitations.length ? `<div style="color:var(--status-warn); font-size:11px; font-family:var(--font-mono);"><b>Physical Constraints & Limitations:</b> ${resp.result.limitations.join('; ')}</div>` : ''}
+            <div class="export-actions-row">
+                <button onclick="downloadFieldPack()" class="btn-export primary">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Download Field Pack (.zip)
+                </button>
+                <button onclick="downloadGeoJson()" class="btn-export">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+                        <line x1="8" y1="2" x2="8" y2="18"/>
+                        <line x1="16" y1="6" x2="16" y2="22"/>
+                    </svg>
+                    Export RFC 7946 GeoJSON
+                </button>
+            </div>
         `;
         banner.appendChild(resDiv);
     }
 
-    // Execution Trace
+    // Execution Trace Steps
     traceSteps.innerHTML = t.steps.map(step => {
         const isOk = step.status === 'completed';
-        const icon = isOk ? '✓' : '✗';
-        const iconCls = isOk ? 'ok' : 'fail';
+        const glyph = isOk ? '✓' : '✕';
+        const glyphCls = isOk ? 'ok' : 'fail';
         return `
-            <div class="trace-step">
-                <span class="trace-icon ${iconCls}">${icon}</span>
-                <div class="trace-content">
-                    <div class="trace-step-name">${step.name}</div>
-                    ${step.details ? `<div class="trace-step-details">${step.details}</div>` : ''}
+            <div class="trace-item">
+                <span class="trace-item-glyph ${glyphCls}">${glyph}</span>
+                <div>
+                    <span class="trace-item-name">${step.name}</span>
+                    ${step.details ? `<div class="trace-item-body">${step.details}</div>` : ''}
                 </div>
             </div>
         `;
     }).join('');
-
-    // Smooth scroll to results
-    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 // ---- Capabilities Modal ----
@@ -1202,31 +1611,31 @@ async function showCapabilitiesModal() {
     const modal = document.getElementById('capabilitiesModal');
     const list = document.getElementById('capabilitiesList');
     modal.classList.add('active');
-    list.innerHTML = `<div class="spinner"></div>`;
+    list.innerHTML = `<div class="spinner-line"></div>`;
 
     try {
         const res = await fetch(`${API}/api/capabilities`);
         const data = await res.json();
         list.innerHTML = Object.entries(data.capabilities).map(([key, cap]) => `
-            <div class="cap-row">
+            <div class="cap-entry">
                 <div>
-                    <div class="cap-title">${cap.name}</div>
-                    <div class="cap-desc">${cap.description}</div>
-                    <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">
+                    <div class="cap-entry-name">${cap.name}</div>
+                    <div class="cap-entry-desc">${cap.description}</div>
+                    <div class="cap-entry-meta">
                         Engine: <b>${cap.primary_engine}</b> ${cap.fallback_engine ? `| Fallback: ${cap.fallback_engine}` : ''}
                     </div>
-                    <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">
+                    <div class="cap-entry-meta">
                         Routing: <b>${cap.routing_readiness || 'N/A'}</b> | Execution: <b>${cap.execution_readiness || 'N/A'}</b> | Model: <b>${cap.model_availability || 'N/A'}</b>
                     </div>
-                    ${cap.license_note ? `<div style="font-size:11px; color:var(--status-warn); margin-top:2px;">License: ${cap.license_note}</div>` : ''}
+                    ${cap.license_note ? `<div style="font-size:11px; color:var(--status-warn); font-family:var(--font-mono); margin-top:2px;">License: ${cap.license_note}</div>` : ''}
                 </div>
                 <div>
-                    <span class="status-pill ${cap.status === 'READY' ? 'ready' : (cap.status === 'BLOCKED_LICENSE' ? 'error' : 'warn')}">${cap.status}</span>
+                    <span class="status-badge ${cap.status === 'READY' ? 'ready' : (cap.status === 'BLOCKED_LICENSE' ? 'error' : 'warn')}">${cap.status}</span>
                 </div>
             </div>
         `).join('');
     } catch (e) {
-        list.innerHTML = `<div style="color:var(--status-error)">Failed to load capabilities.</div>`;
+        list.innerHTML = `<div style="color:var(--status-error); font-family:var(--font-mono); font-size:12px;">Failed to load capability registry.</div>`;
     }
 }
 
@@ -1234,7 +1643,57 @@ function closeCapabilitiesModal() {
     document.getElementById('capabilitiesModal').classList.remove('active');
 }
 
-// ---- Helpers ----
+// ---- Export Downloads ----
+async function downloadFieldPack() {
+    const input = document.getElementById('queryInput');
+    const query = (input && input.value.trim()) || 'Mission Analysis Export';
+    const fileIds = Array.from(selectedFileIds);
+
+    try {
+        const res = await fetch(`${API}/api/export/field-pack`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query, file_ids: fileIds }),
+        });
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `SatQuery_FieldPack_${new Date().toISOString().slice(0,10)}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    } catch (e) {
+        alert('Failed to generate Field Pack: ' + e);
+    }
+}
+
+async function downloadGeoJson() {
+    const input = document.getElementById('queryInput');
+    const query = (input && input.value.trim()) || 'Mission Vectors';
+    const fileIds = Array.from(selectedFileIds);
+
+    try {
+        const res = await fetch(`${API}/api/export/geojson`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query, file_ids: fileIds }),
+        });
+        const data = await res.json();
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/geo+json' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `SatQuery_Vectors_${new Date().toISOString().slice(0,10)}.geojson`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    } catch (e) {
+        alert('Failed to export GeoJSON: ' + e);
+    }
+}
+
+// ---- Utility Helpers ----
 function formatBytes(bytes) {
     if (!bytes || bytes === 0) return '0 B';
     const k = 1024;
@@ -1243,7 +1702,7 @@ function formatBytes(bytes) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
-// ---- Initialization ----
+// Initial Boot
 checkStatus();
 setInterval(checkStatus, 15000);
 </script>

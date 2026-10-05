@@ -128,52 +128,82 @@ class CapabilityRegistry:
             requires_gpu=False,
         ))
 
-        # 4. Grounding -- Routing implemented; head scheduled for Day 3
+        # 4. Grounding -- Deterministic Spatial ROI Extractor & Grounding Engine (Day 8 Freeze)
         self.register(CapabilityRecord(
             name="single_image_grounding",
             description="Text-guided geospatial object detection and bounding box localization",
-            status=CapabilityStatus.NOT_IMPLEMENTED,
+            status=CapabilityStatus.READY,
             routing_readiness="READY",
-            execution_readiness="NOT_IMPLEMENTED (Scheduled Day 3)",
-            model_availability="UNAVAILABLE (GeoChat Grounding Head requires CUDA GPU)",
-            compute_readiness="FALLBACK_CPU_COMPATIBLE",
-            automated_test_coverage="ROUTING_TESTED (tests/test_day2.py)",
-            primary_engine="GeoChat Grounding Head",
-            fallback_engine="Spectral Region-of-Interest (ROI) Extractor",
-            requires_gpu=True,
+            execution_readiness="READY",
+            model_availability="NOT_REQUIRED_DETERMINISTIC (Spectral Region-of-Interest Head active)",
+            compute_readiness="CPU_READY",
+            automated_test_coverage="ROUTING_AND_EXECUTION_TESTED (tests/test_day8_demos.py)",
+            primary_engine="Deterministic Spatial Grounding ROI Head (Section 8.5 / Day 8)",
+            fallback_engine=None,
+            requires_gpu=False,
         ))
 
-        # 5. Temporal Change Detection -- Routing implemented; registration gate & engine scheduled Day 5
+        # 5. Temporal Change Detection -- Deterministic engine with registration gate & L1/L2 distinction
         self.register(CapabilityRecord(
             name="temporal_change",
             description="Bi-temporal change detection with registration gate and L1/L2 distinction",
-            status=CapabilityStatus.NOT_IMPLEMENTED,
+            status=CapabilityStatus.READY,
             routing_readiness="READY",
-            execution_readiness="NOT_IMPLEMENTED (Scheduled Day 5)",
-            model_availability="BLOCKED_LICENSE (ChangeChat licensing review required)",
-            compute_readiness="CPU_COMPATIBLE (Deterministic change engine requires zero GPU)",
-            automated_test_coverage="ROUTING_AND_REFUSAL_TESTED (tests/test_day2.py)",
-            primary_engine="Deterministic Change Engine + AROSICS Gate (Scheduled Day 5)",
+            execution_readiness="READY",
+            model_availability="NOT_REQUIRED_DETERMINISTIC (ChangeChat optional; deterministic engine active)",
+            compute_readiness="CPU_READY (Deterministic change engine requires zero GPU)",
+            automated_test_coverage="ROUTING_AND_EXECUTION_TESTED (tests/test_day5_fusion_and_change.py)",
+            primary_engine="Deterministic Bitemporal Change Engine (Section 16)",
             fallback_engine=None,
             requires_gpu=False,
         ))
 
-        # 6. Optical-SAR Multimodal Fusion -- Routing implemented; fusion engine scheduled Day 6
+        # 6. Optical-SAR Multimodal Fusion -- Deterministic cross-modal grid fusion
         self.register(CapabilityRecord(
             name="optical_sar_fusion",
-            description="Cross-modal optical and SAR joint surface water and land analysis",
-            status=CapabilityStatus.NOT_IMPLEMENTED,
+            description="Cross-modal optical and SAR joint surface water and cloud-piercing analysis",
+            status=CapabilityStatus.READY,
             routing_readiness="READY",
-            execution_readiness="NOT_IMPLEMENTED (Scheduled Day 6)",
-            model_availability="DISABLED (CROMA optional stretch model)",
-            compute_readiness="CPU_COMPATIBLE (Deterministic cross-modal grid fusion requires zero GPU)",
-            automated_test_coverage="ROUTING_TESTED (tests/test_day2.py)",
-            primary_engine="Co-registered Spatial Fusion Engine (Section 18 -- Scheduled Day 6)",
+            execution_readiness="READY",
+            model_availability="NOT_REQUIRED_DETERMINISTIC (CROMA optional; deterministic engine active)",
+            compute_readiness="CPU_READY (Deterministic cross-modal grid fusion requires zero GPU)",
+            automated_test_coverage="ROUTING_AND_EXECUTION_TESTED (tests/test_day5_fusion_and_change.py)",
+            primary_engine="Deterministic Optical-SAR Cross-Modal Fusion Engine (Section 18)",
             fallback_engine=None,
             requires_gpu=False,
         ))
 
-        # 7. Specialist models explicitly tracked
+        # 7. Verification Engine & Numerical Guard -- Implemented (Day 7)
+        self.register(CapabilityRecord(
+            name="verification_engine",
+            description="Anti-hallucination verification engine, numerical guard, and spatial consistency auditor",
+            status=CapabilityStatus.READY,
+            routing_readiness="READY",
+            execution_readiness="READY",
+            model_availability="NOT_REQUIRED_DETERMINISTIC",
+            compute_readiness="CPU_READY",
+            automated_test_coverage="AUTOMATED_TESTS_PASSING (tests/test_day7_verification_and_reporting.py)",
+            primary_engine="EvidenceVerifier & Deterministic Numerical Guard (Sections 21 & 22)",
+            fallback_engine=None,
+            requires_gpu=False,
+        ))
+
+        # 8. Report & Field Pack Generator -- Implemented (Day 7)
+        self.register(CapabilityRecord(
+            name="field_pack_generator",
+            description="Air-gapped 1-Click Field Pack (.zip), RFC 7946 GeoJSON, and offline HTML map viewer",
+            status=CapabilityStatus.READY,
+            routing_readiness="READY",
+            execution_readiness="READY",
+            model_availability="NOT_REQUIRED_DETERMINISTIC",
+            compute_readiness="CPU_READY",
+            automated_test_coverage="AUTOMATED_TESTS_PASSING (tests/test_day7_verification_and_reporting.py)",
+            primary_engine="FieldPackGenerator (Section 26)",
+            fallback_engine=None,
+            requires_gpu=False,
+        ))
+
+        # 9. Specialist models explicitly tracked
         self.register(CapabilityRecord(
             name="geochat",
             description="GeoChat 7B multimodal RS foundation model",

@@ -459,6 +459,54 @@ class SARWaterDetector:
         )
 
 
+class TerrainAndRunwayArbiter:
+    """
+    Implements Section 5.5 Slope-Gated Terrain & Runway False-Positive Arbiter:
+    Valid Flood Pixel <==> (sigma0 <= tau_Otsu) AND (Slope <= max_slope_deg) AND (Pre-Event NDBI <= max_ndbi)
+
+    Removes false alarms:
+    1. Mountain radar shadow artifacts on steep hillslopes (Slope > 3.0°).
+    2. Smooth airport tarmac, highways, and dry smooth urban surfaces (Pre-Event NDBI > 0.15).
+    """
+
+    def __init__(self, max_slope_deg: float = 3.0, max_ndbi: float = 0.15):
+        self.max_slope_deg = max_slope_deg
+        self.max_ndbi = max_ndbi
+
+    def filter_water_mask(
+        self,
+        candidate_water_mask: np.ndarray,
+        slope_degrees: Optional[np.ndarray] = None,
+        pre_event_ndbi: Optional[np.ndarray] = None,
+    ) -> tuple[np.ndarray, dict[str, Any]]:
+        """Filter out false-positive water pixels using terrain slope and pre-event NDBI."""
+        mask = np.copy(candidate_water_mask).astype(bool)
+        initial_count = int(np.sum(mask))
+        slope_suppressed = 0
+        ndbi_suppressed = 0
+
+        if slope_degrees is not None:
+            slope_excess = mask & (slope_degrees > self.max_slope_deg)
+            slope_suppressed = int(np.sum(slope_excess))
+            mask &= ~slope_excess
+
+        if pre_event_ndbi is not None:
+            ndbi_excess = mask & (pre_event_ndbi > self.max_ndbi)
+            ndbi_suppressed = int(np.sum(ndbi_excess))
+            mask &= ~ndbi_excess
+
+        final_count = int(np.sum(mask))
+        stats = {
+            "initial_water_pixels": initial_count,
+            "slope_suppressed_pixels": slope_suppressed,
+            "ndbi_runway_suppressed_pixels": ndbi_suppressed,
+            "final_water_pixels": final_count,
+            "max_slope_deg": self.max_slope_deg,
+            "max_ndbi": self.max_ndbi,
+        }
+        return mask, stats
+
+
 class SARStructuredResponseComposer:
     """
     Composes truthful, factual natural language summaries and structured results

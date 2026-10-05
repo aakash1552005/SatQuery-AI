@@ -449,6 +449,7 @@ class OpticalStructuredResponseComposer:
         mndwi: Optional[SpectralIndexResult],
         land_cover: Optional[LandCoverDistribution],
         band_map: Optional[BandMap],
+        spatial_metadata: Optional[dict[str, Any]] = None,
     ) -> AnalysisResult:
         measurements: dict[str, Any] = {}
         evidence: list[str] = []
@@ -525,20 +526,37 @@ class OpticalStructuredResponseComposer:
             )
             limitations.extend(land_cover.rules_applied)
 
+        task_type = TaskType.SINGLE_IMAGE_VQA_OPTICAL
+        q_lower = query.lower()
+        if any(k in q_lower for k in ("where is", "where are", "locate", "highlight", "bounding box", "bbox", "find the", "pinpoint", "box the")):
+            task_type = TaskType.SINGLE_IMAGE_GROUNDING
+
+        conf_dict = {
+            "confidence_type": "heuristic_uncalibrated",
+            "calibrated": False,
+            "score": 1.0,
+            "note": "Deterministic physical spectral indices; zero probabilistic hallucination.",
+        }
+
+        if spatial_metadata and "water_bbox" in spatial_metadata:
+            bbox = spatial_metadata["water_bbox"]
+            conf_dict["bbox"] = bbox
+            measurements["grounded_bbox"] = bbox
+            area_km2 = spatial_metadata.get("water_area_km2", 0.0)
+            measurements["grounded_area_km2"] = area_km2
+            if task_type == TaskType.SINGLE_IMAGE_GROUNDING:
+                summary_parts.insert(0, f"Target water body localized at geographic bounding box {bbox} with physical area {area_km2} km².")
+                evidence.insert(0, f"Grounded water body bounding box: {bbox} (area: {area_km2} km²).")
+
         answer = " ".join(summary_parts) if summary_parts else "Spectral analysis completed; insufficient valid pixels for summary."
 
         return AnalysisResult(
-            task=TaskType.SINGLE_IMAGE_VQA_OPTICAL,
+            task=task_type,
             mechanism="deterministic_optical_spectral_analysis",
             model=None,
             answer=answer,
             evidence=evidence,
-            confidence={
-                "confidence_type": "heuristic_uncalibrated",
-                "calibrated": False,
-                "score": 1.0,
-                "note": "Deterministic physical spectral indices; zero probabilistic hallucination.",
-            },
+            confidence=conf_dict,
             limitations=list(dict.fromkeys(limitations)),
             status="EXECUTED",
         )
@@ -569,10 +587,16 @@ class DeterministicOpticalEngine:
         executed_tools = ["RasterInspector"]
         path = Path(raster_path)
 
+        spatial_meta: dict[str, Any] = {}
+
         with rasterio.open(path) as ds:
             band_count = ds.count
             band_names = [ds.descriptions[i - 1] or f"band_{i}" for i in range(1, band_count + 1)]
             nodata = ds.nodata
+            spatial_meta["crs"] = str(ds.crs) if ds.crs else "EPSG:4326"
+            spatial_meta["bounds"] = [ds.bounds.left, ds.bounds.bottom, ds.bounds.right, ds.bounds.top]
+            gsd_x = abs(ds.transform.a)
+            gsd_y = abs(ds.transform.e)
 
             bmap = self.band_mapper.map_bands(band_count, band_names)
             executed_tools.append("BandMappingValidator")
@@ -583,23 +607,36 @@ class DeterministicOpticalEngine:
             nir = ds.read(bmap.nir_idx).astype(np.float64) if bmap.nir_idx and bmap.nir_idx <= band_count else None
             swir = ds.read(bmap.swir1_idx).astype(np.float64) if bmap.swir1_idx and bmap.swir1_idx <= band_count else None
 
-        # Check required bands for NDVI
-        ndvi_res = None
-        if nir is not None and red is not None:
-            ndvi_res = self.index_engine.compute_ndvi_stat(nir, red, nodata=nodata)
-            executed_tools.append("SpectralIndexEngine (NDVI)")
+            # Check required bands for NDVI
+            ndvi_res = None
+            if nir is not None and red is not None:
+                ndvi_res = self.index_engine.compute_ndvi_stat(nir, red, nodata=nodata)
+                executed_tools.append("SpectralIndexEngine (NDVI)")
 
-        # NDWI
-        ndwi_res = None
-        if green is not None and nir is not None:
-            ndwi_res = self.index_engine.compute_ndwi_stat(green, nir, nodata=nodata)
-            executed_tools.append("SpectralIndexEngine (NDWI)")
+            # NDWI
+            ndwi_res = None
+            if green is not None and nir is not None:
+                ndwi_res = self.index_engine.compute_ndwi_stat(green, nir, nodata=nodata)
+                executed_tools.append("SpectralIndexEngine (NDWI)")
 
-        # MNDWI (optional, only if SWIR exists)
-        mndwi_res = None
-        if green is not None and swir is not None:
-            mndwi_res = self.index_engine.compute_mndwi_stat(green, swir, nodata=nodata)
-            executed_tools.append("SpectralIndexEngine (MNDWI)")
+            # MNDWI (optional, only if SWIR exists)
+            mndwi_res = None
+            if green is not None and swir is not None:
+                mndwi_res = self.index_engine.compute_mndwi_stat(green, swir, nodata=nodata)
+                executed_tools.append("SpectralIndexEngine (MNDWI)")
+
+            # Calculate deterministic water bounding box if water is detected
+            if ndwi_res and ndwi_res.array is not None:
+                wmask = ndwi_res.array > 0.0
+                if np.any(wmask):
+                    rows, cols = np.where(wmask)
+                    r_min, r_max = int(rows.min()), int(rows.max())
+                    c_min, c_max = int(cols.min()), int(cols.max())
+                    xs, ys = rasterio.transform.xy(ds.transform, [r_min, r_max], [c_min, c_max])
+                    water_bbox = [round(min(xs), 6), round(min(ys), 6), round(max(xs), 6), round(max(ys), 6)]
+                    spatial_meta["water_bbox"] = water_bbox
+                    water_area = round(float(np.sum(wmask)) * gsd_x * gsd_y / 1_000_000.0, 4)
+                    spatial_meta["water_area_km2"] = water_area
 
         # Rule-based land cover
         lc_dist = self.classifier.classify(
@@ -620,6 +657,7 @@ class DeterministicOpticalEngine:
             mndwi=mndwi_res,
             land_cover=lc_dist,
             band_map=bmap,
+            spatial_metadata=spatial_meta,
         )
         executed_tools.append("OpticalStructuredResponseComposer")
 

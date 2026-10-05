@@ -138,19 +138,12 @@ def test_capability_registry_matches_actual_execution_state():
     assert all_caps["metadata_inspection"]["status"] == "READY"
     assert all_caps["compatibility_check"]["status"] == "READY"
 
-    # Day 3 implemented capabilities are READY
-    for cap_name in ("single_image_vqa_sar", "single_image_vqa_optical"):
+    # Implemented capabilities (Day 3 + Day 5 + Day 6)
+    for cap_name in ("single_image_vqa_sar", "single_image_vqa_optical", "temporal_change", "optical_sar_fusion"):
         cap = all_caps[cap_name]
         assert cap["status"] == "READY"
         assert cap["routing_readiness"] == "READY"
         assert cap["execution_readiness"] == "READY"
-
-    # Future capabilities remain NOT_IMPLEMENTED
-    for cap_name in ("temporal_change", "optical_sar_fusion"):
-        cap = all_caps[cap_name]
-        assert cap["status"] == "NOT_IMPLEMENTED"
-        assert cap["routing_readiness"] == "READY"
-        assert "NOT_IMPLEMENTED" in cap["execution_readiness"]
 
 
 def test_dataset_provenance_and_governance_rules():

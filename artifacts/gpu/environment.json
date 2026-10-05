@@ -1,0 +1,15 @@
+{
+  "framework": "PyTorch 2.13.0 / CUDA 12.4+ / Python 3.11.9",
+  "libraries": {
+    "torch": "2.13.0",
+    "transformers": "5.14.1",
+    "peft": "0.21.0",
+    "accelerate": "1.15.0",
+    "bitsandbytes": "0.43.0 (NF4 quantized)",
+    "rasterio": "1.4.4",
+    "scipy": "1.17.1",
+    "fastapi": "0.139.2"
+  },
+  "host_profile": "PROFILE D (Local CPU Fallback / Deterministic Tier 1)",
+  "cloud_target": "Tier 2 NVIDIA Tesla T4 / L4 (16 GB VRAM) via Colab / RunPod"
+}
