@@ -1,3 +1,7 @@
 name = "satquery-ai"
 compatibility_date = "2024-10-01"
-pages_build_output_dir = "app/frontend"
+
+[assets]
+directory = "app/frontend"
+not_found_handling = "single-page-application"
+html_handling = "auto-trailing-slash"
