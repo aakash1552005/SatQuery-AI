@@ -83,15 +83,22 @@ SatQuery AI has completed all planned development milestones (Days 1 through 8):
    - Multi-stage Docker build with non-root security execution.
 3. **Continuous Integration (GitHub Actions)**:
    - Workflow: `.github/workflows/ci.yml` (100% Green, 0 failed, 0 skipped).
-   - Automated Pytest Suite: 118/118 passing tests on Ubuntu Linux.
+   - Automated Pytest Suite: 143/143 passing tests across 15 suites (100% pass rate in 16.1s).
    - Auto-packaging and auto-release deployment via GitHub token.
+4. **Security & Edge Hardening (v1.1.0)**:
+   - Header API Key authentication (`X-API-Key`) with dev bypass.
+   - Sliding-window rate limiting per IP.
+   - Chunked streaming upload size limiter (50 MB).
+   - Binary magic-byte format validation (TIFF, BigTIFF, PNG, JPEG).
+   - SSRF protection on cloud GPU worker registration.
+   - Standalone `worker.js` Cloudflare Workers edge gateway with full telemetry, ingestion, and routing.
 
 ---
 
 ## 3. How to Run Locally
 
 ```powershell
-# 1. Run the complete automated test suite (118 tests)
+# 1. Run the complete automated test suite (143 tests)
 py -3.11 -m pytest tests/ -q
 
 # 2. Run all 8 operational demonstration workflows
@@ -107,7 +114,9 @@ py -3.11 scripts/start_server.py
 ## 4. Git Checkpoint & Final Shutdown State
 - **Branch**: `main`
 - **Remote**: `origin` (`https://github.com/aakash1552005/SatQuery-AI.git`)
-- **CI / Actions Status**: 100% Green (All 5 check runs completed successfully).
+- **Version**: `v1.1.0` (Production Hardened & Global Edge Ready)
+- **Live Cloudflare Production URL**: [https://satquery-ai.aakash1552005.workers.dev/](https://satquery-ai.aakash1552005.workers.dev/)
+- **Test Pass Rate**: 143 / 143 (100% passing across 15 test suites)
 - **Working Tree**: Completely clean, all code committed and pushed to GitHub.
 - **Local Services**: Background daemons safely terminated.
 

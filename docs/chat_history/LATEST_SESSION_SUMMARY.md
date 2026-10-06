@@ -51,6 +51,34 @@
   - `Publish Container Package`: Deployed `ghcr.io/aakash1552005/satquery-ai:latest`.
   - Final Check Runs: 0 failed, 0 skipped, 100% passing.
 
+### Milestone E: Gap Analysis, v1.1.0 Security Hardening & Edge Gateway Fix
+- **User Request**: Complete gap analysis, improvement plan, security hardening, and resolve Cloudflare "offline/disconnected" & upload issues.
+- **Actions Taken**:
+  - **Comprehensive Gap Analysis**: Audited entire codebase, identified 22 architectural/security/quality gaps, and created a 7-phase execution roadmap in `satquery_gap_analysis_and_improvement_plan.md`.
+  - **Security Hardening (Phase 1, GAP-01 to GAP-06)**:
+    - Created `app/backend/security.py` with `ApiKeyMiddleware` (`X-API-Key`) and configurable dev bypass.
+    - Implemented in-memory sliding-window IP rate limiter (`RateLimitMiddleware`) with automatic test-client exemption.
+    - Added chunked upload streaming 50 MB file size enforcement (`413 Payload Too Large`).
+    - Implemented binary magic-byte header inspection (TIFF, BigTIFF, PNG, JPEG) rejecting malicious payloads.
+    - Implemented SSRF protection for `/api/cloud-gpu/register` restricting private/loopback routing.
+  - **Architecture & Reliability (Phase 2, GAP-08, 13, 18, 19)**:
+    - Centralized settings into `app/backend/config.py` using `pydantic-settings` (`AppConfig`) with `.env.example` documentation.
+    - Standardized API error envelope in `app/backend/errors.py` (`ErrorResponse`).
+    - Added lifespan background cleanup task pruning uploaded files older than `upload_ttl_hours`.
+    - Consolidated versioning across the project.
+  - **Testing & Quality (Phase 3, GAP-15)**:
+    - Built comprehensive API test suite in `tests/test_api_integration.py` (25 new integration tests).
+    - Expanded test suite to **143 tests across 15 suites (100% pass rate in 16.1s)**.
+  - **Cloudflare Edge Gateway Fix**:
+    - Resolved Cloudflare build error (`Missing entry-point to Worker script`) by creating `worker.js` with `main = "worker.js"` in `wrangler.toml`.
+    - Implemented edge telemetry (`/api/status`, `/api/health`, `/api/capabilities`) and edge raster ingestion & query execution handlers.
+    - Successfully validated with `npx wrangler deploy --dry-run` and deployed live to `https://satquery-ai.aakash1552005.workers.dev/`.
+    - Verified live: raster ingestion, metadata display, routing pipeline, and execution trace fully functional on edge.
+- **Git Commits Pushed**:
+  - `d5bc596`: `feat(security): v1.1.0 API key auth, rate limiting, file validation, error contracts, and 25 integration tests (143/143 passing)`
+  - `8c2957f`: `fix(deploy): add worker.js entrypoint and update wrangler.toml for Cloudflare Workers deployment`
+  - `1d37cd8`: `feat(edge): add edge upload, compatibility, and query handlers in worker.js`
+
 ---
 
 ## 2. Key Architecture Decisions Preserved
@@ -58,4 +86,5 @@
 2. **Deterministic Anti-Hallucination Guard**: Never allow ungrounded LLM/VLM generation to produce spatial area figures or polygon coordinates.
 3. **Sensor-Aware Routing**: Optical vs SAR physics decoupled; no cross-contamination of radar data into optical VLM pipelines without physical calibration.
 4. **Air-Gapped & Offline Ready**: Local Python backend runs 100% offline without external internet access, while the web terminal provides instant browser-based interaction.
+5. **Zero-Trust Edge & Local Synchronization**: The Cloudflare edge terminal operates autonomously for edge demos, while seamlessly pairing with local/remote GPU backends for intensive 16-bit raster processing.
 
