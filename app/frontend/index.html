@@ -1024,7 +1024,7 @@
             </svg>
             Engine Capabilities
         </button>
-        <div class="telemetry-indicator" title="Live System Telemetry Status">
+        <div class="telemetry-indicator" onclick="setApiEndpoint()" style="cursor:pointer;" title="Live Telemetry (Click to configure API URL)">
             <div class="telemetry-dot" id="runtimeDot"></div>
             <span id="runtimeMode">CHECKING TELEMETRY...</span>
         </div>
@@ -1189,9 +1189,22 @@
 // SatQuery AI: Workstation Frontend Engine Logic
 // ============================================================
 
-const API = '';
+let API = window.SATQUERY_API_BASE || localStorage.getItem('SATQUERY_API_BASE') || '';
 const uploadedFiles = {};
 const selectedFileIds = new Set();
+
+function setApiEndpoint() {
+    const current = localStorage.getItem('SATQUERY_API_BASE') || '';
+    const entered = prompt('Configure Backend API Endpoint URL (e.g., https://api.yourdomain.com or leave blank for same-origin / relative /api):', current);
+    if (entered !== null) {
+        if (entered.trim()) {
+            localStorage.setItem('SATQUERY_API_BASE', entered.trim().replace(/\/+$/, ''));
+        } else {
+            localStorage.removeItem('SATQUERY_API_BASE');
+        }
+        location.reload();
+    }
+}
 
 // ---- Telemetry & Runtime Status ----
 async function checkStatus() {
