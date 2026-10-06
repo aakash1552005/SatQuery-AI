@@ -39,6 +39,18 @@
   👉 **`https://satquery-ai.aakash1552005.workers.dev/`**
 - **Domain Configuration Guidance**: Clarified onboarding flow for custom domains in Cloudflare Workers and confirmed that the free Cloudflare production subdomain is fully functional, SSL-secured, and permanent.
 
+### Milestone D: GitHub Actions CI/CD Pipeline & v1.0.0 Production Release
+- **User Request**: Resolve CI failures ("1 failed, 2 skipped"), publish release with emoji, build packages, and achieve 100% green status across repository.
+- **Root Cause & Fix**:
+  - Root Cause: In `.gitignore`, `*.tif` was ignored to avoid binary bloat. On clean GitHub Actions checkouts, `data/external/bigearthnet_txt/samples/*.tif` were absent, causing the test suite to fail on step 6 and skipping package build and release jobs.
+  - Fix: Updated `tests/conftest.py` and `.github/workflows/ci.yml` to generate synthetic and BigEarthNet test rasters and metadata stubs dynamically on clean CI runners.
+- **Outcome**:
+  - `Run Automated Test Suite (3.11)`: 118/118 tests passed (100% green).
+  - `Build Python Distribution Package`: Built `satquery-1.0.0-py3-none-any.whl` and `satquery-1.0.0.tar.gz`.
+  - `Publish Official GitHub Release`: Auto-deployed official release `🛰️ Release v1.0.0 — Production Architecture Freeze (SIH 2026 PS 26167)`.
+  - `Publish Container Package`: Deployed `ghcr.io/aakash1552005/satquery-ai:latest`.
+  - Final Check Runs: 0 failed, 0 skipped, 100% passing.
+
 ---
 
 ## 2. Key Architecture Decisions Preserved
@@ -46,3 +58,4 @@
 2. **Deterministic Anti-Hallucination Guard**: Never allow ungrounded LLM/VLM generation to produce spatial area figures or polygon coordinates.
 3. **Sensor-Aware Routing**: Optical vs SAR physics decoupled; no cross-contamination of radar data into optical VLM pipelines without physical calibration.
 4. **Air-Gapped & Offline Ready**: Local Python backend runs 100% offline without external internet access, while the web terminal provides instant browser-based interaction.
+

@@ -527,5 +527,20 @@ The frontend interface at [`app/frontend/index.html`](file:///c:/Users/AAKASH.S.
 * **Favicon:** Dedicated geometric satellite radar aperture vector asset at [`app/frontend/favicon.svg`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/SatQuery%20AI/app/frontend/favicon.svg).
 
 ---
+
+### Open Source Packaging, Production Release & CI/CD Verification
+
+* **Official GitHub Release:** [`🛰️ Release v1.0.0 — Production Architecture Freeze (SIH 2026 PS 26167)`](https://github.com/aakash1552005/SatQuery-AI/releases/tag/v1.0.0)
+* **Release Artifacts:**
+  - `satquery-1.0.0-py3-none-any.whl` (111 KB PEP 517 wheel)
+  - `satquery-1.0.0.tar.gz` (155 KB source archive)
+* **Container Package (GHCR):** `ghcr.io/aakash1552005/satquery-ai:latest`
+* **Automated CI/CD Pipeline:** Fully green continuous integration on GitHub Actions (`.github/workflows/ci.yml`).
+  - Automated Test Suite: **118/118 passing tests** across all 14 milestone suites in Ubuntu Linux runner.
+  - Distribution Packaging: Automated wheel/sdist compilation and metadata verification with `twine`.
+  - Automatic Release Publishing: Automated tag validation, changelog extraction, and release asset synchronization.
+
+---
 *End of SatQuery AI Sovereign Master Dossier — Space Applications Centre (ISRO) Problem Statement ID 26167.*
+
 
