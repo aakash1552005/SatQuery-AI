@@ -16,11 +16,13 @@ env*/
 venv*/
 .venv/
 
-# IDE
+# IDE & Tools
 .vscode/
 .idea/
 *.swp
 *.swo
+.pytest_cache/
+.wrangler/
 
 # OS
 .DS_Store
