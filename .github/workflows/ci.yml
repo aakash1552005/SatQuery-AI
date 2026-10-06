@@ -51,7 +51,22 @@ jobs:
 
       - name: Run 14 Milestone Test Suites (118 Tests)
         run: |
-          python -m pytest tests/ -v --durations=10
+          python -m pytest tests/ -v --durations=10 --tb=short 2>&1 | tee pytest_output.txt
+
+      - name: Upload Pytest Execution Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-execution-log
+          path: pytest_output.txt
+
+      - name: Publish Test Summary
+        if: always()
+        run: |
+          echo "### 🛰️ Pytest Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -n 60 pytest_output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
   build-package:
     name: Build Python Distribution Package
