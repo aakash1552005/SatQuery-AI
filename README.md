@@ -1,20 +1,19 @@
 # SatQuery AI (SatSense) — Verification-First Multimodal EO Assistant
 
-[![Problem Statement](https://img.shields.io/badge/SIH%202026-PS%2026167-orange.svg)](https://www.sih.gov.in/)
+[![SIH 2026](https://img.shields.io/badge/SIH%202026-PS%2026167-orange.svg)](https://www.sih.gov.in/)
 [![Sponsoring Agency](https://img.shields.io/badge/ISRO%20%2F%20SAC-Space%20Applications%20Centre-blue.svg)](https://www.isro.gov.in/)
-[![Production Live](https://img.shields.io/badge/Production%20Live-Cloudflare%20Edge%20Terminal-0070F3.svg?style=flat&logo=cloudflare)](https://satquery-ai.aakash1552005.workers.dev/)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-brightgreen.svg)]()
+[![Live Demo](https://img.shields.io/badge/🛰️%20Live%20Demo-Cloudflare%20Edge%20Terminal-0070F3.svg?style=flat&logo=cloudflare)](https://satquery-ai.aakash1552005.workers.dev/)
+[![Release](https://img.shields.io/badge/🏷️%20Release-v1.0.0%20(Frozen)-success.svg)](https://github.com/aakash1552005/SatQuery-AI/releases)
+[![License](https://img.shields.io/badge/📜%20License-Apache%202.0-blue.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/🧪%20Tests-118%2F118%20Passed%20(100%25)-brightgreen.svg)]()
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-lightgrey.svg)]()
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://www.python.org/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.13%2B-EE4C2C.svg)](https://pytorch.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.139%2B-009688.svg)](https://fastapi.tiangolo.com/)
-[![Tests](https://img.shields.io/badge/Tests-118%2F118%20Passed%20(100%25)-success.svg)]()
-[![Architecture Status](https://img.shields.io/badge/Architecture-FROZEN%20(Production%20Final)-brightgreen.svg)]()
-[![Offline Mode](https://img.shields.io/badge/Deployment-100%25%20Air--Gapped%20Offline-darkred.svg)]()
+[![Deployment](https://img.shields.io/badge/Deployment-100%25%20Air--Gapped%20Offline-darkred.svg)]()
 
-> **Smart India Hackathon 2026 — Problem Statement ID: 26167**  
-> **Title:** Multimodal Remote Sensing Image Analysis through Text Queries  
-> **Sponsoring Agency:** Space Applications Centre (SAC), Indian Space Research Organisation (ISRO), Department of Space (DoS)  
-> **System Designation:** **SatQuery AI (SatSense)** — Physics-Grounded, Hallucination-Free Multimodal Remote Sensing Assistant with Deterministic GIS Verification
+> 🛰️ **LIVE PRODUCTION DEMO:** [https://satquery-ai.aakash1552005.workers.dev/](https://satquery-ai.aakash1552005.workers.dev/)  
+> ⚡ **AEROSPACE GIS WORKSTATION:** Deployed globally on Cloudflare Edge with global CDN routing & zero-downtime static assets.  
+> 🎯 **SMART INDIA HACKATHON 2026:** Problem Statement 26167 | Sponsored by Space Applications Centre (SAC), Indian Space Research Organisation (ISRO).  
+> 🛡️ **VERIFICATION-FIRST GUARANTEE:** Deterministic Affine GIS (0.0% area hallucination error) + Linear SAR Physics + Air-Gapped CPU Profile D fallback.
 
 ---
 
@@ -273,7 +272,9 @@ Located in [`sih_presentation/`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/Sa
 ## 8. Production Repository Structure
 
 ```
-SatQuery AI/
+├── .github/                            # Continuous Integration & DevOps
+│   └── workflows/
+│       └── ci.yml                      # Automated test suite & package build pipeline
 ├── app/                                # User Interface & API Services
 │   ├── backend/
 │   │   └── main.py                     # FastAPI server, endpoints, query execution, field pack
@@ -302,7 +303,7 @@ SatQuery AI/
 │   ├── start_server.py                 # Launches local FastAPI server daemon
 │   └── generate_gpu_audit_artifacts.py # Generates GPU benchmark logs & audit evidence
 ├── sih_presentation/                   # Complete SIH 2026 Presentation Package
-│   ├── PPT - SatSense .pptx            # Native 16:9 widescreen PowerPoint deck
+│   ├── SatQuery_AI_SIH2026_SatSense_V2.pptx # Native 16:9 widescreen PowerPoint deck
 │   ├── index.html                      # Interactive web presentation with speaker notes
 │   └── SPEAKER_NOTES_AND_DEFENSE_GUIDE.md # 3-min pitch script & 10 lethal Q&A defenses
 ├── src/                                # Core Software Package (`src/`)
@@ -318,12 +319,15 @@ SatQuery AI/
 │   ├── router/                         # Day 2: Sensor-aware query parser & agentic router
 │   └── verification/                   # Day 7: Numerical Anti-Hallucination Guard
 ├── tests/                              # Automated Test Suite (14 Test Suites, 118 Tests)
-├── wrangler.toml                       # Cloudflare Workers Static Assets configuration
+├── CHANGELOG.md                        # Keep a Changelog standard release history
+├── CONTRIBUTING.md                     # Contributor covenants & developer workflow
+├── LICENSE                             # Apache 2.0 Open Source License
+├── pyproject.toml                      # Standard PEP 517/621 packaging & entry points
 ├── requirements.txt                    # Verified Python dependencies (Python 3.11)
 ├── pytest.ini                          # Test runner configuration
+├── wrangler.toml                       # Cloudflare Workers Static Assets configuration
 └── README.md                           # Master Project Documentation
 ```
-
 
 ---
 
@@ -348,10 +352,11 @@ python -m venv .venv
 source .venv/bin/activate
 ```
 
-### Step 2: Install Verified Dependencies
+### Step 2: Install Verified Dependencies & Package
 ```bash
 pip install --upgrade pip
 pip install -r requirements.txt
+pip install -e .
 ```
 
 ### Step 3: Run Automated Test Suite

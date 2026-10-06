@@ -1,0 +1,87 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "satquery"
+version = "1.0.0"
+description = "Physics-Grounded, Hallucination-Free Multimodal Remote Sensing Assistant with Deterministic GIS Verification"
+readme = "README.md"
+authors = [
+    { name = "Aakash S S", email = "aakash1552005@gmail.com" }
+]
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+keywords = [
+    "earth-observation",
+    "remote-sensing",
+    "synthetic-aperture-radar",
+    "sar",
+    "gis",
+    "geospatial",
+    "multimodal-ai",
+    "qwen2-vl",
+    "isro",
+    "sih2026",
+    "computer-vision",
+    "deep-learning",
+    "fastapi"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence"
+]
+dependencies = [
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+    "pydantic>=2.0.0",
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "torch>=2.0.0",
+    "rasterio>=1.3.0",
+    "geopandas>=0.13.0",
+    "shapely>=2.0.0",
+    "matplotlib>=3.7.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "httpx>=0.24.0",
+    "ruff>=0.1.0"
+]
+gpu = [
+    "transformers>=4.40.0",
+    "peft>=0.10.0",
+    "bitsandbytes>=0.43.0",
+    "accelerate>=0.28.0"
+]
+
+[project.scripts]
+satquery-server = "app.backend.main:main"
+satquery-demos = "scripts.run_all_demos:main"
+
+[project.urls]
+"Homepage" = "https://satquery-ai.aakash1552005.workers.dev/"
+"Repository" = "https://github.com/aakash1552005/SatQuery-AI"
+"Documentation" = "https://github.com/aakash1552005/SatQuery-AI#readme"
+"Bug Tracker" = "https://github.com/aakash1552005/SatQuery-AI/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*", "app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
