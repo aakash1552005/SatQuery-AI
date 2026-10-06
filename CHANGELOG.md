@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [v1.0.0] - 2026-10-06 — Production Architecture Freeze (SIH 2026 PS 26167)
+## [v1.0.0] - 2026-10-06 — 🛰️ Production Architecture Freeze (SIH 2026 PS 26167)
 
 ### Added
 - **Global Edge Terminal**: Deployed live mission control interface to Cloudflare Workers Static Assets at [`https://satquery-ai.aakash1552005.workers.dev/`](https://satquery-ai.aakash1552005.workers.dev/).

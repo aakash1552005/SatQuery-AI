@@ -19,17 +19,7 @@ def ensure_test_samples():
 
     if not optical_sample.exists():
         try:
-            from scripts.generate_test_data import (
-                create_optical_sample,
-                create_multispectral_sample,
-                create_sar_sample,
-                create_temporal_pair,
-                create_incompatible_sample,
-            )
-            create_optical_sample()
-            create_multispectral_sample()
-            create_sar_sample()
-            create_temporal_pair()
-            create_incompatible_sample()
+            from scripts.generate_test_data import main as generate_samples
+            generate_samples()
         except Exception as e:
             print(f"[Warning] Could not auto-generate test samples: {e}")
