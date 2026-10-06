@@ -47,6 +47,7 @@ jobs:
       - name: Generate Synthetic Validation Data
         run: |
           python scripts/generate_test_data.py
+          python scripts/generate_bigearthnet_samples.py
 
       - name: Run 14 Milestone Test Suites (118 Tests)
         run: |
