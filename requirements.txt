@@ -19,7 +19,7 @@ pyyaml>=6.0.1
 
 # Anti-Hallucination & Validation
 pydantic>=2.5.0
-pydantic-settings>=2.0.0
+pydantic-settings>=2.1.0
 
 # Optional RS-VLM & PyTorch Machine Learning
 torch>=2.1.0

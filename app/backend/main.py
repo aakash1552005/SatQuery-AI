@@ -2,10 +2,23 @@
 SatQuery AI -- FastAPI Backend
 Section 25: Backend API for upload, metadata inspection, compatibility checking.
 Day 1 scope: upload + inspect + validate.
+
+Phase 1/2 Upgrades:
+  - Centralized AppConfig (GAP-19)
+  - API Key Authentication Middleware (GAP-01)
+  - Rate Limiting Middleware (GAP-02)
+  - Upload size & type validation (GAP-04, GAP-05)
+  - GPU worker SSRF protection (GAP-06)
+  - Standardized error responses (GAP-08)
+  - Upload cleanup background task (GAP-18)
+  - Version consolidation (GAP-13)
 """
 
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
+
+import asyncio
 import logging
 import os
 import shutil
@@ -14,13 +27,28 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
-from fastapi import FastAPI, File, HTTPException, UploadFile, Response
+from fastapi import FastAPI, File, HTTPException, UploadFile, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 import httpx
+from app.backend.config import AppConfig, get_config, __version__
+from app.backend.errors import (
+    ErrorResponse,
+    http_exception_handler,
+    generic_exception_handler,
+    make_error_response,
+)
+from app.backend.security import (
+    APIKeyMiddleware,
+    RateLimitMiddleware,
+    validate_upload_file,
+    validate_file_magic_bytes,
+    validate_gpu_worker_url,
+)
+
 from src.reporting.report_generator import FieldPackGenerator
 from src.verification.evidence_store import EvidenceStore, EvidenceType
 from src.verification.verifier import EvidenceVerifier
@@ -49,13 +77,43 @@ from src.router.agentic_router import AgenticRouter
 from src.router.capability_registry import CapabilityRegistry, RuntimeMode
 
 # ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+config = get_config()
+
+# ---------------------------------------------------------------------------
 # Logging
 # ---------------------------------------------------------------------------
 logging.basicConfig(
-    level=logging.INFO,
+    level=getattr(logging, config.log_level.upper(), logging.INFO),
     format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
 )
 logger = logging.getLogger("satquery.api")
+
+# ---------------------------------------------------------------------------
+# Lifespan (modern replacement for deprecated @app.on_event)
+# ---------------------------------------------------------------------------
+
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    """Manage startup/shutdown lifecycle."""
+    cleanup_task = None
+    if config.upload_ttl_hours > 0:
+        cleanup_task = asyncio.create_task(_cleanup_old_uploads())
+    logger.info(
+        "SatQuery AI v%s started [auth=%s, rate_limit=%s, max_upload=%dMB, cors=%s]",
+        __version__,
+        "enabled" if config.api_key else "disabled",
+        "enabled" if config.rate_limit_enabled else "disabled",
+        config.max_upload_size_mb,
+        config.cors_origins,
+    )
+    yield
+    # Shutdown
+    if cleanup_task:
+        cleanup_task.cancel()
+    logger.info("SatQuery AI shutting down.")
+
 
 # ---------------------------------------------------------------------------
 # App
@@ -67,16 +125,31 @@ app = FastAPI(
         "Remote Sensing Image Analysis through Text Queries. "
         "PS 26167 -- ISRO / Department of Space / SAC."
     ),
-    version="4.0.0-final",
+    version=__version__,
+    lifespan=lifespan,
+    responses={
+        401: {"model": ErrorResponse, "description": "Unauthorized"},
+        429: {"model": ErrorResponse, "description": "Rate Limited"},
+        500: {"model": ErrorResponse, "description": "Internal Error"},
+    },
 )
 
+# Register standardized exception handlers (GAP-08)
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(Exception, generic_exception_handler)
+
+# CORS Middleware (GAP-01: configurable origins)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=config.cors_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Security Middleware (GAP-01, GAP-02)
+app.add_middleware(RateLimitMiddleware, config=config)
+app.add_middleware(APIKeyMiddleware, config=config)
 
 FRONTEND_INDEX = Path(__file__).resolve().parent.parent / "frontend" / "index.html"
 FRONTEND_FAVICON = Path(__file__).resolve().parent.parent / "frontend" / "favicon.svg"
@@ -101,8 +174,7 @@ async def serve_favicon():
 # ---------------------------------------------------------------------------
 # State
 # ---------------------------------------------------------------------------
-UPLOAD_DIR = Path("data/uploads")
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+UPLOAD_DIR = config.upload_path
 
 inspector = RasterInspector()
 compat_checker = CompatibilityChecker()
@@ -119,6 +191,42 @@ _uploaded_files: dict[str, dict] = {}
 
 
 # ---------------------------------------------------------------------------
+# Upload Cleanup Background Task (GAP-18)
+# ---------------------------------------------------------------------------
+
+async def _cleanup_old_uploads():
+    """Periodically remove uploaded files older than the configured TTL."""
+    if config.upload_ttl_hours <= 0:
+        return  # Cleanup disabled
+
+    while True:
+        await asyncio.sleep(3600)  # Check every hour
+        try:
+            cutoff = datetime.now(timezone.utc).timestamp() - (config.upload_ttl_hours * 3600)
+            removed = 0
+            stale_ids = []
+
+            for file_id, data in list(_uploaded_files.items()):
+                file_path = Path(data["path"])
+                if file_path.exists():
+                    mtime = file_path.stat().st_mtime
+                    if mtime < cutoff:
+                        file_path.unlink(missing_ok=True)
+                        stale_ids.append(file_id)
+                        removed += 1
+
+            for fid in stale_ids:
+                _uploaded_files.pop(fid, None)
+
+            if removed > 0:
+                logger.info("Upload cleanup: removed %d expired files (TTL: %dh)", removed, config.upload_ttl_hours)
+        except Exception as e:
+            logger.error("Upload cleanup error: %s", e)
+
+
+
+
+# ---------------------------------------------------------------------------
 # Health / Status
 # ---------------------------------------------------------------------------
 
@@ -129,22 +237,22 @@ class SystemStatus(BaseModel):
     capabilities: dict
 
 
-@app.get("/api/health")
+@app.get("/api/health", tags=["System"])
 async def health():
-    return {"status": "ok", "service": "satquery-ai", "version": "4.0.0-final"}
+    return {"status": "ok", "service": "satquery-ai", "version": __version__}
 
 
-@app.get("/api/status", response_model=SystemStatus)
+@app.get("/api/status", response_model=SystemStatus, tags=["System"])
 async def system_status():
     return SystemStatus(
         status="running",
-        version="4.0.0-final",
+        version=__version__,
         runtime_mode=registry.runtime_mode.value,
         capabilities={name: rec["status"] for name, rec in registry.get_all().items()},
     )
 
 
-@app.get("/api/capabilities")
+@app.get("/api/capabilities", tags=["System"])
 async def get_capabilities():
     """Retrieve complete live capability registry with engine notes and license status."""
     return {
@@ -158,7 +266,7 @@ async def get_capabilities():
 # ---------------------------------------------------------------------------
 
 _cloud_gpu_config: dict[str, Any] = {
-    "url": os.environ.get("SATQUERY_REMOTE_GPU_URL", None),
+    "url": config.gpu_worker_url,
     "status": "NOT_CONNECTED",
     "gpu_info": None,
     "last_ping": None,
@@ -167,15 +275,30 @@ _cloud_gpu_config: dict[str, Any] = {
 
 class CloudGPURegisterRequest(BaseModel):
     worker_url: str
+    secret: Optional[str] = None
 
 
-@app.post("/api/cloud-gpu/register")
+@app.post("/api/cloud-gpu/register", tags=["Cloud GPU"])
 async def register_cloud_gpu(req: CloudGPURegisterRequest):
     """
     Connect SatQuery AI backend to a Tier 2 Cloud GPU worker
     (Google Colab, Kaggle GPU, or RunPod A100).
     """
     url = req.worker_url.strip().rstrip("/")
+
+    # GAP-06: SSRF protection and secret validation
+    is_valid, error_msg = validate_gpu_worker_url(
+        url=url,
+        configured_secret=config.gpu_worker_secret,
+        provided_secret=req.secret,
+    )
+    if not is_valid:
+        return make_error_response(
+            status_code=403,
+            code="GPU_WORKER_DENIED",
+            message=error_msg or "GPU worker registration denied.",
+        )
+
     try:
         async with httpx.AsyncClient(timeout=5.0) as cl:
             r = await cl.get(f"{url}/health")
@@ -189,16 +312,14 @@ async def register_cloud_gpu(req: CloudGPURegisterRequest):
                 logger.info("Tier 2 Cloud GPU worker connected successfully: %s", url)
                 return {"status": "CONNECTED", "worker_url": url, "gpu_info": data}
             else:
-                raise HTTPException(502, f"Worker returned status {r.status_code}")
-    except HTTPException:
-        raise
+                return make_error_response(502, "GPU_WORKER_ERROR", f"Worker returned status {r.status_code}")
     except Exception as e:
         _cloud_gpu_config["status"] = "CONNECTION_FAILED"
         _cloud_gpu_config["url"] = None
-        raise HTTPException(502, f"Could not reach remote GPU worker at {url}: {e}")
+        return make_error_response(502, "GPU_WORKER_UNREACHABLE", f"Could not reach remote GPU worker at {url}: {e}")
 
 
-@app.get("/api/cloud-gpu/status")
+@app.get("/api/cloud-gpu/status", tags=["Cloud GPU"])
 async def get_cloud_gpu_status():
     """Check connectivity and status of Tier 2 Cloud GPU worker."""
     return _cloud_gpu_config
@@ -206,17 +327,26 @@ async def get_cloud_gpu_status():
 
 
 # ---------------------------------------------------------------------------
-# Upload
+# Upload (GAP-04, GAP-05: Size + Type Validation)
 # ---------------------------------------------------------------------------
 
-@app.post("/api/upload", response_model=UploadResponse)
+@app.post("/api/upload", response_model=UploadResponse, tags=["Data Ingestion"])
 async def upload_file(file: UploadFile = File(...)):
     """
     Upload a raster file (GeoTIFF, TIFF, PNG, JPEG).
     Returns extracted metadata and validation status.
     """
     if not file.filename:
-        raise HTTPException(400, "No filename provided")
+        return make_error_response(400, "UPLOAD_NO_FILENAME", "No filename provided.")
+
+    # GAP-04/05: Pre-write validation (extension + size hint)
+    is_valid, error_msg = validate_upload_file(
+        file=file,
+        max_size_bytes=config.max_upload_bytes,
+        allowed_extensions=config.allowed_extensions_set,
+    )
+    if not is_valid:
+        return make_error_response(415, "UPLOAD_INVALID_TYPE", error_msg or "Invalid file type.")
 
     # Save to disk with path traversal sanitization
     file_id = str(uuid.uuid4())[:12]
@@ -224,12 +354,39 @@ async def upload_file(file: UploadFile = File(...)):
     dest = UPLOAD_DIR / f"{file_id}_{safe_name}"
 
     try:
+        # GAP-04: Enforce size limit during streaming write
+        total_bytes = 0
+        chunk_size = 1024 * 1024  # 1 MB chunks
         with open(dest, "wb") as f:
-            shutil.copyfileobj(file.file, f)
+            while True:
+                chunk = await file.read(chunk_size)
+                if not chunk:
+                    break
+                total_bytes += len(chunk)
+                if total_bytes > config.max_upload_bytes:
+                    f.close()
+                    dest.unlink(missing_ok=True)
+                    return make_error_response(
+                        413,
+                        "UPLOAD_TOO_LARGE",
+                        f"File exceeds maximum upload size of {config.max_upload_size_mb} MB.",
+                    )
+                f.write(chunk)
     except Exception as e:
-        raise HTTPException(500, f"Failed to save file: {e}")
+        dest.unlink(missing_ok=True)
+        return make_error_response(500, "UPLOAD_SAVE_FAILED", f"Failed to save file: {e}")
     finally:
         await file.close()
+
+    # GAP-05: Post-write magic byte validation
+    magic_valid, detected_type = validate_file_magic_bytes(dest)
+    if not magic_valid:
+        dest.unlink(missing_ok=True)
+        return make_error_response(
+            422,
+            "UPLOAD_INVALID_CONTENT",
+            f"File content does not match an accepted raster format (detected: {detected_type}).",
+        )
 
     # Inspect
     metadata = inspector.inspect(str(dest))
@@ -239,6 +396,7 @@ async def upload_file(file: UploadFile = File(...)):
     _uploaded_files[file_id] = {
         "path": str(dest),
         "metadata": metadata,
+        "uploaded_at": datetime.now(timezone.utc).isoformat(),
     }
 
     # Determine status
@@ -248,10 +406,11 @@ async def upload_file(file: UploadFile = File(...)):
         rejection = "; ".join(metadata.validation_errors)
 
     logger.info(
-        "Upload %s: %s [%s] %dx%d bands=%d modality=%s",
+        "Upload %s: %s [%s] %dx%d bands=%d modality=%s size=%s",
         status, file.filename, metadata.format,
         metadata.width, metadata.height,
         metadata.band_count, metadata.modality.value,
+        f"{total_bytes / 1024:.1f}KB",
     )
 
     return UploadResponse(
@@ -267,15 +426,15 @@ async def upload_file(file: UploadFile = File(...)):
 # Metadata
 # ---------------------------------------------------------------------------
 
-@app.get("/api/files/{file_id}/metadata", response_model=RasterMetadata)
+@app.get("/api/files/{file_id}/metadata", response_model=RasterMetadata, tags=["Data Ingestion"])
 async def get_metadata(file_id: str):
     """Retrieve metadata for a previously uploaded file."""
     if file_id not in _uploaded_files:
-        raise HTTPException(404, f"File not found: {file_id}")
+        return make_error_response(404, "FILE_NOT_FOUND", f"File not found: {file_id}")
     return _uploaded_files[file_id]["metadata"]
 
 
-@app.get("/api/files")
+@app.get("/api/files", tags=["Data Ingestion"])
 async def list_files():
     """List all uploaded files and their metadata summaries."""
     result = []
@@ -302,13 +461,13 @@ class CompatibilityRequest(BaseModel):
     file_id_b: str
 
 
-@app.post("/api/compatibility", response_model=PairCompatibility)
+@app.post("/api/compatibility", response_model=PairCompatibility, tags=["Analysis"])
 async def check_compatibility(req: CompatibilityRequest):
     """Check compatibility between two uploaded rasters."""
     if req.file_id_a not in _uploaded_files:
-        raise HTTPException(404, f"File not found: {req.file_id_a}")
+        return make_error_response(404, "FILE_NOT_FOUND", f"File not found: {req.file_id_a}")
     if req.file_id_b not in _uploaded_files:
-        raise HTTPException(404, f"File not found: {req.file_id_b}")
+        return make_error_response(404, "FILE_NOT_FOUND", f"File not found: {req.file_id_b}")
 
     meta_a = _uploaded_files[req.file_id_a]["metadata"]
     meta_b = _uploaded_files[req.file_id_b]["metadata"]
@@ -333,20 +492,20 @@ class QueryResponse(BaseModel):
     status: str
 
 
-@app.post("/api/query", response_model=QueryResponse)
+@app.post("/api/query", response_model=QueryResponse, tags=["Analysis"])
 async def process_query(req: QueryRequest):
     """
     Process natural language user query against selected raster inputs.
     Emits sensor-aware routing decision, transparent pathway, and execution trace.
     """
     if not req.query.strip():
-        raise HTTPException(400, "Query cannot be empty.")
+        return make_error_response(400, "QUERY_EMPTY", "Query cannot be empty.")
 
     # Resolve metadata objects for provided file_ids
     input_metadata: list[RasterMetadata] = []
     for fid in req.file_ids:
         if fid not in _uploaded_files:
-            raise HTTPException(404, f"Referenced file not found: {fid}")
+            return make_error_response(404, "FILE_NOT_FOUND", f"Referenced file not found: {fid}")
         input_metadata.append(_uploaded_files[fid]["metadata"])
 
     # Dynamic routing
@@ -636,7 +795,7 @@ async def process_query(req: QueryRequest):
 # Day 7: Export & Field Pack Endpoints
 # ---------------------------------------------------------------------------
 
-@app.post("/api/export/geojson")
+@app.post("/api/export/geojson", tags=["Export"])
 async def export_geojson(req: QueryRequest):
     """Export analysis results and raster footprints as RFC 7946 GeoJSON."""
     input_metadata = [
@@ -653,7 +812,7 @@ async def export_geojson(req: QueryRequest):
     return JSONResponse(content=geojson_data)
 
 
-@app.post("/api/export/field-pack")
+@app.post("/api/export/field-pack", tags=["Export"])
 async def export_field_pack(req: QueryRequest):
     """
     Generate and stream an air-gapped 1-Click Field Pack (.zip) containing:
@@ -705,7 +864,7 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
         "app.backend.main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
+        host=config.host,
+        port=config.port,
+        reload=config.reload,
     )

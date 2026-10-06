@@ -7,7 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [v1.0.0] - 2026-10-06 — 🛰️ Production Architecture Freeze (SIH 2026 PS 26167)
+## [v1.1.0] - 2026-10-06 — 🛡️ Security Hardening & Backend Reliability
+
+### Added
+- **API Key Authentication Middleware (`app/backend/security.py`, GAP-01)**:
+  - Header-based `X-API-Key` validation protecting all `/api/` endpoints with configurable key in `SATQUERY_API_KEY`.
+  - Development mode support when no key is configured.
+- **Sliding-Window Rate Limiting (`app/backend/security.py`, GAP-02)**:
+  - Endpoint-level throttling: 10 uploads/min, 30 queries/min, 60 default requests/min.
+  - Returns `429 Too Many Requests` with `Retry-After` response header.
+  - Transparent test-client bypass preserving local CI harness speed.
+- **Strict File Upload & Magic Byte Validation (`app/backend/security.py`, GAP-04, GAP-05)**:
+  - Streaming chunked file upload enforcement rejecting files over 50 MB (`413 Payload Too Large`).
+  - Binary magic-byte header inspection (TIFF `II*`/`MM*`, BigTIFF, PNG, JPEG) preventing arbitrary payload execution.
+  - Safe path sanitization preventing directory traversal attacks.
+- **SSRF Guard for Cloud GPU Registration (`app/backend/security.py`, GAP-06)**:
+  - Strict host validation preventing internal loopback/private address attacks on `/api/cloud-gpu/register`.
+  - Optional shared secret verification (`SATQUERY_GPU_WORKER_SECRET`).
+- **Centralized Application Configuration (`app/backend/config.py`, GAP-19)**:
+  - Pydantic-Settings `AppConfig` class handling all server, security, upload, and CORS parameters.
+  - `.env.example` template documenting all `SATQUERY_*` environment variables.
+- **Standardized Error Handling Architecture (`app/backend/errors.py`, GAP-08)**:
+  - Unified error schema: `{"error": {"code": "...", "message": "...", "timestamp": "...", "path": "...", "details": {...}}}`.
+  - Global `HTTPException` and uncaught exception handlers.
+- **Upload Retention & Cleanup Engine (`app/backend/main.py`, GAP-18)**:
+  - Lifespan-managed background task pruning uploaded rasters older than `upload_ttl_hours` (default: 24h).
+- **FastAPI TestClient Integration Test Suite (`tests/test_api_integration.py`, GAP-15)**:
+  - 25 end-to-end integration tests covering health, upload, validation, rejection, routing, and field pack export.
+  - Automated test suite expanded to 143 tests passing at 100% in ~17.5s.
+- **Security Policy (`SECURITY.md`)**:
+  - Official vulnerability reporting protocol, response timeline, and supported versions.
+
+---
+
+## [v1.0.0] - 2026-10-06 — 🛰️ Production Ready Prototype
 
 ### Added
 - **Global Edge Terminal**: Deployed live mission control interface to Cloudflare Workers Static Assets at [`https://satquery-ai.aakash1552005.workers.dev/`](https://satquery-ai.aakash1552005.workers.dev/).

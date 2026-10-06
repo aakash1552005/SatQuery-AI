@@ -57,7 +57,9 @@ data/outputs/
 
 # Secrets
 .env
-.env.*
+.env.local
+.env.*.local
+!.env.example
 *.key
 *.pem
 
