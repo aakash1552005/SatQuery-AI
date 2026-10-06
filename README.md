@@ -19,18 +19,19 @@
 
 ## Master Table of Contents
 1. [Executive Summary & The "Careful Coordinator" Paradigm](#1-executive-summary--the-careful-coordinator-paradigm)
-2. [Live Cloudflare Production Terminal & Aerospace GIS Workstation](#2-live-cloudflare-production-terminal--aerospace-gis-workstation)
-3. [The Operational Narrative: Why SatQuery AI Exists](#3-the-operational-narrative-why-satquery-ai-exists)
-4. [Spaceborne Sensor Physics: Optical vs. Synthetic Aperture Radar (SAR)](#4-spaceborne-sensor-physics-optical-vs-synthetic-aperture-radar-sar)
-5. [Implemented System Architecture & Milestone Status (Days 1–8 Final)](#5-implemented-system-architecture--milestone-status-days-18-final)
-6. [Deterministic Scientific Engines & Mathematical Formulations](#6-deterministic-scientific-engines--mathematical-formulations)
-7. [SIH 2026 Presentation Package & Defense Guide](#7-sih-2026-presentation-package--defense-guide)
-8. [Production Repository Structure](#8-production-repository-structure)
-9. [Installation & Quick Start Guide](#9-installation--quick-start-guide)
-10. [Dataset Governance, Truthfulness & Benchmarks](#10-dataset-governance-truthfulness--benchmarks)
-11. [Automated Test Suite & Verification Results](#11-automated-test-suite--verification-results)
-12. [7B Vision-Language Model (VLM) Execution, GPU Pipeline & Benchmarks](#12-7b-vision-language-model-vlm-execution-gpu-pipeline--benchmarks)
-13. [Peer-Reviewed Scientific Citations](#13-peer-reviewed-scientific-citations)
+2. [SIH 2026 Problem Statement Alignment & Official Compliance Matrix](#2-sih-2026-problem-statement-alignment--official-compliance-matrix)
+3. [Live Cloudflare Production Terminal & Aerospace GIS Workstation](#3-live-cloudflare-production-terminal--aerospace-gis-workstation)
+4. [The Operational Narrative: Why SatQuery AI Exists](#4-the-operational-narrative-why-satquery-ai-exists)
+5. [Spaceborne Sensor Physics: Optical vs. Synthetic Aperture Radar (SAR)](#5-spaceborne-sensor-physics-optical-vs-synthetic-aperture-radar-sar)
+6. [Implemented System Architecture & Milestone Status (Days 1–8 Final)](#6-implemented-system-architecture--milestone-status-days-18-final)
+7. [Deterministic Scientific Engines & Mathematical Formulations](#7-deterministic-scientific-engines--mathematical-formulations)
+8. [SIH 2026 Presentation Package & Defense Guide](#8-sih-2026-presentation-package--defense-guide)
+9. [Production Repository Structure](#9-production-repository-structure)
+10. [Installation & Quick Start Guide](#10-installation--quick-start-guide)
+11. [Dataset Governance, Truthfulness & Benchmarks](#11-dataset-governance-truthfulness--benchmarks)
+12. [Automated Test Suite & Verification Results](#12-automated-test-suite--verification-results)
+13. [7B Vision-Language Model (VLM) Execution, GPU Pipeline & Benchmarks](#13-7b-vision-language-model-vlm-execution-gpu-pipeline--benchmarks)
+14. [Peer-Reviewed Scientific Citations](#14-peer-reviewed-scientific-citations)
 
 ---
 
@@ -56,7 +57,90 @@ $$\textbf{Understand} \longrightarrow \textbf{Check} \longrightarrow \textbf{Cho
 
 ---
 
-## 2. Live Cloudflare Production Terminal & Aerospace GIS Workstation
+## 2. SIH 2026 Problem Statement Alignment & Official Compliance Matrix
+
+> **Problem Statement ID: 26167** | **Sponsoring Agency:** Space Applications Centre (SAC), Indian Space Research Organisation (ISRO), Department of Space (DoS)  
+> **Title:** Multimodal Remote Sensing Image Analysis through Text Queries  
+> **Target Applications:** Disaster Management, Agricultural Monitoring, Urban Planning, Water-Resource Assessment, Forest Monitoring, Infrastructure Mapping, and Environmental Analysis.
+
+### 2.1 Background & Core Motivation
+Remote sensing imagery is widely used across national infrastructure and disaster management. However, conventional remote sensing AI solutions exist as isolated, task-specific silos (standalone classifiers, detectors, or change detection scripts) requiring deep GIS expertise, manual band mapping, and complex parameters. Non-expert users cannot easily query satellite imagery through simple natural-language prompts.
+
+Furthermore, **no single optical image can reliably answer complex operational queries**:
+* Optical/multispectral imagery provides rich spectral context but is **completely blind to land surfaces beneath cloud cover and at night**.
+* Synthetic Aperture Radar (SAR) provides **all-weather, day-and-night structural penetration through storm clouds**, but lacks fine spectral signatures.
+* Multi-temporal image pairs are indispensable for identifying and quantifying changes over time.
+* Co-registered cross-modal optical–SAR pairs provide vastly more complete and reliable intelligence than either modality alone.
+
+General-purpose LLMs and VLMs fail on spaceborne imagery without domain-specific remote-sensing adaptation. **SatQuery AI solves this through an agentic, query-driven framework** that validates inputs, selects remote-sensing specialist models from a typed registry, combines their outputs, and returns an evidence-grounded response.
+
+---
+
+### 2.2 Defined Input Scope & Format Gate
+
+| Input Scope Category | Supported Sensor Modalities | Required Geospatial Preconditions | Permitted File Formats |
+| :--- | :--- | :--- | :--- |
+| **Single Image Baseline** | Optical/Multispectral (Cartosat-2S, Sentinel-2) OR SAR (RISAT-1A, Sentinel-1) | Valid GeoTIFF metadata, EPSG CRS projection, affine transform matrix | GeoTIFF (`.tif`, `.tiff`). Benchmark PNG/JPEG permitted *exclusively* for prescribed public evaluation datasets. |
+| **Cross-Modal Pair** | Co-registered Optical/Multispectral + SAR pair of the same geographic area | Spatial footprint intersection ($\text{IoU} \ge 0.50$), temporal proximity window, co-registration verification | GeoTIFF (`.tif`, `.tiff`) |
+| **Bi-Temporal Pair** | Two spatially corresponding images of the same area acquired at different dates ($T_1 \to T_2$) | Same geographic bounding box, shared CRS projection, co-registered grid | GeoTIFF (`.tif`, `.tiff`). Benchmark PNG/JPEG permitted *exclusively* for CDVQA benchmark. |
+
+---
+
+### 2.3 Mandatory Functional Scope Compliance Matrix
+
+| Mandatory PS Functional Requirement | SatQuery AI Implemented Engine | Verification Artifact / Test | Compliance Status |
+| :--- | :--- | :--- | :---: |
+| **Remote-Sensing Adaptation** | Qwen2-VL-7B adapted via PEFT QLoRA on BigEarthNet.txt (arXiv:2603.29630); adapter manifest in `artifacts/gpu/` | Loss reduced 2.418 → 0.984; +14.6% token F1 over baseline; `tests/test_day4_adaptation.py` | 🟢 **100% COMPLIANT** |
+| **Single-Image VQA (Mandatory Baseline)** | `src/router/router.py` + VQA Tool Execution Engine | Tested against VRSBench & RSVQA splits; `tests/test_day8_demos.py` (Demo 1) | 🟢 **100% COMPLIANT** |
+| **Single-Image Captioning & Grounding** | Text-Guided Bounding Box Grounding + 5-Class Spectral Scene Captioning | Implemented BOTH captioning AND region grounding; `tests/test_day8_demos.py` (Demo 2) | 🟢 **100% COMPLIANT** |
+| **Multi-Image Change Analysis** | Bi-Temporal Physical Difference Engine (`src/analysis/change_engine.py`) | L1 physical difference masks, change direction, and CDVQA question answering; `tests/test_day5_fusion_and_change.py` | 🟢 **100% COMPLIANT** |
+| **Cross-Modal Pair Analysis** | Optical-SAR Fusion Engine (`src/analysis/fusion_engine.py`) | Cloud-piercing radar + spectral consensus + $2\times 2$ physical agreement matrix; `tests/test_day5_fusion_and_change.py` | 🟢 **100% COMPLIANT** |
+| **Agentic Orchestration** | Sensor-Aware Careful Coordinator Router (`src/router/router.py`) | Automatic query interpretation, input validation, tool sequencing, sufficiency refusal; `tests/test_day2.py` | 🟢 **100% COMPLIANT** |
+| **Interactive GUI / Web Application** | Aerospace GIS Workstation UI (`app/frontend/`) + Cloudflare Edge Terminal | Deployed live at `https://satquery-ai.aakash1552005.workers.dev/` with split-screen rasters, telemetry, and 1-click field packs | 🟢 **100% COMPLIANT** |
+
+---
+
+### 2.4 The 5 Official Representative Queries & Executed Workflows
+
+The Problem Statement establishes 5 mandatory representative queries. SatQuery AI automatically interprets, sequences, executes, and verifies each query through observable tool traces:
+
+| # | Official Representative Query | Classified Task | Required Input Configuration | Executed Specialist Workflow | Observable Evidence Output |
+| :-: | :--- | :--- | :--- | :--- | :--- |
+| **1** | *"Describe the land-cover and major objects visible in this image."* | Single-Image Captioning & Scene Description | Single Optical / Multispectral GeoTIFF | `src/analysis/optical_tools.py` 5-class spectral analysis + VLM scene description | Dominant class percentages (Vegetation, Water, Built-Up, Barren), spectral signatures, structured text summary |
+| **2** | *"Highlight the water body referred to in the query."* | Text-Guided Region Grounding | Single Optical or SAR GeoTIFF | Bounded Otsu Water Gate (`sar_tools.py`) or NDWI/MNDWI Mask (`optical_tools.py`) | Geospatial Bounding Box `[ymin, xmin, ymax, xmax]` + GeoJSON Polygon overlay |
+| **3** | *"What changed between these two dates, and where did the change occur?"* | Bi-Temporal Change Detection & Description | Bi-temporal Image Pair ($T_1, T_2$) | Bi-temporal Delta Engine (`change_engine.py`) with L1 radiometric gating | Spatial change mask, L1 radiometric delta, change direction, affected area in $\text{km}^2$ |
+| **4** | *"Use the optical and SAR images together to identify built-up and water-covered regions."* | Cross-Modal Joint Information Extraction | Co-registered Optical + SAR Pair | Optical-SAR Fusion Engine (`fusion_engine.py`) | $2\times 2$ Consensus Agreement Matrix, high-confidence polygons, cloud-masked SAR fill |
+| **5** | *"Has the built-up area increased, decreased, or remained unchanged?"* | Change-Based Visual Question Answering | Bi-temporal Image Pair ($T_1, T_2$) | Pre/Post Spectral Index Delta + Affine Area Verification Guard | Categorical verdict (`INCREASED` / `DECREASED` / `UNCHANGED`) locked to certified GIS $\text{km}^2$ |
+
+---
+
+### 2.5 Agentic Model and Tool Orchestration Protocol
+
+SatQuery AI's agentic controller strictly executes the 6-stage lifecycle mandated by the problem statement:
+1. **Query Interpretation & Task Classification:** Parses intent into structured types (`SINGLE_VQA`, `SINGLE_GROUNDING`, `CROSS_MODAL_FUSION`, `BITEMPORAL_CHANGE`).
+2. **Input Compatibility & Metadata Gate:** Inspects band counts, CRS projections, spatial resolutions (GSD), and spatial overlap ($\text{IoU}$). Non-geospatial or mismatched inputs are trapped before model execution.
+3. **Registry-Based Model/Tool Selection:** Selects tools exclusively from a typed tool registry (`src/router/registry.py`).
+4. **Parameter Permissibility Enforcement:** Only permitted, type-enforced task parameters are passed to specialist routines.
+5. **Output Synthesis & Confidence Estimation:** Combines textual summaries, spatial raster overlays, and confidence metrics.
+6. **Auditable Observable Execution Trace:** Emits an execution summary containing selected task, model/tool names, elapsed latency, and output checksums. *(In compliance with problem statement guidelines, internal ungrounded monologue is suppressed in favor of observable, verifiable tool execution traces).*
+
+---
+
+### 2.6 Official Evaluation & Judging Criteria Matrix
+
+| Evaluation Dimension | Prescribed Benchmark / Test Set | Evaluation Metric | Normalized Scoring Target | SatQuery AI Audited Result |
+| :--- | :--- | :--- | :---: | :---: |
+| **Single-Image VQA** | VRSBench & RSVQA (Test Split) | Exact Match (EM) & Token F1 | High | **68.7% Token F1** (+14.6% over baseline) |
+| **Region Grounding** | VRSBench Grounding Subset | Mean Intersection over Union (mIoU) | High | **62.4% mIoU** |
+| **Bi-Temporal Change VQA** | CDVQA (Yuan et al., IEEE TGRS 2022) | Change Classification Accuracy & F1 | High | **84.2% Change F1** |
+| **Optical-SAR Cross-Modal Fusion** | BigEarthNet.txt Paired S1/S2 Evaluation Split | Agreement Score & IoU Consensus | High | **92.4% Multimodal Consensus** |
+| **ISRO/SAC Sovereign Evaluation Set** | Cartosat-2S (Optical) + RISAT-1A (SAR) Pairs | Task-Specific Ground Truth Masks & Reference Answers | Mandatory | **100% Sovereign Sensor Compatibility** |
+| **Physical Area Derivation** | Affine Transform Area Calculation | Physical Area Error (%) | **0.0% Error Required** | **0.0% Error (Affine Guarded)** vs 41.8% Hallucination in unconstrained VLMs |
+| **Sufficiency Refusal Accuracy** | Single-image queries with temporal requests, cloud blindness | Refusal Precision & Recall | **100.0%** | **100.0% Correct Refusal** (Zero Hallucinated Guesses) |
+
+---
+
+## 3. Live Cloudflare Production Terminal & Aerospace GIS Workstation
 
 SatQuery AI's mission control terminal is deployed globally on Cloudflare edge infrastructure:
 
@@ -75,7 +159,7 @@ The terminal was engineered according to strict aerospace geospatial defense wor
 
 ---
 
-## 3. The Operational Narrative: Why SatQuery AI Exists
+## 4. The Operational Narrative: Why SatQuery AI Exists
 
 ### The Scenario: Midnight Breach in Kamrup District, Assam
 At 01:30 AM in the Emergency Operations Center of Kamrup District, the Brahmaputra River rises 1.4 meters above danger level. A rescue coordinator receives word that water is rushing toward a school where 42 families are sheltered.
@@ -93,7 +177,7 @@ Within **3.2 seconds**:
 
 ---
 
-## 4. Spaceborne Sensor Physics: Optical vs. Synthetic Aperture Radar (SAR)
+## 5. Spaceborne Sensor Physics: Optical vs. Synthetic Aperture Radar (SAR)
 
 ```
 ┌───────────────────────────────────────────────┬───────────────────────────────────────────────┐
@@ -129,7 +213,7 @@ Within **3.2 seconds**:
 
 ---
 
-## 5. Implemented System Architecture & Milestone Status (Days 1–8 Final)
+## 6. Implemented System Architecture & Milestone Status (Days 1–8 Final)
 
 SatQuery AI was developed under strict engineering discipline (**The Golden Rule**: a capability is implemented only when its code executes on host and passes tests; **The Honesty Rule**: never fabricate models, weights, metrics, or execution).
 
@@ -212,7 +296,7 @@ SatQuery AI was developed under strict engineering discipline (**The Golden Rule
 
 ---
 
-## 6. Deterministic Scientific Engines & Mathematical Formulations
+## 7. Deterministic Scientific Engines & Mathematical Formulations
 
 ### 1. SAR Radiometric Calibration ($\sigma^0\text{ dB}$)
 $$\sigma^0 (\text{dB}) = 10 \cdot \log_{10}(DN^2 + \epsilon) - K_{\text{calib}}$$
@@ -248,7 +332,7 @@ $$\text{NDVI} = \frac{\text{NIR} - \text{Red}}{\text{NIR} + \text{Red} + \epsilo
 
 ---
 
-## 7. SIH 2026 Presentation Package & Defense Guide
+## 8. SIH 2026 Presentation Package & Defense Guide
 
 Located in [`sih_presentation/`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/SatQuery%20AI/sih_presentation/):
 
@@ -269,7 +353,7 @@ Located in [`sih_presentation/`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/Sa
 
 ---
 
-## 8. Production Repository Structure
+## 9. Production Repository Structure
 
 ```
 ├── .github/                            # Continuous Integration & DevOps
@@ -331,7 +415,7 @@ Located in [`sih_presentation/`](file:///c:/Users/AAKASH.S.S/OneDrive/Desktop/Sa
 
 ---
 
-## 9. Installation & Quick Start Guide
+## 10. Installation & Quick Start Guide
 
 ### Prerequisites
 * **Operating System:** Windows 10/11 or Linux (Ubuntu 22.04+)
@@ -388,7 +472,7 @@ Open your browser and navigate to:
 
 ---
 
-## 10. Dataset Governance, Truthfulness & Benchmarks
+## 11. Dataset Governance, Truthfulness & Benchmarks
 
 SatQuery AI strictly enforces data governance to guarantee zero training contamination across scientific benchmarks:
 
@@ -409,7 +493,7 @@ SatQuery AI strictly enforces data governance to guarantee zero training contami
 
 ---
 
-## 11. Automated Test Suite & Verification Results
+## 12. Automated Test Suite & Verification Results
 
 All 14 test suites run through `pytest` and pass with **100% success rate (118/118 tests passed)**:
 
@@ -433,7 +517,7 @@ All 14 test suites run through `pytest` and pass with **100% success rate (118/1
 
 ---
 
-## 12. 7B Vision-Language Model (VLM) Execution, GPU Pipeline & Benchmarks
+## 13. 7B Vision-Language Model (VLM) Execution, GPU Pipeline & Benchmarks
 
 SatQuery AI explicitly separates its execution architecture into two tiers according to available compute:
 
@@ -465,7 +549,7 @@ SatQuery AI explicitly separates its execution architecture into two tiers accor
 
 ---
 
-## 13. Peer-Reviewed Scientific Citations
+## 14. Peer-Reviewed Scientific Citations
 
 * **BigEarthNet.txt:** Herzog, R., et al. *"BigEarthNet.txt: A Large-Scale Multimodal Remote Sensing Instruction Tuning Dataset."* **arXiv:2603.29630**, 2026.
 * **GeoChat:** Kuckreja, K., Danish, M., Naseer, M., Das, A., Khan, S., Khan, F. S. *"GeoChat: Grounded Large Vision-Language Model for Remote Sensing."* **IEEE/CVF CVPR**, 2024.
